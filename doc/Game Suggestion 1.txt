@@ -1,0 +1,52 @@
+Areena clone/remake with more tactic elements
+
+Reference material
+
+What is Areena?
+
+"Old indie game"
+Last updated in 2007, unless you count the new browser based game, facebook game and a mobile game.
+
+All of these games utulize the same old gaphics, and the same game mechanics, so id call them the same game. We can do better.
+
+Gladiator management game created by Seppo Suorsa
+http://fi.wikipedia.org/wiki/Areena_%28pelisarja%29
+http://www.seppos.net/areena.html
+http://apps.facebook.com/gladiatormanager/
+http://www.seppos.net/gm/
+https://arena-6.appspot.com/
+
+
+Point in the game was to manage your team of Gladiators and rise in team rankings/ladder and thusly beat the season of matches.
+
+Basics:
+- form a team by buying slaves
+- buy equipment to your slaves
+- win matches to gain money
+- get up in the ladder
+
+The game utilizes a slight variation d100 system of roleplaying rules, most likely inspired by the game RuneQuest
+
+Lets say that a character has a skill of 45 in shordsmanship. He has a short sword that deals 1d6 points of damage.
+
+In order for him to hit succesfully his target he needs to get more than 45 from a roll of 100 sided die. After this he will deal damage to his target equal to the damage of his weapon, in this case the number told by a 6 sided die.
+
+In short this is how the combat would work. In time, the weapon skill would increase, for example 1 point per 10 succesful hits, or something like that. He coudl afford a better sword dealing more damage and so on.
+
+
+What could we make? What could out game be?
+
+- game with better graphics
+- more versatile and balanced combat system
+- rpg elements, such as creating the team, other than buying pregenerated characters
+- music
+- the surrounding area would heve greater deal in the tactics
+- and best of all, a new Arena game
+ 
+
+ 
+
+ 
+
+
+
