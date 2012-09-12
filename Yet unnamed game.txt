@@ -1,0 +1,22 @@
+Team:
+Jakke   (Brenon)     jakke@utu.fi                       "Project Manager"
+Aleksi  (alexer)     altorh@utu.fi                      Leading software architect
+Heikki  (Zokol)      juva.hj@gmail.com                  Software architect
+Daniel  (Prototailz) Daniel.Prange@students.turkuamk.fi Leading graphics designer
+Jarkko  ()           jajuhu@utu.fi                      Graphics designer
+
+Titles are not set in stone, dont take them too seriously :D
+
+Game name:
+
+Theme: "Isolation"
+
+Basics
+- turn based
+- strategy
+
+Possible features
+- rpg elements (character creation)
+
+
+
