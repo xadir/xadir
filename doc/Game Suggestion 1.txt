@@ -34,7 +34,7 @@ In order for him to hit succesfully his target he needs to get more than 45 from
 In short this is how the combat would work. In time, the weapon skill would increase, for example 1 point per 10 succesful hits, or something like that. He coudl afford a better sword dealing more damage and so on.
 
 
-What could we make? What could out game be?
+What could we make? What could our game be?
 
 - game with better graphics
 - more versatile and balanced combat system
