@@ -36,7 +36,7 @@ if __name__ == "__main__":
 		sys.exit()
 
 	size_x = int(sys.argv[2]) if len(sys.argv) >= 3 else 16
-	size_y = int(sys.argv[3]) if len(sys.argv) >= 4 else 16
+	size_y = int(sys.argv[3]) if len(sys.argv) >= 4 else size_x
 	SIZE = (size_x, size_y)
 
 	win = TileView()
