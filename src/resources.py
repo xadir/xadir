@@ -22,7 +22,7 @@ def load_tiles(name, (width, height), colorkey=None):
 
 def parse_tiles(tileimage, (width, height)):
 	rect = tileimage.get_rect()
-	if rect.width % width == 0 or rect.height % height == 0:
+	if rect.width % width or rect.height % height:
 		print 'Tile image should be divisible to (%d,%d)' % (width, height)
 	cols = rect.width / width
 	rows = rect.height / height
