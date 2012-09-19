@@ -29,7 +29,6 @@ class TileView:
 					sys.exit()
 			time.sleep(0.05)
 
-# XXX: window size from image size
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
 		print 'syntax: %s FILE [SIZE_X [SIZE_Y]]' % (sys.argv[0], )
@@ -42,6 +41,9 @@ if __name__ == "__main__":
 	win = TileView()
 
 	tiles = load_tiles(sys.argv[1], SIZE, (255, 0, 255))
+
+	# Resize window to image size
+	win.screen = pygame.display.set_mode((len(tiles[0])*(SIZE[0]+1)-1, len(tiles)*(SIZE[1]+1)-1))
 
 	win.loop()
 
