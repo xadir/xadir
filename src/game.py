@@ -70,11 +70,12 @@ class Water(pygame.sprite.Sprite):
 			self.rect = rect
 
 SIZE = (16, 16)
+SIZE2 = (3 * SIZE[0], 3 * SIZE[1])
 
 if __name__ == "__main__":
 	MainWindow = PyManMain()
 
-	tiles = load_tiles('placeholder_tilemap.png', (48, 48))
+	tiles = load_tiles('placeholder_tilemap.png', SIZE2)
 	waters = parse_tiles(tiles[0][0], SIZE)
 	lands = parse_tiles(tiles[0][1], SIZE)
 
