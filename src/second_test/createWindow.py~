@@ -113,7 +113,7 @@ class Character:
 	def setHeading(angle):			# Sets the absolute heading of character
 		self.heading = angle
 
-	def turn(angle):			# Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time
+	def turn(angle):
 		angle = angle % 360
 		if angle <= 45:
 			self.heading = (self.heading + angle) % 360
