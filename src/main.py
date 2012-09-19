@@ -4,6 +4,7 @@ from pygame.locals import *
 from config import *
 
 GFXDIR = os.path.join(BASEDIR, 'gfx')
+SNDDIR = os.path.join(BASEDIR, 'snd')
 
 def load_image(name, colorkey=None):
 	path = os.path.join(GFXDIR, name)
@@ -43,7 +44,7 @@ def load_sound(name):
 		def play(self): pass
 	if not pygame.mixer:
 		return NoneSound()
-	fullname = os.path.join('data', name)
+	fullname = os.path.join(SNDDIR, name)
 	try:
 		sound = pygame.mixer.Sound(fullname)
 	except pygame.error, message:
