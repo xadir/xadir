@@ -22,7 +22,7 @@ class TileView:
 		while 1:
 			for y in range(len(tiles)):
 				for x in range(len(tiles[y])):
-					self.screen.blit(tiles[y][x], (x*17, y*17))
+					self.screen.blit(tiles[y][x], (x*(SIZE[0]+1), y*(SIZE[1]+1)))
 			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
