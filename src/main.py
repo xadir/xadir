@@ -17,10 +17,10 @@ def load_image(name, colorkey=None):
 		if colorkey is -1:
 			colorkey = image.get_at((0,0))
 		image.set_colorkey(colorkey, RLEACCEL)
-	return image, image.get_rect()
+	return image
 
 def load_tiles(name, (width, height), colorkey=None):
-	image, rect = load_image(name, colorkey)
+	image = load_image(name, colorkey)
 	return parse_tiles(image, (width, height))
 
 def parse_tiles(tileimage, (width, height)):
@@ -36,7 +36,7 @@ def parse_tiles(tileimage, (width, height)):
 			image = tileimage.subsurface((x*width, y*height, width, height))
 			row.append(image)
 		images.append(row)
-	return images, images[0][0].get_rect()
+	return images
 
 def load_sound(name):
 	class NoneSound:
@@ -103,14 +103,16 @@ class Map:
 class Land(pygame.sprite.Sprite):
 	def __init__(self, rect=None):
 		pygame.sprite.Sprite.__init__(self)
-		self.image, self.rect = lands[1][1], rect#load_image('land%d.jpg' % SIZE)
+		self.image = lands[1][1]#load_image('land%d.jpg' % SIZE)
+		self.rect = self.image.get_rect()
 		if rect != None:
 			self.rect = rect
 
 class Water(pygame.sprite.Sprite):
 	def __init__(self, rect=None):
 		pygame.sprite.Sprite.__init__(self)
-		self.image, self.rect = waters[1][1], rect#load_image('water%d.jpg' % SIZE)
+		self.image = waters[1][1]#load_image('water%d.jpg' % SIZE)
+		self.rect = self.image.get_rect()
 		if rect != None:
 			self.rect = rect
 
@@ -119,9 +121,9 @@ SIZE = (16, 16)
 if __name__ == "__main__":
 	MainWindow = PyManMain()
 
-	tiles, rect = load_tiles('placeholder_tilemap.png', (48, 48))
-	waters, rect = parse_tiles(tiles[0][0], SIZE)
-	lands, rect = parse_tiles(tiles[0][1], SIZE)
+	tiles = load_tiles('placeholder_tilemap.png', (48, 48))
+	waters = parse_tiles(tiles[0][0], SIZE)
+	lands = parse_tiles(tiles[0][1], SIZE)
 
 	MainWindow.MainLoop()
 
