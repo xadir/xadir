@@ -1,6 +1,7 @@
 import os, sys, time
 import pygame
 from pygame.locals import *
+from resources import *
 from config import *
 
 if not pygame.font:
