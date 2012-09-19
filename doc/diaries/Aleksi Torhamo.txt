@@ -3,6 +3,7 @@
 	- Ui-suunnittelu
 	- Grafiikka suunnittelu
 	- yms.
+
 - 19.9 (2t) Palaveri 2 (kaikki paikalla)
 	- Grafiikka suunnittelu
 	- Layout suunnittelu
