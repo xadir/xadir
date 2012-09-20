@@ -42,30 +42,19 @@ class Map:
 		self.map_sprites = pygame.sprite.Group()
 		for x in range(self.width):
 			for y in range(self.height):
-				if map[x][y]:
-					print "Water at: (" + str(x) + "," + str(y) + ")"
-					self.map_sprites.add(Water(pygame.Rect(y*SIZE[1], x*SIZE[0], *SIZE)))
-				else:
-					print "Land at: (" + str(x) + "," + str(y) + ")"
-					self.map_sprites.add(Land(pygame.Rect(y*SIZE[1], x*SIZE[0], *SIZE)))
+				tiletype = map[x][y]
+				tile = tiletypes[tiletype]
+				self.map_sprites.add(Tile(tile, pygame.Rect(y*SIZE[1], x*SIZE[0], *SIZE)))
 
 	def get_sprites(self):
 		return self.map_sprites
 
-class Land(pygame.sprite.Sprite):
-	def __init__(self, rect=None):
+class Tile(pygame.sprite.Sprite):
+	def __init__(self, image, rect=None):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = lands[1][1]
-		self.rect = self.image.get_rect()
-		if rect != None:
-			self.rect = rect
-
-class Water(pygame.sprite.Sprite):
-	def __init__(self, rect=None):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = waters[1][1]
-		self.rect = self.image.get_rect()
-		if rect != None:
+		self.image = image
+		self.rect = image.get_rect()
+		if rect is not None:
 			self.rect = rect
 
 SIZE = (16, 16)
@@ -77,6 +66,11 @@ if __name__ == "__main__":
 	tiles = load_tiles('placeholder_tilemap.png', SIZE2)
 	waters = parse_tiles(tiles[0][0], SIZE)
 	lands = parse_tiles(tiles[0][1], SIZE)
+
+	tiletypes = {
+		0: lands[1][1],
+		1: waters[1][1],
+	}
 
 	game.loop()
 
