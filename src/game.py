@@ -34,17 +34,17 @@ class GameMain:
 
 class Map:
 	"""Class for initialization of the map layer"""
-	def __init__(self, map, height, width):
+	def __init__(self, map, width, height):
 		self.sprite = []
 		self.width = width
 		self.height = height
 		self.map = map
 		self.map_sprites = pygame.sprite.Group()
-		for x in range(self.width):
-			for y in range(self.height):
-				tiletype = map[x][y]
+		for y in range(self.height):
+			for x in range(self.width):
+				tiletype = map[y][x]
 				tile = tiletypes[tiletype]
-				self.map_sprites.add(Tile(tile, pygame.Rect(y*SIZE[1], x*SIZE[0], *SIZE)))
+				self.map_sprites.add(Tile(tile, pygame.Rect(x*SIZE[0], y*SIZE[1], *SIZE)))
 
 	def get_sprites(self):
 		return self.map_sprites
