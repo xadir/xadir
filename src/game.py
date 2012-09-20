@@ -63,7 +63,7 @@ SIZE2 = (3 * SIZE[0], 3 * SIZE[1])
 if __name__ == "__main__":
 	game = GameMain()
 
-	tiles = load_tiles('placeholder_tilemap.png', SIZE2)
+	tiles = load_tiles('placeholder_tilemap.png', SIZE2, (255, 0, 255))
 	waters = parse_tiles(tiles[0][0], SIZE)
 	lands = parse_tiles(tiles[0][1], SIZE)
 
