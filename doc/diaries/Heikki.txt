@@ -1,11 +1,27 @@
+- 17.9 (3t) Pre-Alphan kehitys
+	- kartan renderöinti
+
 - 18.9 (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
 	- Ui-suunnittelu
 	- Grafiikka suunnittelu
 	- yms.
 
+- 18.9 (4t) Ohjelmointia
+	- Ulkoasun muutoksia ja karttatiilien skaalaus
+
 - 19.9 (2t) Palaveri 2 (kaikki paikalla)
 	- Grafiikka suunnittelu
 	- Layout suunnittelu
 	- Class/race suunnittelu
-	
+
+- 19.9 (5t)
+	- Player, Map ja Character - luokat
+
+- 20.9 (4t)
+	- Hahmon liikuttaminen hiirellä
+	- Hahmon liikkumisen rajoitus (movement points, kartan tiilet johon ei voi mennä)
+
+- 21.9 ()
+	- Korjattu liikkumisen estäminen kartan ulkopuolelle
+	- secont_test ja game.py merge
