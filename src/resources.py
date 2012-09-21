@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from config import *
 
-def load_image(name, colorkey=None):
+def load_image(name, colorkey=None, scale=1):
 	path = os.path.join(GFXDIR, name)
 	try:
 		image = pygame.image.load(path)
@@ -14,6 +14,9 @@ def load_image(name, colorkey=None):
 		if colorkey is -1:
 			colorkey = image.get_at((0,0))
 		image.set_colorkey(colorkey, RLEACCEL)
+	if scale is not 1:
+		image_rect = image.get_rect()
+		image = pygame.transform.scale(image, (image_rect.bottom*scale, image_rect.right*scale))
 	return image
 
 def load_tiles(name, (width, height), colorkey=None):
