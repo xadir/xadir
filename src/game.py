@@ -287,7 +287,6 @@ if __name__ == "__main__":
 	waters = parse_tiles(tiles[0][0], SIZE)
 	lands = parse_tiles(tiles[0][1], SIZE)
 	characters = parse_tiles(tiles[1][2], SIZE)
-	
 
 	tiletypes = {
 		'l': lands[1][1],
@@ -295,5 +294,7 @@ if __name__ == "__main__":
 		'b': characters[0][0],
 		'g': characters[1][0]
 	}
+
+	tiletypes['g'].set_alpha(120)
 
 	game.main_loop()
