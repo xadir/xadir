@@ -35,24 +35,9 @@ class xadir_main:
 
 	def load_sprites(self):
     		"""Load the sprites that we need"""
-		self.walkable = ['l']
-		self.map = background_map([
-				['w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w'],
-				['w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w'],
-                                ['w','w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','w','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-				], 20, 15)
+		self.walkable = ['GGGG1']
+		map = load_map('map2.txt')
+		self.map = background_map(map, len(map[0]), len(map))
 		self.player1 = player([['b', 4, 3]], self)
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
@@ -294,6 +279,9 @@ if __name__ == "__main__":
 		'b': characters[0][0],
 		'g': characters[1][0]
 	}
+	tiletypes = load_named_tiles('placeholder_tilemap', (16, 16))
+	tiletypes['b'] = characters[0][0]
+	tiletypes['g'] = characters[1][0]
 
 	tiletypes['g'].set_alpha(120)
 
