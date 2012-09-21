@@ -239,8 +239,8 @@ class character:
 		w = 'w'
 		l = 'l'
 
-		if coords[0] >= 15: return False
-		if coords[1] >= 20: return False
+		if coords[1] >= 15: return False
+		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
 		if coords[1] < 0: return False
 
