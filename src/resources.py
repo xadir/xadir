@@ -19,8 +19,8 @@ def load_image(name, colorkey=None, scale=1):
 		image = pygame.transform.scale(image, (image_rect.bottom*scale, image_rect.right*scale))
 	return image
 
-def load_tiles(name, (width, height), colorkey=None):
-	image = load_image(name, colorkey)
+def load_tiles(name, (width, height), colorkey=None, scale=1):
+	image = load_image(name, colorkey, scale)
 	return parse_tiles(image, (width, height))
 
 def parse_tiles(tileimage, (width, height)):
