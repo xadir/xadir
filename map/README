@@ -1,0 +1,19 @@
+Map data lives here.
+
+The compatibility of two map tiles is defined by their touching borders.
+We represent this by dividing each of the four borders of a tile to 2 parts
+and walking the border in the clockwise direction starting from the top left corner.
+
+For example, a tile at the border of water (W) and ground (G) would be represented as:
+WG
+WG
+
+The border of this tile would then translate to WG GG GW WW or WGGGGWWW.
+If there are multiple tiles with identical borders but differing contents, we use a
+number at the end to differentiate them, on a first drawn first numbered basis.
+
+If the borders are identical in corners, this can be shortened to a four letter code,
+which is obtained by walking the corner codes instead. For example, for the previous
+example, this code would be WGGW. If the whole block uses the same border, it can be
+shortened to just one letter.
+

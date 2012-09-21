@@ -1,5 +1,18 @@
-- 18.9 (3t) Palaveri 1 (kaikki paikalla)
+- 18.9. (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
 	- Ui-suunnittelu
 	- Grafiikka suunnittelu
 	- yms.
+
+- 19.9. (2t) Palaveri 2 (kaikki paikalla)
+	- Grafiikka suunnittelu
+	- Layout suunnittelu
+	- Class/race suunnittelu
+
+- 19.9. (5h) Map & Tiles
+	- Tileset loader
+	- Tileset viewer
+	- Started on a map editor
+	- Figured out what format best works for tile naming
+	  (so that maps made for older tiles still work)
+
