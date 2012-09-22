@@ -63,7 +63,7 @@ class xadir_main:
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
 			mouse_coords = list(pygame.mouse.get_pos())
-			mouse_coords = [mouse_coords[0]/SIZE[0], mouse_coords[1]/SIZE[1]]
+			mouse_coords = [mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1]]
 			print char_coords
 			print mouse_coords
 			if char_coords == mouse_coords:
@@ -91,7 +91,7 @@ class sprite_grid:
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
 			tile = tiletypes['g']
-			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*SIZE[0], grid[i][1]*SIZE[1], *SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
 	def get_sprites(self):
 		return self.sprites
@@ -109,7 +109,7 @@ class background_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*SIZE[0], y*SIZE[1], *SIZE)))
+				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
 		"""
 		for x in range(self.width):
 			for y in range(self.height):
@@ -139,7 +139,7 @@ class player:
 			y = coords[i][1]
 			x = coords[i][2]
 			tile = tiletypes[character_type]
-			self.sprites.add(Tile(tile, pygame.Rect(x*SIZE[0], y*SIZE[1], *SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
 			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
 
 	def get_sprites(self):
@@ -169,7 +169,7 @@ class player:
 			coords = self.characters[i].get_coords()
 			character_type = self.characters[i].get_type()
 			tile = tiletypes[character_type]
-			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*SIZE[0], coords[1]*SIZE[1], *SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
 
 class character:
 	# Universal class for any character in the game
@@ -276,24 +276,26 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-SIZE = (16, 16)
-SIZE2 = (3 * SIZE[0], 3 * SIZE[1])
-SIZE3 = 48
+SCALE = 3
+ORIG_TILE_SIZE = (16, 16)
+TILE_SIZE = (ORIG_TILE_SIZE[0]*SCALE, ORIG_TILE_SIZE[1]*SCALE)
+TILEGROUP_SIZE = (3 * ORIG_TILE_SIZE[0], 3 * ORIG_TILE_SIZE[1])
+
 
 if __name__ == "__main__":
 	game = xadir_main()
 
-	tiles = load_tiles('placeholder_tilemap.png', SIZE2, (255, 0, 255))
-	waters = parse_tiles(tiles[0][0], SIZE)
-	lands = parse_tiles(tiles[0][1], SIZE)
-	characters = parse_tiles(tiles[1][2], SIZE)
+	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
+	waters = parse_tiles(tiles[0][0], TILE_SIZE)
+	lands = parse_tiles(tiles[0][1], TILE_SIZE)
+	#characters = parse_tiles(tiles[1][2], TILE_SIZE)
 	
 
 	tiletypes = {
 		'l': lands[1][1],
 		'w': waters[1][1],
-		'b': characters[0][0],
-		'g': characters[1][0]
+		'b': lands[0][0],
+		'g': lands[1][0]
 	}
 
 	game.main_loop()

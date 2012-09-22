@@ -19,9 +19,9 @@ def load_image(name, colorkey=None, scale=1):
 		image = pygame.transform.scale(image, (image_rect.bottom*scale, image_rect.right*scale))
 	return image
 
-def load_tiles(name, (width, height), colorkey=None):
-	image = load_image(name, colorkey)
-	return parse_tiles(image, (width, height))
+def load_tiles(name, (width, height), colorkey=None, scale=1):
+	image = load_image(name, colorkey, scale)
+	return parse_tiles(image, (width*scale, height*scale))
 
 def parse_tiles(tileimage, (width, height)):
 	rect = tileimage.get_rect()
@@ -35,6 +35,7 @@ def parse_tiles(tileimage, (width, height)):
 		for x in range(cols):
 			image = tileimage.subsurface((x*width, y*height, width, height))
 			row.append(image)
+		print row
 		images.append(row)
 	return images
 
