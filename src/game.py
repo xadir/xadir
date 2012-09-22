@@ -35,24 +35,9 @@ class xadir_main:
 
 	def load_sprites(self):
     		"""Load the sprites that we need"""
-		self.walkable = ['l']
-		self.map = background_map([
-				['w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w'],
-				['w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w','w'],
-                                ['w','w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','l','w','l','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-                                ['w','w','l','l','l','l','l','l','l','l','w','w','w','l','l','l','l','l','l','l'],
-				], 20, 15)
+		self.walkable = ['GGGG1']
+		map = load_map('map2.txt')
+		self.map = background_map(map, len(map[0]), len(map))
 		self.player1 = player([['b', 4, 3]], self)
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
@@ -276,20 +261,32 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-SCALE = 3
+TARGET_SIZE = 48
 ORIG_TILE_SIZE = (16, 16)
-TILE_SIZE = (ORIG_TILE_SIZE[0]*SCALE, ORIG_TILE_SIZE[1]*SCALE)
+TILE_SIZE = (TARGET_SIZE, TARGET_SIZE)
 TILEGROUP_SIZE = (3 * ORIG_TILE_SIZE[0], 3 * ORIG_TILE_SIZE[1])
 
+
+"""
+SIZE = (16, 16)
+SIZE2 = (3 * SIZE[0], 3 * SIZE[1])
+SIZE3 = 48
+"""
 
 if __name__ == "__main__":
 	game = xadir_main()
 
+	"""
 	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
 	waters = parse_tiles(tiles[0][0], TILE_SIZE)
 	lands = parse_tiles(tiles[0][1], TILE_SIZE)
 	#characters = parse_tiles(tiles[1][2], TILE_SIZE)
 	
+	"""
+	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255))
+	waters = parse_tiles(tiles[0][0], ORIG_TILE_SIZE)
+	lands = parse_tiles(tiles[0][1], ORIG_TILE_SIZE)
+	characters = parse_tiles(tiles[1][2], ORIG_TILE_SIZE)
 
 	tiletypes = {
 		'l': lands[1][1],
@@ -297,5 +294,11 @@ if __name__ == "__main__":
 		'b': lands[0][0],
 		'g': lands[1][0]
 	}
+	
+	tiletypes = load_named_tiles('placeholder_tilemap', (16, 16))
+	tiletypes['b'] = characters[0][0]
+	tiletypes['g'] = characters[1][0]
+
+	tiletypes['g'].set_alpha(120)
 
 	game.main_loop()

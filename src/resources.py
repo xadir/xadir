@@ -21,7 +21,7 @@ def load_image(name, colorkey=None, scale=1):
 
 def load_tiles(name, (width, height), colorkey=None, scale=1):
 	image = load_image(name, colorkey, scale)
-	return parse_tiles(image, (width*scale, height*scale))
+	return parse_tiles(image, (width, height))
 
 def parse_tiles(tileimage, (width, height)):
 	rect = tileimage.get_rect()
@@ -38,6 +38,38 @@ def parse_tiles(tileimage, (width, height)):
 		print row
 		images.append(row)
 	return images
+
+def load_named_tiles(name, (width, height), colorkey=None, scale=1):
+	images = load_tiles(name + '.png', (width, height), colorkey, scale)
+	tiles = {}
+	with file(os.path.join(GFXDIR, name + '.txt'), 'rb') as f:
+		for y, line in enumerate(f):
+			for x, name in enumerate(line.split()):
+				tiles[name] = images[y][x]
+	return tiles
+
+def load_map(name):
+	path = os.path.join(MAPDIR, name)
+	with file(path, 'rb') as f:
+		aliases = {}
+		width = height = 0
+		for line in f:
+			cmd = line.strip().split()
+			if not cmd:
+				break
+			if cmd[0] == 'SIZE':
+				width, height = int(cmd[1]), int(cmd[2])
+			elif cmd[0] == 'ALIAS':
+				aliases[cmd[1]] = cmd[2]
+			else:
+				raise ValueError, 'Unknown map directive'
+		result = []
+		for y in range(height):
+			line = f.next()
+			tiles = [aliases.get(tile, tile) for tile in line.split()]
+			assert len(tiles) == width
+			result.append(tiles)
+	return result
 
 def load_sound(name):
 	class NoneSound:
