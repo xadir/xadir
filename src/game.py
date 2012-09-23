@@ -39,8 +39,10 @@ class xadir_main:
 	def load_sprites(self):
     		"""Load the sprites that we need"""
 		self.walkable = ['GGGG1']
-		map = load_map('map2.txt')
-		self.map = background_map(map, len(map[0]), len(map))
+		map, mapsize, spawns = load_map('map2.txt')
+		self.map = background_map(map, *mapsize)
+		self.spawns = spawns
+		# player_1_spawn_points = random.sample(self.spawns[1], number_of_characters)
 		self.players = [player([['b', 4, 3]], self)]
 		self.turn = 0		
 		self.grid_sprites = pygame.sprite.Group()
