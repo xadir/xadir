@@ -38,13 +38,17 @@ class xadir_main:
 		self.walkable = ['GGGG1']
 		map = load_map('map2.txt')
 		self.map = background_map(map, len(map[0]), len(map))
-		self.player1 = player([['b', 4, 3]], self)
+		self.players = [player([['b', 4, 3]], self)]
+		self.turn = 0		
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
-		self.player_sprites = self.player1.get_sprites()
+		self.player_sprites = pygame.sprite.Group()
+		for p in self.players:
+			self.player_sprites.add(p.get_sprites())
 
 	def click(self):
-		characters = self.player1.get_characters()
+		player = self.players[self.turn]
+		characters = player.get_characters()
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
 			mouse_coords = list(pygame.mouse.get_pos())
@@ -69,8 +73,13 @@ class xadir_main:
 				characters[i].unselect()
 
 	def update_sprites(self):
-		self.player1.update_sprites()
-		self.player_sprites = self.player1.get_sprites()
+		self.player_sprites = pygame.sprite.Group()
+		for p in self.players:
+			p.update_sprites()			
+			self.player_sprites.add(p.get_sprites())
+	
+	def get_players(self):
+		return self.players
 
 class sprite_grid:
 	def __init__(self, grid, coords):
@@ -156,8 +165,11 @@ class character:
 		self.coords = coords 		# Array of x and y
 		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
-		self.background_map = main.map.get_map()
-		self.walkable_tiles = main.walkable
+		self.main = main
+		
+		self.background_map = self.main.map.get_map()
+		self.walkable_tiles = self.main.walkable
+		#self.other_characters = self.main.players[0].get_characters_coords()
 		
 	def get_type(self):
 		return self.type
@@ -230,6 +242,11 @@ class character:
 		if coords[0] < 0: return False
 		if coords[1] < 0: return False
 
+		"""
+		for c in self.other_characters:
+			if c == coords:
+				return False
+		"""		
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
 				return True
