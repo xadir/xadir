@@ -49,17 +49,17 @@ class xadir_main:
 			char_coords = characters[i].get_coords()
 			mouse_coords = list(pygame.mouse.get_pos())
 			mouse_coords = [mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1]]
-			print char_coords
-			print mouse_coords
+			#print char_coords
+			#print mouse_coords
 			if char_coords == mouse_coords:
-				print "Clicked on character"
+				#print "Clicked on character"
 				if characters[i].is_selected():
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
 					characters[i].select()
 					self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords())
-					self.grid_sprites = self.movement_grid.get_sprites()			
+					self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
 					characters[i].set_coords(mouse_coords)
@@ -67,6 +67,7 @@ class xadir_main:
 					characters[i].unselect
 			if char_coords != mouse_coords:
 				characters[i].unselect()
+
 	def update_sprites(self):
 		self.player1.update_sprites()
 		self.player_sprites = self.player1.get_sprites()
@@ -94,17 +95,7 @@ class background_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
-		"""
-		for x in range(self.width):
-			for y in range(self.height):
-				if map[x][y] == 'w':
-					#print "Water at: (" + str(x) + "," + str(y) + ")"
-					self.sprites.add(water(pygame.Rect(y*SIZE3, x*SIZE3, SIZE3, SIZE3)))
-				elif map[x][y] == 'l':
-					#print "Land at: (" + str(x) + "," + str(y) + ")"
-					self.sprites.add(land(pygame.Rect(y*SIZE3, x*SIZE3, SIZE3, SIZE3)))
-		"""	
+				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))	
 	def get_sprites(self):
 		return self.sprites
 
@@ -260,7 +251,7 @@ class Tile(pygame.sprite.Sprite):
 		self.rect = image.get_rect()
 		if rect is not None:
 			self.rect = rect
-SCALE = 1
+SCALE = 3
 ORIG_SIZE = 16
 TARGET_SIZE = ORIG_SIZE * SCALE
 ORIG_TILE_SIZE = (ORIG_SIZE, ORIG_SIZE)
@@ -268,52 +259,15 @@ TILE_SIZE = (TARGET_SIZE, TARGET_SIZE)
 TILEGROUP_SIZE = (3 * TILE_SIZE[0], 3 * TILE_SIZE[1])
 
 
-"""
-SIZE = (16, 16)
-SIZE2 = (3 * SIZE[0], 3 * SIZE[1])
-SIZE3 = 48
-"""
-
 if __name__ == "__main__":
 	game = xadir_main()
 
-	"""
 	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
-	waters = parse_tiles(tiles[0][0], TILE_SIZE)
-	lands = parse_tiles(tiles[0][1], TILE_SIZE)
-	#characters = parse_tiles(tiles[1][2], TILE_SIZE)
-	
-	"""
-	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
-	"""	
-	print "parsing waters"
-	waters = parse_tiles(tiles[0][0], TILE_SIZE)
-	print "parsing lands"
-	lands = parse_tiles(tiles[0][1], TILE_SIZE)
-	print "parsing woods"
-	woods = parse_tiles(tiles[0][2], TILE_SIZE)
-	print "parsing woodlands"
-	wlands = parse_tiles(tiles[0][3], TILE_SIZE)
-	print "parsing mudlands"	
-	mlands = parse_tiles(tiles[1][0], TILE_SIZE)
-	print "parsing mud"	
-	muds = parse_tiles(tiles[1][1], TILE_SIZE)
-	print "parsing characters"	
-	"""
 	characters = parse_tiles(tiles[1][2], TILE_SIZE)
-	"""
-	tiletypes = {
-		'l': lands[1][1],
-		'w': waters[1][1],
-		'b': characters[0][0],
-		'g': characters[0][1]
-	}
-	"""
-	tiletypes = load_named_tiles('placeholder_tilemap', ORIG_TILE_SIZE, (255, 0, 255), SCALE)
-	print tiletypes	
+
+	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)	
 	tiletypes['b'] = characters[0][0]
 	tiletypes['g'] = characters[1][0]
-
 	tiletypes['g'].set_alpha(120)
 
 	game.main_loop()

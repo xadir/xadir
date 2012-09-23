@@ -20,7 +20,7 @@ def load_image(name, colorkey=None, scale=1):
 	return image
 
 def load_tiles(name, (width, height), colorkey=None, scale=1):
-	print "Scaling: %d" % (scale)
+	#print "Scaling: %d" % (scale)
 	image = load_image(name, colorkey, scale)
 	return parse_tiles(image, (width, height))
 
@@ -30,14 +30,13 @@ def parse_tiles(tileimage, (width, height)):
 		print 'Tile image should be divisible to (%d,%d)' % (width, height)
 	cols = rect.width / width
 	rows = rect.height / height
-	print "# parse_tiles, got %dx%d tileset with %d cols and %d rows" % (rect.width, rect.height, cols, rows)
+	#print "parse_tiles - got %dx%d tileset with %d cols and %d rows" % (rect.width, rect.height, cols, rows)
 	images = []
 	for y in range(rows):
 		row = []
 		for x in range(cols):
 			image = tileimage.subsurface((x*width, y*height, width, height))
 			row.append(image)
-		print row
 		images.append(row)
 	return images
 
