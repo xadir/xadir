@@ -54,6 +54,7 @@ def load_map(name):
 	with file(path, 'rb') as f:
 		aliases = {}
 		width = height = 0
+		spawns = {}
 		for line in f:
 			cmd = line.strip().split()
 			if not cmd:
@@ -62,6 +63,8 @@ def load_map(name):
 				width, height = int(cmd[1]), int(cmd[2])
 			elif cmd[0] == 'ALIAS':
 				aliases[cmd[1]] = cmd[2]
+			elif cmd[0] == 'SPAWN':
+				spawns.setdefault(int(cmd[1]), []).append((int(cmd[2]), int(cmd[3])))
 			else:
 				raise ValueError, 'Unknown map directive'
 		result = []
@@ -70,7 +73,7 @@ def load_map(name):
 			tiles = [aliases.get(tile, tile) for tile in line.split()]
 			assert len(tiles) == width
 			result.append(tiles)
-	return result
+	return result, (width, height), spawns
 
 def load_sound(name):
 	class NoneSound:
