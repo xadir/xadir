@@ -20,9 +20,9 @@ class TileView:
 
 	def loop(self):
 		while 1:
-			for y in range(len(tiles)):
-				for x in range(len(tiles[y])):
-					self.screen.blit(tiles[y][x], (x*(SIZE[0]+1), y*(SIZE[1]+1)))
+			for y in range(tile_rows):
+				for x in range(tile_cols):
+					self.screen.blit(tiles[y][x], (x * framed_x, y * framed_y))
 			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -34,16 +34,30 @@ if __name__ == "__main__":
 		print 'syntax: %s FILE [SIZE_X [SIZE_Y]]' % (sys.argv[0], )
 		sys.exit()
 
+	# Size of individual tiles
 	size_x = int(sys.argv[2]) if len(sys.argv) >= 3 else 16
 	size_y = int(sys.argv[3]) if len(sys.argv) >= 4 else size_x
-	SIZE = (size_x, size_y)
 
+	# Size with borders
+	framed_x = size_x + 1
+	framed_y = size_y + 1
+
+	# Window must be initialized before tiles can be loaded
 	win = TileView()
 
-	tiles = load_tiles(sys.argv[1], SIZE, (255, 0, 255))
+	# Load tiles
+	tiles = load_tiles(sys.argv[1], (size_x, size_y), (255, 0, 255))
+
+	# Tile table size
+	tile_cols = len(tiles[0])
+	tile_rows = len(tiles)
+
+	# Needed window size
+	width = tile_cols * framed_x - 1
+	height = tile_rows * framed_y - 1
 
 	# Resize window to image size
-	win.screen = pygame.display.set_mode((len(tiles[0])*(SIZE[0]+1)-1, len(tiles)*(SIZE[1]+1)-1))
+	win.screen = pygame.display.set_mode((width, height))
 
 	win.loop()
 
