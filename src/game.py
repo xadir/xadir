@@ -15,9 +15,17 @@ class xadir_main:
 	
 	def __init__(self, width=1200, height=720):
 		pygame.init()
+		pygame.display.set_caption('Xadir')
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
+		self.sidebar = pygame.Rect(960, 0, 240, 720)
+		self.screen.fill((159, 182, 205))
+		self.font = pygame.font.Font(None, 50)
+		self.turntext = self.font.render('Player 0', True, (255,255, 255), (159, 182, 205))
+		self.textRect = self.turntext.get_rect()
+		self.textRect.centerx = self.sidebar.centerx
+		self.textRect.centery = 50
 
 	def main_loop(self):
 		self.load_sprites()
@@ -25,6 +33,7 @@ class xadir_main:
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
+			self.screen.blit(self.turntext, self.textRect)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -49,7 +58,7 @@ class xadir_main:
 		# self.players.append(player([['b', 4, 3]], self))
 		self.add_player([['b', 4, 3], ['b', 4, 6]])
 		self.add_player([['b', 17, 10], ['b', 17, 13]])		
-		self.turn = 0		
+		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
 		self.player_sprites = pygame.sprite.Group()
@@ -82,13 +91,34 @@ class xadir_main:
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
 					start = characters[i].get_coords()
-					end = mouse_coords
-					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
-					#print "Moved %d tiles" % (distance)					
-					characters[i].set_coords(mouse_coords)					
-					characters[i].reduce_movement_points(distance)
-					self.grid_sprites = pygame.sprite.Group()
-					characters[i].unselect
+					#print characters[i].is_attack_move(mouse_coords)
+					"""					
+					if characters[i].is_attack_move(mouse_coords):
+						path = self.get_path(start, mouse_coords)
+						print path						
+						end = path[1]
+						distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
+						#print "Moved %d tiles" % (distance)					
+						characters[i].set_coords(end)					
+						characters[i].reduce_movement_points(distance)
+						self.grid_sprites = pygame.sprite.Group()
+						characters[i].unselect
+						for p in self.get_other_players():
+							for c in p.get_characters():
+								if c.get_coords() == mouse_coords:
+									target = c
+						self.attack(characters[i], target)
+					"""
+					if False:
+						print "false"
+					else:
+						end = mouse_coords
+						distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
+						#print "Moved %d tiles" % (distance)					
+						characters[i].set_coords(end)					
+						characters[i].reduce_movement_points(distance)
+						self.grid_sprites = pygame.sprite.Group()
+						characters[i].unselect
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
@@ -109,7 +139,12 @@ class xadir_main:
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
 		self.players[self.turn].reset_movement_points()
+		self.update_turntext()
 	
+	def update_turntext(self):
+		turnstring = "Player " + str(self.turn)
+		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
+
 	def get_all_players(self):
 		return self.players
 	
@@ -117,12 +152,39 @@ class xadir_main:
 		other_players = self.players
 		other_players.pop(self.turn)
 		return other_players
+
+	def get_current_player(self):
+		return self.players[self.turn]
 	
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
 	def add_player(self, characters):
 		self.players.append(player(characters, self))
+
+	def get_path(self, start, end):
+		path = []
+		if start == end:
+			return [start]
+		else:
+			temp = end
+			path.append(temp)			
+			while temp != start:
+				if abs(temp[0] - start[0]) > abs(temp[1] - start[1]):
+					temp[0] -= 1
+					path.append(temp)
+				elif abs(temp[0] - start[0]) < abs(temp[1] - start[1]):
+					temp[1] -= 1
+					path.append(temp)
+				else:
+					temp[0] -= 1
+					temp[1] -= 1
+					path.append(temp)
+		path.append(start)
+		return path
+	
+	def attack(attacker, target):
+		print "Character at %d attacked character at %d" % (attacker.get_coords(), target.get_coords())
 
 class sprite_grid:
 	def __init__(self, grid, coords, tile):
@@ -189,6 +251,9 @@ class player:
 
 	def character_is_selected(self, character):
 		return self.characters[character].is_selected()
+
+	def remove_character(self, i):
+		characters.pop(i)
 	
 	def update_sprites(self):
 		self.sprites = pygame.sprite.Group()
@@ -214,6 +279,7 @@ class character:
 	def __init__(self, character_type, movement, coords, heading, main):
 		self.type = character_type		
 		self.movement = movement	# Movement points left
+		#self.health = health		# Health left
 		self.coords = coords 		# Array of x and y
 		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
@@ -304,10 +370,10 @@ class character:
 		if coords[0] < 0: return False
 		if coords[1] < 0: return False
 
-		for p in self.main.get_all_players():
-			for c in p.get_characters_coords():
-				if c == coords:
-					return False
+		p = self.main.get_current_player()
+		for c in p.get_characters_coords():
+			if c == coords:
+				return False
 
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
@@ -320,6 +386,13 @@ class character:
 		for i in range(len(movement_grid)):
 			if coords == movement_grid[i]:
 				return True
+		return False
+
+	def is_attack_move(self, coords):
+		for p in self.main.get_other_players():
+			for c in p.get_characters_coords():
+				if c == coords:
+					return True
 		return False
 
 # Following classes define the graphical elements, or Sprites.
