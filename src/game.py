@@ -1,6 +1,7 @@
 import os, sys, time
 import pygame
 import numpy
+import math
 from pygame.locals import *
 from resources import *
 
@@ -31,6 +32,8 @@ class xadir_main:
 					self.click()
 			pygame.display.flip()
 			self.update_sprites()
+			if self.players[self.turn].movement_points_left() < 1:
+				self.next_turn()
 			time.sleep(0.05)
 
 	def load_sprites(self):
@@ -56,6 +59,7 @@ class xadir_main:
 			#print char_coords
 			#print mouse_coords
 			if char_coords == mouse_coords:
+				#print "You can move %d tiles" % (characters[i].get_movement_points())				
 				#print "Clicked on character"
 				if characters[i].is_selected():
 					characters[i].unselect()
@@ -66,7 +70,12 @@ class xadir_main:
 					self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
-					characters[i].set_coords(mouse_coords)
+					start = characters[i].get_coords()
+					end = mouse_coords
+					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
+					#print "Moved %d tiles" % (distance)					
+					characters[i].set_coords(mouse_coords)					
+					characters[i].reduce_movement_points(distance)
 					self.grid_sprites = pygame.sprite.Group()
 					characters[i].unselect
 			if char_coords != mouse_coords:
@@ -77,6 +86,16 @@ class xadir_main:
 		for p in self.players:
 			p.update_sprites()			
 			self.player_sprites.add(p.get_sprites())
+
+	def next_turn(self):
+		if len(self.players) < 1:
+			print "Error, less than one player"
+		elif len(self.players) == 1:
+			self.turn = 0
+		else:
+			self.turn = (self.turn + 1) % (len(self.players) - 1)
+		print "Next turn"
+		self.players[self.turn].reset_movement_points()
 	
 	def get_players(self):
 		return self.players
@@ -156,6 +175,16 @@ class player:
 			tile = tiletypes[character_type]
 			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
 
+	def movement_points_left(self):
+		points_left = 0
+		for c in self.characters:
+			points_left += c.get_movement_points()
+		return points_left
+	
+	def reset_movement_points(self):
+		for c in self.characters:
+			c.set_movement_points(2)
+
 class character:
 	# Universal class for any character in the game
 
@@ -169,7 +198,7 @@ class character:
 		
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
-		#self.other_characters = self.main.players[0].get_characters_coords()
+		#self.players = self.main.players
 		
 	def get_type(self):
 		return self.type
@@ -197,6 +226,16 @@ class character:
 	
 	def unselect(self):
 		self.selected = False
+
+	def get_movement_points(self):
+		return self.movement
+
+	def set_movement_points(self, points):
+		self.movement = points
+
+	def reduce_movement_points(self, points):
+		self.movement = self.movement - points
+		print "%d movement points left" % (self.movement)
 	
 	def turn(self, angle):			# Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time
 		angle = angle % 360
@@ -250,6 +289,7 @@ class character:
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
 				return True
+		
 		return False
 
 	def is_legal_move(self, coords):		# Before moving, check if target is inside movement grid
