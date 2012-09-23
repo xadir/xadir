@@ -229,7 +229,7 @@ class character:
 		for x in range(-1, 2):
 			for y in range(-1, 2):
 				temp_coords = [coords[0] + x, coords[1] + y]
-				print temp_coords
+				#print temp_coords
 				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
 		return return_grid
 
@@ -260,11 +260,12 @@ class Tile(pygame.sprite.Sprite):
 		self.rect = image.get_rect()
 		if rect is not None:
 			self.rect = rect
-
-TARGET_SIZE = 48
-ORIG_TILE_SIZE = (16, 16)
+SCALE = 1
+ORIG_SIZE = 16
+TARGET_SIZE = ORIG_SIZE * SCALE
+ORIG_TILE_SIZE = (ORIG_SIZE, ORIG_SIZE)
 TILE_SIZE = (TARGET_SIZE, TARGET_SIZE)
-TILEGROUP_SIZE = (3 * ORIG_TILE_SIZE[0], 3 * ORIG_TILE_SIZE[1])
+TILEGROUP_SIZE = (3 * TILE_SIZE[0], 3 * TILE_SIZE[1])
 
 
 """
@@ -283,19 +284,33 @@ if __name__ == "__main__":
 	#characters = parse_tiles(tiles[1][2], TILE_SIZE)
 	
 	"""
-	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255))
-	waters = parse_tiles(tiles[0][0], ORIG_TILE_SIZE)
-	lands = parse_tiles(tiles[0][1], ORIG_TILE_SIZE)
-	characters = parse_tiles(tiles[1][2], ORIG_TILE_SIZE)
-
+	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
+	"""	
+	print "parsing waters"
+	waters = parse_tiles(tiles[0][0], TILE_SIZE)
+	print "parsing lands"
+	lands = parse_tiles(tiles[0][1], TILE_SIZE)
+	print "parsing woods"
+	woods = parse_tiles(tiles[0][2], TILE_SIZE)
+	print "parsing woodlands"
+	wlands = parse_tiles(tiles[0][3], TILE_SIZE)
+	print "parsing mudlands"	
+	mlands = parse_tiles(tiles[1][0], TILE_SIZE)
+	print "parsing mud"	
+	muds = parse_tiles(tiles[1][1], TILE_SIZE)
+	print "parsing characters"	
+	"""
+	characters = parse_tiles(tiles[1][2], TILE_SIZE)
+	"""
 	tiletypes = {
 		'l': lands[1][1],
 		'w': waters[1][1],
-		'b': lands[0][0],
-		'g': lands[1][0]
+		'b': characters[0][0],
+		'g': characters[0][1]
 	}
-	
-	tiletypes = load_named_tiles('placeholder_tilemap', (16, 16))
+	"""
+	tiletypes = load_named_tiles('placeholder_tilemap', ORIG_TILE_SIZE, (255, 0, 255), SCALE)
+	print tiletypes	
 	tiletypes['b'] = characters[0][0]
 	tiletypes['g'] = characters[1][0]
 

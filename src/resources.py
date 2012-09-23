@@ -16,10 +16,11 @@ def load_image(name, colorkey=None, scale=1):
 		image.set_colorkey(colorkey, RLEACCEL)
 	if scale is not 1:
 		image_rect = image.get_rect()
-		image = pygame.transform.scale(image, (image_rect.bottom*scale, image_rect.right*scale))
+		image = pygame.transform.scale(image, (image_rect.right*scale, image_rect.bottom*scale))
 	return image
 
 def load_tiles(name, (width, height), colorkey=None, scale=1):
+	print "Scaling: %d" % (scale)
 	image = load_image(name, colorkey, scale)
 	return parse_tiles(image, (width, height))
 
@@ -29,6 +30,7 @@ def parse_tiles(tileimage, (width, height)):
 		print 'Tile image should be divisible to (%d,%d)' % (width, height)
 	cols = rect.width / width
 	rows = rect.height / height
+	print "# parse_tiles, got %dx%d tileset with %d cols and %d rows" % (rect.width, rect.height, cols, rows)
 	images = []
 	for y in range(rows):
 		row = []
