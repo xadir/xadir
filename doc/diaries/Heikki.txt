@@ -22,6 +22,15 @@
 	- Hahmon liikuttaminen hiirellä
 	- Hahmon liikkumisen rajoitus (movement points, kartan tiilet johon ei voi mennä)
 
-- 21.9 ()
+- 21.9 (6t)
 	- Korjattu liikkumisen estäminen kartan ulkopuolelle
 	- secont_test ja game.py merge
+
+- 22.9 (6t)
+	- Muuttujien nimien yksinkertaistus
+	- Karttatiilien skaalauksen implementointi
+
+- 23.9 (4t)
+	- Usean pelaajan tuki
+	- Pelivuorojen tuki
+	- Liikkumispisteiden vähentäminen liikkuessa ja automaattinen vuoron vaihto kun pisteet loppuu
