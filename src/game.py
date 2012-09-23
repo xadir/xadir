@@ -30,6 +30,8 @@ class xadir_main:
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					self.click()
+				if event.type == KEYDOWN and event.key == K_SPACE:
+					self.next_turn()
 			pygame.display.flip()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
@@ -44,8 +46,9 @@ class xadir_main:
 		self.spawns = spawns
 		# player_1_spawn_points = random.sample(self.spawns[1], number_of_characters)
 		self.players = []		
-		self.players.append(player([['b', 4, 3]], self))
-		self.players = [player([['b', 4, 3]], self)]
+		# self.players.append(player([['b', 4, 3]], self))
+		self.add_player([['b', 4, 3], ['b', 4, 6]])
+		self.add_player([['b', 17, 10], ['b', 17, 13]])		
 		self.turn = 0		
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
@@ -70,8 +73,12 @@ class xadir_main:
 					self.grid_sprites = pygame.sprite.Group()
 				else:
 					characters[i].select()
-					self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords())
-					self.grid_sprites = self.movement_grid.get_sprites()
+					if characters[i].get_movement_points() <= 0:
+						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), tiletypes['r'])
+						self.grid_sprites = self.movement_grid.get_sprites()
+					else:
+						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), tiletypes['g'])
+						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
 					start = characters[i].get_coords()
@@ -95,10 +102,12 @@ class xadir_main:
 		if len(self.players) < 1:
 			print "Error, less than one player"
 		elif len(self.players) == 1:
+			print "There is only one player"
 			self.turn = 0
 		else:
-			self.turn = (self.turn + 1) % (len(self.players) - 1)
-		print "Next turn"
+			print "Next players turn"
+			self.turn = (self.turn + 1) % (len(self.players))
+			print self.turn
 		self.players[self.turn].reset_movement_points()
 	
 	def get_all_players(self):
@@ -112,11 +121,13 @@ class xadir_main:
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
+	def add_player(self, characters):
+		self.players.append(player(characters, self))
+
 class sprite_grid:
-	def __init__(self, grid, coords):
+	def __init__(self, grid, coords, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
-			tile = tiletypes['g']
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
 	def get_sprites(self):
@@ -337,6 +348,8 @@ if __name__ == "__main__":
 	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)	
 	tiletypes['b'] = characters[0][0]
 	tiletypes['g'] = characters[1][0]
+	tiletypes['r'] = characters[2][0]
 	tiletypes['g'].set_alpha(120)
+	tiletypes['r'].set_alpha(120)
 
 	game.main_loop()
