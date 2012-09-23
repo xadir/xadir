@@ -41,8 +41,9 @@ class xadir_main:
 		self.walkable = ['GGGG1']
 		map = load_map('map2.txt')
 		self.map = background_map(map, len(map[0]), len(map))
-		self.players = [player([['b', 4, 3]], self)]
-		self.turn = 0		
+		self.players = []		
+		self.players.append(player([['b', 4, 3]], self))
+		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
 		self.player_sprites = pygame.sprite.Group()
@@ -97,8 +98,16 @@ class xadir_main:
 		print "Next turn"
 		self.players[self.turn].reset_movement_points()
 	
-	def get_players(self):
+	def get_all_players(self):
 		return self.players
+	
+	def get_other_players(self):
+		other_players = self.players
+		other_players.pop(self.turn)
+		return other_players
+	
+	def get_own_other_players(self):
+		return [self.players[self.turn], self.get_other_players()]
 
 class sprite_grid:
 	def __init__(self, grid, coords):
@@ -155,7 +164,7 @@ class player:
 	def get_characters_coords(self):
 		coords = []		
 		for i in self.characters:
-			coords.append(self.characters[i].coords)
+			coords.append(i.get_coords())
 		return coords
 
 	def select_character(self, character):
@@ -198,7 +207,7 @@ class character:
 		
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
-		#self.players = self.main.players
+		self.players = self.main.get_all_players()
 		
 	def get_type(self):
 		return self.type
@@ -281,11 +290,11 @@ class character:
 		if coords[0] < 0: return False
 		if coords[1] < 0: return False
 
-		"""
-		for c in self.other_characters:
-			if c == coords:
-				return False
-		"""		
+		for p in self.main.get_all_players():
+			for c in p.get_characters_coords():
+				if c == coords:
+					return False
+
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
 				return True
