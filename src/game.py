@@ -2,6 +2,7 @@ import os, sys, time
 import pygame
 import numpy
 import math
+import random
 from pygame.locals import *
 from resources import *
 
@@ -44,11 +45,15 @@ class xadir_main:
 		map, mapsize, spawns = load_map('map2.txt')
 		self.map = background_map(map, *mapsize)
 		self.spawns = spawns
-		# player_1_spawn_points = random.sample(self.spawns[1], number_of_characters)
 		self.players = []		
-		# self.players.append(player([['b', 4, 3]], self))
-		self.add_player([['b', 4, 3], ['b', 4, 6]])
-		self.add_player([['b', 17, 10], ['b', 17, 13]])		
+
+		player_count = 2
+		character_count = 2
+		player_ids = random.sample(self.spawns, player_count)
+		for player_id in player_ids:
+			spawn_points = random.sample(self.spawns[player_id], character_count)
+			self.add_player([('b', x, y) for x, y in spawn_points])
+
 		self.turn = 0		
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
