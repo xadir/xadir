@@ -336,13 +336,6 @@ class Tile(pygame.sprite.Sprite):
 		self.rect = image.get_rect()
 		if rect is not None:
 			self.rect = rect
-SCALE = 3
-ORIG_SIZE = 16
-TARGET_SIZE = ORIG_SIZE * SCALE
-ORIG_TILE_SIZE = (ORIG_SIZE, ORIG_SIZE)
-TILE_SIZE = (TARGET_SIZE, TARGET_SIZE)
-TILEGROUP_SIZE = (3 * TILE_SIZE[0], 3 * TILE_SIZE[1])
-
 
 if __name__ == "__main__":
 	game = xadir_main()
