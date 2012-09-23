@@ -8,12 +8,11 @@ from resources import *
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
-if not pygame.mixer: 
+if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
 class xadir_main:
-	# Main class for initialization and mechanics of the game
-	
+	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720):
 		pygame.init()
 		self.width = width
@@ -40,12 +39,12 @@ class xadir_main:
 			time.sleep(0.05)
 
 	def load_sprites(self):
-    		"""Load the sprites that we need"""
+		"""Load the sprites that we need"""
 		self.walkable = ['GGGG1']
 		map, mapsize, spawns = load_map('map2.txt')
 		self.map = background_map(map, *mapsize)
 		self.spawns = spawns
-		self.players = []		
+		self.players = []
 
 		player_count = 2
 		character_count = 2
@@ -54,7 +53,7 @@ class xadir_main:
 			spawn_points = random.sample(self.spawns[player_id], character_count)
 			self.add_player([('b', x, y) for x, y in spawn_points])
 
-		self.turn = 0		
+		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
 		self.player_sprites = pygame.sprite.Group()
@@ -71,7 +70,7 @@ class xadir_main:
 			#print char_coords
 			#print mouse_coords
 			if char_coords == mouse_coords:
-				#print "You can move %d tiles" % (characters[i].get_movement_points())				
+				#print "You can move %d tiles" % (characters[i].get_movement_points())
 				#print "Clicked on character"
 				if characters[i].is_selected():
 					characters[i].unselect()
@@ -89,8 +88,8 @@ class xadir_main:
 					start = characters[i].get_coords()
 					end = mouse_coords
 					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
-					#print "Moved %d tiles" % (distance)					
-					characters[i].set_coords(mouse_coords)					
+					#print "Moved %d tiles" % (distance)
+					characters[i].set_coords(mouse_coords)
 					characters[i].reduce_movement_points(distance)
 					self.grid_sprites = pygame.sprite.Group()
 					characters[i].unselect
@@ -100,7 +99,7 @@ class xadir_main:
 	def update_sprites(self):
 		self.player_sprites = pygame.sprite.Group()
 		for p in self.players:
-			p.update_sprites()			
+			p.update_sprites()
 			self.player_sprites.add(p.get_sprites())
 
 	def next_turn(self):
@@ -114,15 +113,15 @@ class xadir_main:
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
 		self.players[self.turn].reset_movement_points()
-	
+
 	def get_all_players(self):
 		return self.players
-	
+
 	def get_other_players(self):
 		other_players = self.players
 		other_players.pop(self.turn)
 		return other_players
-	
+
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
@@ -139,11 +138,10 @@ class sprite_grid:
 		return self.sprites
 
 class background_map:
-	# Map class to create the background layer, holds any static and dynamical elements in the field.
-	
+	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height):
-                self.width = width
-                self.height = height
+		self.width = width
+		self.height = height
 		self.map = map
 		self.sprites = pygame.sprite.Group()
 		for y in range(self.height):
@@ -151,7 +149,8 @@ class background_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))	
+				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
+
 	def get_sprites(self):
 		return self.sprites
 
@@ -159,8 +158,7 @@ class background_map:
 		return self.map
 
 class player:
-	# Class to create player or team in the game. One player may have many characters.
-
+	"""Class to create player or team in the game. One player may have many characters."""
 	def __init__(self, coords, main):
 		self.main = main
 		self.coords = coords
@@ -176,12 +174,12 @@ class player:
 
 	def get_sprites(self):
 		return self.sprites
-	
+
 	def get_characters(self):
 		return self.characters
 
 	def get_characters_coords(self):
-		coords = []		
+		coords = []
 		for i in self.characters:
 			coords.append(i.get_coords())
 		return coords
@@ -194,7 +192,7 @@ class player:
 
 	def character_is_selected(self, character):
 		return self.characters[character].is_selected()
-	
+
 	def update_sprites(self):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(self.characters)):
@@ -208,50 +206,53 @@ class player:
 		for c in self.characters:
 			points_left += c.get_movement_points()
 		return points_left
-	
+
 	def reset_movement_points(self):
 		for c in self.characters:
 			c.set_movement_points(2)
 
 class character:
-	# Universal class for any character in the game
-
+	"""Universal class for any character in the game"""
 	def __init__(self, character_type, movement, coords, heading, main):
-		self.type = character_type		
-		self.movement = movement	# Movement points left
-		self.coords = coords 		# Array of x and y
-		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
+		self.type = character_type
+		self.movement = movement  # Movement points left
+		self.coords = coords      # Array of x and y
+		self.heading = heading    # Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.main = main
-		
+
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
-		
+
 	def get_type(self):
 		return self.type
 
 	def set_type(self, character_type):
 		self.type = character_type
 
-	def get_coords(self):			# Returns coordinates of the character, return is array [x, y]
+	def get_coords(self):
+		"""Returns coordinates of the character, return is array [x, y]"""
 		return self.coords
-	
-	def set_coords(self, coords):			# Sets coordinates of characte, input is array of [x, y]
+
+	def set_coords(self, coords):
+		"""Sets coordinates of characte, input is array of [x, y]"""
 		self.coords = coords
 
-	def get_heading(self):			# Returns heading of character in degrees
+	def get_heading(self):
+		"""Returns heading of character in degrees"""
 		return self.heading
 
-	def set_heading(self, angle):			# Sets the absolute heading of character
+	def set_heading(self, angle):
+		"""Sets the absolute heading of character"""
 		self.heading = angle
-	
+
 	def is_selected(self):
 		return self.selected
-	
+
 	def select(self):
 		self.selected = True
-	
+
 	def unselect(self):
 		self.selected = False
 
@@ -264,8 +265,9 @@ class character:
 	def reduce_movement_points(self, points):
 		self.movement = self.movement - points
 		print "%d movement points left" % (self.movement)
-	
-	def turn(self, angle):			# Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time
+
+	def turn(self, angle):
+		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
 		angle = angle % 360
 		if angle <= 45:
 			self.heading = (self.heading + angle) % 360
@@ -274,7 +276,8 @@ class character:
 		elif angle <= 135:
 			self.heading = (self.heading + angle) % 360
 
-	def move_forward(self, steps):		# Moves to headed direction given amount of steps
+	def move_forward(self, steps):
+		"""Moves to headed direction given amount of steps"""
 		if self.movement <= steps:
 			if self.heading == 0:
 				self.coords[1] -= steps
@@ -284,17 +287,19 @@ class character:
 				self.coords[1] += steps
 			elif self.heading == 270:
 				self.coords[0] -= steps
-	
-	def get_movement_grid(self):			# Return grid of available cells to move to		
+
+	def get_movement_grid(self):
+		"""Return grid of available cells to move to"""
 		movement_grid = self.get_surroundings(self.coords)
 		if self.movement > 1:
 			for i in range(2, (self.movement + 1)):
 				for i in range(len(movement_grid)):
 					movement_grid.extend(self.get_surroundings(movement_grid[i]))
 		movement_grid = [list(x) for x in set(tuple(x) for x in movement_grid)]
-		return movement_grid		
+		return movement_grid
 
-	def get_surroundings(self, coords):		# Return surrounding tiles that are walkable
+	def get_surroundings(self, coords):
+		"""Return surrounding tiles that are walkable"""
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
@@ -303,7 +308,8 @@ class character:
 				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
 		return return_grid
 
-	def is_walkable_tile(self, coords):		# To check if tile is walkable
+	def is_walkable_tile(self, coords):
+		"""To check if tile is walkable"""
 		if coords[1] >= 15: return False
 		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
@@ -317,10 +323,11 @@ class character:
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
 				return True
-		
+
 		return False
 
-	def is_legal_move(self, coords):		# Before moving, check if target is inside movement grid
+	def is_legal_move(self, coords):
+		"""Before moving, check if target is inside movement grid"""
 		movement_grid = self.get_movement_grid()
 		for i in range(len(movement_grid)):
 			if coords == movement_grid[i]:
@@ -343,7 +350,7 @@ if __name__ == "__main__":
 	tiles = load_tiles('placeholder_tilemap.png', TILEGROUP_SIZE, (255, 0, 255), SCALE)
 	characters = parse_tiles(tiles[1][2], TILE_SIZE)
 
-	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)	
+	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)
 	tiletypes['b'] = characters[0][0]
 	tiletypes['g'] = characters[1][0]
 	tiletypes['r'] = characters[2][0]
@@ -351,3 +358,4 @@ if __name__ == "__main__":
 	tiletypes['r'].set_alpha(120)
 
 	game.main_loop()
+
