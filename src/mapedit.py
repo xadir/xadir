@@ -18,11 +18,16 @@ class MapEditor:
 		self.screen = pygame.display.set_mode((self.width, self.height))
 
 		self.tiles = load_named_tiles('placeholder_tilemap', ORIG_TILE_SIZE, (255, 0, 255))
+		tools, size, _ = load_map('tools.txt')
+
 		self.grid = Grid(29, 29)
 		self.tools = Grid(9, 29)
 
-		for pos, tile_name in zip(self.tools.keys(), self.tiles.keys()):
-			self.tools[pos] = tile_name
+		for y, row in enumerate(tools):
+			for x, tile_name in enumerate(row):
+				self.tools[x, y] = tile_name
+
+		# XXX: add tools that arent specified in toolfile
 
 	def draw(self):
 		for (x, y), tile in self.tools.items():
