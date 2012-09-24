@@ -11,6 +11,31 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+# XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
+def scale(value, old_max, new_max):
+	assert value <= old_max
+	return new_max * value / old_max
+
+def get_hp_bar_color(total, value):
+	"""Linearly generates colors from red to yellow to green"""
+	# 256 values per color, so red-to-yellow and yellow-to-green make 512 - but yellow gets counted twice, so it's really 511
+	num_colors = 511
+	c = scale(value, total, num_colors)
+	return (min(num_colors - c, 255), min(c, 255), 0)
+
+def draw_gradient_hp_bar(surface, rect, total, left):
+	surface.fill((0, 0, 0), rect)
+	for i in range(scale(left, total, rect.width)):
+		color = get_hp_bar_color(rect.width - 1, i)
+		surface.fill(color, (rect.x + i, rect.y, 1, rect.height))
+
+def draw_solid_hp_bar(surface, rect, total, left):
+	color = get_hp_bar_color(total, left)
+	surface.fill(color, rect)
+
+# Change to suit your mood
+draw_hp_bar = draw_gradient_hp_bar
+
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720):
