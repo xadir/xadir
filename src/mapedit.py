@@ -76,6 +76,12 @@ class MapEditor:
 						x, y = x/17, y/17
 						self.grid[x, y] = tool
 				elif event.type == pygame.QUIT:
+					print 'SIZE', self.grid.width, self.grid.height
+					print
+					for y in range(self.grid.height):
+						for x in range(self.grid.width):
+							print self.grid[x, y] or '?????',
+						print
 					sys.exit()
 
 			time.sleep(0.05)
