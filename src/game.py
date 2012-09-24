@@ -120,7 +120,7 @@ class xadir_main:
 									target = c
 						self.attack(characters[i], target)
 					"""
-					if False:
+					if characters[i].is_attack_move(mouse_coords):
 						print "false"
 					else:
 						end = mouse_coords
@@ -129,7 +129,7 @@ class xadir_main:
 						characters[i].set_coords(end)					
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect
+						characters[i].unselect()
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
@@ -411,6 +411,7 @@ class character:
 	def is_attack_move(self, coords):
 		for p in self.main.get_other_players():
 			for c in p.get_characters_coords():
+				print c
 				if c == coords:
 					return True
 		return False
@@ -439,4 +440,3 @@ if __name__ == "__main__":
 	tiletypes['r'].set_alpha(120)
 
 	game.main_loop()
-
