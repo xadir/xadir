@@ -52,9 +52,11 @@ class xadir_main:
 		self.textRect.centerx = self.sidebar.centerx
 		self.textRect.centery = 50
 		self.healthbars = []
+		self.enemy_tiles = []
 
 	def main_loop(self):
 		self.load_sprites()
+		self.update_enemy_tiles()
 		while 1:
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
@@ -62,6 +64,8 @@ class xadir_main:
 			self.screen.blit(self.turntext, self.textRect)
 			for healthbar in self.healthbars:
 				self.screen.blit(healthbar[0], healthbar[1])
+			for enemy_tiles in self.enemy_tiles:
+				self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -71,7 +75,6 @@ class xadir_main:
 					self.next_turn()
 			pygame.display.flip()
 			self.update_healthbars()
-			#self.update_character_numbers()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
@@ -198,6 +201,7 @@ class xadir_main:
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
 		self.players[self.turn].reset_movement_points()
+		self.update_enemy_tiles()
 		self.update_turntext()
 	
 	def update_turntext(self):
@@ -237,6 +241,17 @@ class xadir_main:
 				coords = characters[c].get_coords()
 				print "player %d at (%d,%d)" % (p, coords[0], coords[1])
 				self.add_text(self.screen, str(p), 20, (0, 0))
+
+	def update_enemy_tiles(self):
+		self.enemy_tiles = []
+		players = self.get_other_players()
+		for p in range(len(players)):
+			characters = players[p].get_characters()
+			for c in range(len(characters)):
+				coords = characters[c].get_coords()
+				print "enemy at (%d,%d)" % (coords[0], coords[1])
+				tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
+				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
 		return self.players
@@ -331,6 +346,12 @@ class xadir_main:
 		text_rect.centerx = coords[0]
 		text_rect.centery = coords[1]
 		self.screen.blit(text_surface, text_rect)
+
+	def opaque_rect(self, rect, color=(0, 0, 0), opaque=255):
+		box = pygame.Surface((rect.width, rect.height)).convert()
+		box.fill(color)
+		box.set_alpha(opaque)
+		return [box, (rect.left, rect.top)]
 
 class sprite_grid:
 	def __init__(self, grid, coords, tile):
