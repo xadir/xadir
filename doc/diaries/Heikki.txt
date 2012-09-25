@@ -30,7 +30,15 @@
 	- Muuttujien nimien yksinkertaistus
 	- Karttatiilien skaalauksen implementointi
 
-- 23.9 (4t)
+- 23.9 (8t)
 	- Usean pelaajan tuki
 	- Pelivuorojen tuki
 	- Liikkumispisteiden vähentäminen liikkuessa ja automaattinen vuoron vaihto kun pisteet loppuu
+	- Sivupalkki ja pelaajavuoron näyttö
+	- Hyökkäys
+
+- 24.9 (4t)
+	- Liikkumisreitin laskenta
+
+- 25.9 (4t)
+	- Hyökkäyksen ja liikkumisreitin bugien korjaus
