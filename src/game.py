@@ -51,6 +51,7 @@ class xadir_main:
 		self.textRect = self.turntext.get_rect()
 		self.textRect.centerx = self.sidebar.centerx
 		self.textRect.centery = 50
+		self.healthbars = []
 
 	def main_loop(self):
 		self.load_sprites()
@@ -59,6 +60,8 @@ class xadir_main:
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
 			self.screen.blit(self.turntext, self.textRect)
+			for healthbar in self.healthbars:
+				self.screen.blit(healthbar[0], healthbar[1])
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -67,6 +70,7 @@ class xadir_main:
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
 			pygame.display.flip()
+			self.update_healthbars()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
@@ -199,6 +203,34 @@ class xadir_main:
 		turnstring = "Player " + str(self.turn)
 		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
 
+	def update_healthbars(self):
+		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
+		width = self.sidebar.width - 20
+		height = self.sidebar.height - 110
+		bar_height = 20
+		margin = 5
+		bar_size = [width, bar_height]
+		self.healthbars = []
+		players = self.get_all_players()
+		for p in range(len(players)):
+			player_health = []
+			characters = players[p].get_characters()
+			text = "Player " + str(p)
+			font = pygame.font.Font(None, 12)
+			playertext = font.render(text, True, (255,255, 255), (159, 182, 205))
+			playertextRect = playertext.get_rect()
+			playertextRect.left = coords[0]
+			playertextRect.top = coords[1]
+			self.healthbars.append([playertext, playertextRect])
+			coords[1] += 12 + margin
+			for c in range(len(characters)):
+				player_health.append(characters[c].get_health())
+				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
+				character_healthbar = pygame.Surface(tuple(bar_size)).convert()
+				draw_solid_hp_bar(character_healthbar, character_healthbar_rect, 200, characters[c].get_health())
+				self.healthbars.append([character_healthbar, character_healthbar_rect])
+				coords[1] += (bar_height + margin)
+			#print self.healthbars
 
 	def get_all_players(self):
 		return self.players
@@ -374,13 +406,15 @@ class player:
 
 class character:
 	"""Universal class for any character in the game"""
-	def __init__(self, character_type, movement, coords, heading, main):
+	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
 		self.type = character_type		
 		self.movement = movement	# Movement points left
-		#self.health = health		# Health left
+		self.health = health		# Health left (0-100)
+		self.attack = attack		# Attack points (0-50)
 		self.coords = coords 		# Array of x and y
 		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
+		self.alive = True
 		self.main = main
 
 		self.background_map = self.main.map.get_map()
@@ -412,11 +446,37 @@ class character:
 	def is_selected(self):
 		return self.selected
 
+	def get_health(self):
+		return self.health
+	
+	def set_health(self, health):
+		self.health = health
+
+	def take_hit(self, attack_points):
+		self.health -= attack_points
+		if self.health < 1:
+			self.kill()
+
+	def get_attack(self):
+		return self.attack
+
+	def set_attack(self):
+		self.attack = attack
+
 	def select(self):
 		self.selected = True
 
 	def unselect(self):
 		self.selected = False
+
+	def is_alive(self):
+		return self.alive
+
+	def revive(self):
+		self.alive = True
+
+	def kill(self):
+		self.alive = False
 
 	def get_movement_points(self):
 		return self.movement
