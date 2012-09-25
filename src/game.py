@@ -71,6 +71,7 @@ class xadir_main:
 					self.next_turn()
 			pygame.display.flip()
 			self.update_healthbars()
+			#self.update_character_numbers()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
@@ -92,7 +93,7 @@ class xadir_main:
 		self.players = []
 
 		player_count = 2
-		character_count = 2
+		character_count = 1
 		player_ids = random.sample(self.spawns, player_count)
 		for player_id in player_ids:
 			spawn_points = random.sample(self.spawns[player_id], character_count)
@@ -216,21 +217,26 @@ class xadir_main:
 			player_health = []
 			characters = players[p].get_characters()
 			text = "Player " + str(p)
-			font = pygame.font.Font(None, 12)
-			playertext = font.render(text, True, (255,255, 255), (159, 182, 205))
+			playerfont = pygame.font.Font(None, 20)
+			playertext = playerfont.render(text, True, (255,255, 255), (159, 182, 205))
 			playertextRect = playertext.get_rect()
 			playertextRect.left = coords[0]
 			playertextRect.top = coords[1]
 			self.healthbars.append([playertext, playertextRect])
 			coords[1] += 12 + margin
 			for c in range(len(characters)):
-				player_health.append(characters[c].get_health())
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				character_healthbar = pygame.Surface(tuple(bar_size)).convert()
-				draw_solid_hp_bar(character_healthbar, character_healthbar_rect, 200, characters[c].get_health())
-				self.healthbars.append([character_healthbar, character_healthbar_rect])
+				draw_hp_bar(self.screen, character_healthbar_rect, 200, characters[c].get_health())				
 				coords[1] += (bar_height + margin)
-			#print self.healthbars
+
+	def update_character_numbers(self):
+		players = self.get_all_players()
+		for p in range(len(players)):
+			characters = players[p].get_characters()
+			for c in range(len(characters)):
+				coords = characters[c].get_coords()
+				print "player %d at (%d,%d)" % (p, coords[0], coords[1])
+				self.add_text(self.screen, str(p), 20, (0, 0))
 
 	def get_all_players(self):
 		return self.players
@@ -317,6 +323,14 @@ class xadir_main:
 
 	def get_distance(self, a, b):
 		return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+	def add_text(self, surface, text, size, coords):
+		textfont = pygame.font.Font(None, size)
+		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
+		text_rect = text_surface.get_rect()
+		text_rect.centerx = coords[0]
+		text_rect.centery = coords[1]
+		self.screen.blit(text_surface, text_rect)
 
 class sprite_grid:
 	def __init__(self, grid, coords, tile):
