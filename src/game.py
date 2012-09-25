@@ -96,7 +96,7 @@ class xadir_main:
 		self.players = []
 
 		player_count = 2
-		character_count = 1
+		character_count = 3
 		player_ids = random.sample(self.spawns, player_count)
 		for player_id in player_ids:
 			spawn_points = random.sample(self.spawns[player_id], character_count)
@@ -304,9 +304,10 @@ class xadir_main:
 		return path
 	
 	def attack(self, attacker, target):
-		attacker = attacker.get_coords()
-		target = target.get_coords()
-		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker[0], attacker[1], target[0], target[1])
+		attacker_position = attacker.get_coords()
+		target_position = target.get_coords()
+		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
+		target.take_hit(attacker.attack)
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
@@ -424,10 +425,11 @@ class player:
 	def update_sprites(self):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(self.characters)):
-			coords = self.characters[i].get_coords()
-			character_type = self.characters[i].get_type()
-			tile = tiletypes[character_type]
-			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
+			if self.characters[i].is_alive():
+				coords = self.characters[i].get_coords()
+				character_type = self.characters[i].get_type()
+				tile = tiletypes[character_type]
+				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
 
 	def movement_points_left(self):
 		points_left = 0
