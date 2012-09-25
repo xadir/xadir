@@ -86,13 +86,6 @@ class xadir_main:
 		map, mapsize, spawns = load_map('map2.txt')
 		self.map = background_map(map, *mapsize)
 		self.spawns = spawns
-		"""
-		# player_1_spawn_points = random.sample(self.spawns[1], number_of_characters)
-		self.players = []		
-		# self.players.append(player([['b', 4, 3]], self))
-		self.add_player([['b', 4, 3], ['b', 4, 6]])
-		self.add_player([['b', 17, 10], ['b', 17, 13]])		
-		"""
 		self.players = []
 
 		player_count = 2
@@ -135,18 +128,18 @@ class xadir_main:
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
-					start = characters[i].get_coords()						
+					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
 						path = self.get_path(start, mouse_coords)
-						print path						
+						print path
 						end = path[(len(path) - 2)]
 						distance = self.get_distance(start,end)
-						#print "Moved %d tiles" % (distance)					
-						characters[i].set_coords(end)					
+						#print "Moved %d tiles" % (distance)
+						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect
-						target = 0						
+						target = 0
 						for p in self.get_other_players():
 							for c in p.get_characters():
 								if c.get_coords() == mouse_coords:
@@ -154,21 +147,20 @@ class xadir_main:
 						if target == 0:
 							print "Unable to fetch the character"
 						self.attack(characters[i], target)
-					
 					else:
 						end = mouse_coords
 						distance = self.get_distance(start,end)
-						#print "Moved %d tiles" % (distance)					
-						characters[i].set_coords(end)					
+						#print "Moved %d tiles" % (distance)
+						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
-					
+
 					"""
 					end = mouse_coords
 					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
-					#print "Moved %d tiles" % (distance)					
-					characters[i].set_coords(end)					
+					#print "Moved %d tiles" % (distance)
+					characters[i].set_coords(end)
 					characters[i].reduce_movement_points(distance)
 					self.grid_sprites = pygame.sprite.Group()
 					characters[i].unselect()
@@ -190,6 +182,7 @@ class xadir_main:
 			for c in coords:
 				self.masking_sprites.add(Tile(tile, pygame.Rect(c[0]*TILE_SIZE[0], c[1]*TILE_SIZE[1], *TILE_SIZE)))
 		"""
+
 	def next_turn(self):
 		if len(self.players) < 1:
 			print "Error, less than one player"
@@ -203,7 +196,7 @@ class xadir_main:
 		self.players[self.turn].reset_movement_points()
 		self.update_enemy_tiles()
 		self.update_turntext()
-	
+
 	def update_turntext(self):
 		turnstring = "Player " + str(self.turn)
 		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
@@ -230,7 +223,7 @@ class xadir_main:
 			coords[1] += 12 + margin
 			for c in range(len(characters)):
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_hp_bar(self.screen, character_healthbar_rect, 200, characters[c].get_health())				
+				draw_hp_bar(self.screen, character_healthbar_rect, 200, characters[c].get_health())
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
@@ -269,7 +262,7 @@ class xadir_main:
 
 	def get_current_player(self):
 		return self.players[self.turn]
-	
+
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
@@ -282,7 +275,7 @@ class xadir_main:
 			return [start, end]
 		else:
 			temp = start
-			path.append(temp)	
+			path.append(temp)
 			while temp != end:
 				print path
 				for c in self.get_surroundings(temp):
@@ -302,7 +295,7 @@ class xadir_main:
 					path.append(temp)
 				"""
 		return path
-	
+
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
@@ -444,12 +437,12 @@ class player:
 class character:
 	"""Universal class for any character in the game"""
 	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
-		self.type = character_type		
-		self.movement = movement	# Movement points left
-		self.health = health		# Health left (0-100)
-		self.attack = attack		# Attack points (0-50)
-		self.coords = coords 		# Array of x and y
-		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
+		self.type = character_type
+		self.movement = movement # Movement points left
+		self.health = health     # Health left (0-100)
+		self.attack = attack     # Attack points (0-50)
+		self.coords = coords     # Array of x and y
+		self.heading = heading   # Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
 		self.main = main
@@ -485,7 +478,7 @@ class character:
 
 	def get_health(self):
 		return self.health
-	
+
 	def set_health(self, health):
 		self.health = health
 
@@ -624,3 +617,4 @@ if __name__ == "__main__":
 	tiletypes['r'].set_alpha(120)
 
 	game.main_loop()
+
