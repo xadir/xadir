@@ -46,23 +46,21 @@ class xadir_main:
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
-		self.screen.fill((159, 182, 205))
 		self.font = pygame.font.Font(None, 50)
-		self.turntext = self.font.render('Player 0', True, (255,255, 255), (159, 182, 205))
-		self.textRect = self.turntext.get_rect()
-		self.textRect.centerx = self.sidebar.centerx
-		self.textRect.centery = 50
 		self.healthbars = []
 		self.enemy_tiles = []
 
 	def main_loop(self):
 		self.load_sprites()
+		self.update_turntext()
 		self.update_enemy_tiles()
 		while 1:
+			self.screen.fill((159, 182, 205))
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
 			self.screen.blit(self.turntext, self.textRect)
+			self.update_healthbars()
 			for healthbar in self.healthbars:
 				self.screen.blit(healthbar[0], healthbar[1])
 			for enemy_tiles in self.enemy_tiles:
@@ -75,7 +73,6 @@ class xadir_main:
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
 			pygame.display.flip()
-			self.update_healthbars()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
@@ -92,9 +89,10 @@ class xadir_main:
 		player_count = 2
 		character_count = 3
 		player_ids = random.sample(self.spawns, player_count)
-		for player_id in player_ids:
+		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
+		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player([('ball', x, y) for x, y in spawn_points])
+			self.add_player(name, [('ball', x, y) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -199,8 +197,11 @@ class xadir_main:
 		self.update_turntext()
 
 	def update_turntext(self):
-		turnstring = "Player " + str(self.turn)
+		turnstring = self.players[self.turn].name
 		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
+		self.textRect = self.turntext.get_rect()
+		self.textRect.centerx = self.sidebar.centerx
+		self.textRect.centery = 50
 
 	def update_healthbars(self):
 		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
@@ -214,7 +215,7 @@ class xadir_main:
 		for p in range(len(players)):
 			player_health = []
 			characters = players[p].get_characters()
-			text = "Player " + str(p)
+			text = players[p].name
 			playerfont = pygame.font.Font(None, 20)
 			playertext = playerfont.render(text, True, (255,255, 255), (159, 182, 205))
 			playertextRect = playertext.get_rect()
@@ -267,8 +268,8 @@ class xadir_main:
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
-	def add_player(self, characters):
-		self.players.append(player(characters, self))
+	def add_player(self, name, characters):
+		self.players.append(player(name, characters, self))
 
 	def get_path(self, start, end):
 		path = []
@@ -379,7 +380,8 @@ class background_map:
 
 class player:
 	"""Class to create player or team in the game. One player may have many characters."""
-	def __init__(self, coords, main):
+	def __init__(self, name, coords, main):
+		self.name = name
 		self.main = main
 		self.coords = coords
 		self.sprites = pygame.sprite.Group()
