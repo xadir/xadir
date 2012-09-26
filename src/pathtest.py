@@ -11,6 +11,18 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+def get_distance_2(pos1, pos2):
+	"""Get squared euclidean distance"""
+	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
+
+def get_neighbours(grid, pos):
+	# Only neighbours that are white
+	result = [key for key, value in grid.env_items(pos) if value == 0]
+	# Sort neighbours according to their euclidean distance to us.
+	# This is done so that we prefer straight paths.
+	result.sort(key = lambda pos2: get_distance_2(pos2, pos))
+	return result
+
 class PathTest:
 	def __init__(self):
 		pygame.init()
@@ -30,7 +42,7 @@ class PathTest:
 				for x in range(COUNT):
 					self.screen.fill(self.colors[self.grid[x, y]], (x*(SIZE+1), y*(SIZE+1), SIZE, SIZE))
 
-			path = shortest_path(self.grid, self.src, self.dst, lambda g, v: sorted([key for key, value in g.env_items(v) if not value], key = lambda u: (u[0]-v[0])**2+(u[1]-v[1])**2 ))
+			path = shortest_path(self.grid, self.src, self.dst, get_neighbours)
 			for cur, nxt in zip(path[:-1], path[1:]):
 				pygame.draw.aaline(self.screen, (0, 255, 0), (SIZE/2+cur[0]*(SIZE+1), SIZE/2+cur[1]*(SIZE+1)), (SIZE/2+nxt[0]*(SIZE+1), SIZE/2+nxt[1]*(SIZE+1)))
 
