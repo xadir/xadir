@@ -216,6 +216,7 @@ class xadir_main:
 			rect.left = coords[0]
 			rect.top = coords[1]
 			self.screen.blit(playertext, rect)
+			# XXX: take this from text rect size?
 			coords[1] += 12 + margin
 			for character in player.get_characters():
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
