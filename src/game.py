@@ -164,6 +164,9 @@ class xadir_main:
 					self.grid_sprites = pygame.sprite.Group()
 					characters[i].unselect()
 					"""
+				else:
+					characters[i].unselect()
+					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
@@ -241,10 +244,14 @@ class xadir_main:
 		players = self.get_other_players()
 		for player in players:
 			for character in player.get_characters():
-				coords = character.get_coords()
-				print "enemy at (%d,%d)" % (coords[0], coords[1])
-				tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
-				self.enemy_tiles.append(tile)
+				if character.is_alive():
+					coords = character.get_coords()
+					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
+					tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
+					self.enemy_tiles.append(tile)
+				else:
+					coords = character.get_coords()
+					print "enemy dead at (%d,%d)" % (coords[0], coords[1])
 
 	def get_all_players(self):
 		return self.players
@@ -300,7 +307,10 @@ class xadir_main:
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		target.take_hit(attacker.attack)
+		if attacker.get_movement_points() > 0:	
+			target.take_hit((attacker.get_attack() * attacker.get_movement_points()))
+			attacker.set_movement_points(0)
+		self.update_enemy_tiles()
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
@@ -428,7 +438,8 @@ class player:
 	def movement_points_left(self):
 		points_left = 0
 		for c in self.characters:
-			points_left += c.get_movement_points()
+			if c.is_alive():
+				points_left += c.get_movement_points()
 		return points_left
 
 	def reset_movement_points(self):
@@ -573,9 +584,10 @@ class character:
 		if coords[1] < 0: return False
 
 		p = self.main.get_current_player()
-		for c in p.get_characters_coords():
-			if c == coords:
-				return False
+		for c in p.get_characters():
+			if c.get_coords() == coords:
+				if c.is_alive():
+					return False
 
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
