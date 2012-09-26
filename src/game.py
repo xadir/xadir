@@ -23,6 +23,7 @@ def get_hp_bar_color(total, value):
 	c = scale(value, total, num_colors)
 	return (min(num_colors - c, 255), min(c, 255), 0)
 
+# XXX: Possible optimization: Cache 100% health and do a partial blit instead of N+1 fills?
 def draw_gradient_hp_bar(surface, rect, total, left):
 	surface.fill((0, 0, 0), rect)
 	for i in range(scale(left, total, rect.width)):
