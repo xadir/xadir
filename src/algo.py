@@ -23,6 +23,7 @@ def read_path(path, dst):
 	while dst:
 		result.append(dst)
 		dst = path[dst]
+	result.reverse()	
 	return result
 
 def shortest_path(graph, src, dst, neighbours):
