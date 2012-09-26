@@ -576,20 +576,14 @@ class character:
 
 	def get_movement_grid(self):
 		"""Return grid of available cells to move to"""
-		movement_grid = self.get_surroundings(self.coords)
-		if self.movement > 1:
-			for i in range(2, (self.movement + 1)):
-				for i in range(len(movement_grid)):
-					movement_grid.extend(self.get_surroundings(movement_grid[i]))
-		movement_grid = [list(x) for x in set(tuple(x) for x in movement_grid)]
-		return movement_grid
+		return map(list, bfs_area(self, tuple(self.coords), self.movement, character.get_surroundings))
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
-				temp_coords = [coords[0] + x, coords[1] + y]
+				temp_coords = (coords[0] + x, coords[1] + y)
 				#print temp_coords
 				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
 		return return_grid
