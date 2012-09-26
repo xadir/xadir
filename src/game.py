@@ -23,6 +23,7 @@ def get_hp_bar_color(total, value):
 	c = scale(value, total, num_colors)
 	return (min(num_colors - c, 255), min(c, 255), 0)
 
+# XXX: Possible optimization: Cache 100% health and do a partial blit instead of N+1 fills?
 def draw_gradient_hp_bar(surface, rect, total, left):
 	surface.fill((0, 0, 0), rect)
 	for i in range(scale(left, total, rect.width)):
@@ -45,23 +46,21 @@ class xadir_main:
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
-		self.screen.fill((159, 182, 205))
 		self.font = pygame.font.Font(None, 50)
-		self.turntext = self.font.render('Player 0', True, (255,255, 255), (159, 182, 205))
-		self.textRect = self.turntext.get_rect()
-		self.textRect.centerx = self.sidebar.centerx
-		self.textRect.centery = 50
 		self.healthbars = []
 		self.enemy_tiles = []
 
 	def main_loop(self):
 		self.load_sprites()
+		self.update_turntext()
 		self.update_enemy_tiles()
 		while 1:
+			self.screen.fill((159, 182, 205))
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
 			self.screen.blit(self.turntext, self.textRect)
+			self.update_healthbars()
 			for healthbar in self.healthbars:
 				self.screen.blit(healthbar[0], healthbar[1])
 			for enemy_tiles in self.enemy_tiles:
@@ -74,7 +73,6 @@ class xadir_main:
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
 			pygame.display.flip()
-			self.update_healthbars()
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
@@ -86,21 +84,15 @@ class xadir_main:
 		map, mapsize, spawns = load_map('map2.txt')
 		self.map = background_map(map, *mapsize)
 		self.spawns = spawns
-		"""
-		# player_1_spawn_points = random.sample(self.spawns[1], number_of_characters)
-		self.players = []		
-		# self.players.append(player([['b', 4, 3]], self))
-		self.add_player([['b', 4, 3], ['b', 4, 6]])
-		self.add_player([['b', 17, 10], ['b', 17, 13]])		
-		"""
 		self.players = []
 
 		player_count = 2
 		character_count = 3
 		player_ids = random.sample(self.spawns, player_count)
-		for player_id in player_ids:
+		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
+		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player([('b', x, y) for x, y in spawn_points])
+			self.add_player(name, [('ball', x, y) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -128,25 +120,25 @@ class xadir_main:
 				else:
 					characters[i].select()
 					if characters[i].get_movement_points() <= 0:
-						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), tiletypes['r'])
+						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), imgs['red'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 					else:
-						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), tiletypes['g'])
+						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), imgs['green'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
-					start = characters[i].get_coords()						
+					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
 						path = self.get_path(start, mouse_coords)
-						print path						
+						print path
 						end = path[(len(path) - 2)]
 						distance = self.get_distance(start,end)
-						#print "Moved %d tiles" % (distance)					
-						characters[i].set_coords(end)					
+						#print "Moved %d tiles" % (distance)
+						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect
-						target = 0						
+						target = 0
 						for p in self.get_other_players():
 							for c in p.get_characters():
 								if c.get_coords() == mouse_coords:
@@ -154,21 +146,20 @@ class xadir_main:
 						if target == 0:
 							print "Unable to fetch the character"
 						self.attack(characters[i], target)
-					
 					else:
 						end = mouse_coords
 						distance = self.get_distance(start,end)
-						#print "Moved %d tiles" % (distance)					
-						characters[i].set_coords(end)					
+						#print "Moved %d tiles" % (distance)
+						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
-					
+
 					"""
 					end = mouse_coords
 					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
-					#print "Moved %d tiles" % (distance)					
-					characters[i].set_coords(end)					
+					#print "Moved %d tiles" % (distance)
+					characters[i].set_coords(end)
 					characters[i].reduce_movement_points(distance)
 					self.grid_sprites = pygame.sprite.Group()
 					characters[i].unselect()
@@ -190,6 +181,7 @@ class xadir_main:
 			for c in coords:
 				self.masking_sprites.add(Tile(tile, pygame.Rect(c[0]*TILE_SIZE[0], c[1]*TILE_SIZE[1], *TILE_SIZE)))
 		"""
+
 	def next_turn(self):
 		if len(self.players) < 1:
 			print "Error, less than one player"
@@ -203,10 +195,13 @@ class xadir_main:
 		self.players[self.turn].reset_movement_points()
 		self.update_enemy_tiles()
 		self.update_turntext()
-	
+
 	def update_turntext(self):
-		turnstring = "Player " + str(self.turn)
+		turnstring = self.players[self.turn].name
 		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
+		self.textRect = self.turntext.get_rect()
+		self.textRect.centerx = self.sidebar.centerx
+		self.textRect.centery = 50
 
 	def update_healthbars(self):
 		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
@@ -217,10 +212,10 @@ class xadir_main:
 		bar_size = [width, bar_height]
 		self.healthbars = []
 		players = self.get_all_players()
-		for p in range(len(players)):
+		for player in players:
 			player_health = []
-			characters = players[p].get_characters()
-			text = "Player " + str(p)
+			characters = player.get_characters()
+			text = player.name
 			playerfont = pygame.font.Font(None, 20)
 			playertext = playerfont.render(text, True, (255,255, 255), (159, 182, 205))
 			playertextRect = playertext.get_rect()
@@ -228,27 +223,25 @@ class xadir_main:
 			playertextRect.top = coords[1]
 			self.healthbars.append([playertext, playertextRect])
 			coords[1] += 12 + margin
-			for c in range(len(characters)):
+			for character in characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_hp_bar(self.screen, character_healthbar_rect, 200, characters[c].get_health())				
+				draw_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
 		players = self.get_all_players()
-		for p in range(len(players)):
-			characters = players[p].get_characters()
-			for c in range(len(characters)):
-				coords = characters[c].get_coords()
-				print "player %d at (%d,%d)" % (p, coords[0], coords[1])
+		for p, player in enumerate(players):
+			for character in player.get_characters():
+				coords = character.get_coords()
+				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
 				self.add_text(self.screen, str(p), 20, (0, 0))
 
 	def update_enemy_tiles(self):
 		self.enemy_tiles = []
 		players = self.get_other_players()
-		for p in range(len(players)):
-			characters = players[p].get_characters()
-			for c in range(len(characters)):
-				coords = characters[c].get_coords()
+		for player in players:
+			for character in player.get_characters():
+				coords = character.get_coords()
 				print "enemy at (%d,%d)" % (coords[0], coords[1])
 				tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
 				self.enemy_tiles.append(tile)
@@ -269,12 +262,12 @@ class xadir_main:
 
 	def get_current_player(self):
 		return self.players[self.turn]
-	
+
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
-	def add_player(self, characters):
-		self.players.append(player(characters, self))
+	def add_player(self, name, characters):
+		self.players.append(player(name, characters, self))
 
 	def get_path(self, start, end):
 		path = []
@@ -282,7 +275,7 @@ class xadir_main:
 			return [start, end]
 		else:
 			temp = start
-			path.append(temp)	
+			path.append(temp)
 			while temp != end:
 				print path
 				for c in self.get_surroundings(temp):
@@ -302,7 +295,7 @@ class xadir_main:
 					path.append(temp)
 				"""
 		return path
-	
+
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
@@ -385,7 +378,8 @@ class background_map:
 
 class player:
 	"""Class to create player or team in the game. One player may have many characters."""
-	def __init__(self, coords, main):
+	def __init__(self, name, coords, main):
+		self.name = name
 		self.main = main
 		self.coords = coords
 		self.sprites = pygame.sprite.Group()
@@ -394,7 +388,7 @@ class player:
 			character_type = coords[i][0]
 			y = coords[i][1]
 			x = coords[i][2]
-			tile = tiletypes[character_type]
+			tile = chartypes[character_type]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
 			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
 
@@ -428,7 +422,7 @@ class player:
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
 				character_type = self.characters[i].get_type()
-				tile = tiletypes[character_type]
+				tile = chartypes[character_type]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
 
 	def movement_points_left(self):
@@ -444,12 +438,13 @@ class player:
 class character:
 	"""Universal class for any character in the game"""
 	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
-		self.type = character_type		
-		self.movement = movement	# Movement points left
-		self.health = health		# Health left (0-100)
-		self.attack = attack		# Attack points (0-50)
-		self.coords = coords 		# Array of x and y
-		self.heading = heading		# Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
+		self.type = character_type
+		self.movement = movement # Movement points left
+		self.max_health = health
+		self.health = random.randrange(health) # Health left (0-100)
+		self.attack = attack     # Attack points (0-50)
+		self.coords = coords     # Array of x and y
+		self.heading = heading   # Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
 		self.main = main
@@ -483,9 +478,12 @@ class character:
 	def is_selected(self):
 		return self.selected
 
+	def get_max_health(self):
+		return self.max_health
+
 	def get_health(self):
 		return self.health
-	
+
 	def set_health(self, health):
 		self.health = health
 
@@ -617,10 +615,15 @@ if __name__ == "__main__":
 	characters = parse_tiles(tiles[1][2], TILE_SIZE)
 
 	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)
-	tiletypes['b'] = characters[0][0]
-	tiletypes['g'] = characters[1][0]
-	tiletypes['r'] = characters[2][0]
-	tiletypes['g'].set_alpha(120)
-	tiletypes['r'].set_alpha(120)
+
+	chartypes = {}
+	chartypes['ball'] = characters[0][0]
+
+	imgs = {}
+	imgs['green'] = characters[1][0]
+	imgs['red'] = characters[2][0]
+	imgs['green'].set_alpha(120)
+	imgs['red'].set_alpha(120)
 
 	game.main_loop()
+
