@@ -212,10 +212,10 @@ class xadir_main:
 		bar_size = [width, bar_height]
 		self.healthbars = []
 		players = self.get_all_players()
-		for p in range(len(players)):
+		for player in players:
 			player_health = []
-			characters = players[p].get_characters()
-			text = players[p].name
+			characters = player.get_characters()
+			text = player.name
 			playerfont = pygame.font.Font(None, 20)
 			playertext = playerfont.render(text, True, (255,255, 255), (159, 182, 205))
 			playertextRect = playertext.get_rect()
@@ -223,27 +223,25 @@ class xadir_main:
 			playertextRect.top = coords[1]
 			self.healthbars.append([playertext, playertextRect])
 			coords[1] += 12 + margin
-			for c in range(len(characters)):
+			for character in characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_hp_bar(self.screen, character_healthbar_rect, 200, characters[c].get_health())
+				draw_hp_bar(self.screen, character_healthbar_rect, 200, character.get_health())
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
 		players = self.get_all_players()
-		for p in range(len(players)):
-			characters = players[p].get_characters()
-			for c in range(len(characters)):
-				coords = characters[c].get_coords()
-				print "player %d at (%d,%d)" % (p, coords[0], coords[1])
+		for p, player in enumerate(players):
+			for character in player.get_characters():
+				coords = character.get_coords()
+				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
 				self.add_text(self.screen, str(p), 20, (0, 0))
 
 	def update_enemy_tiles(self):
 		self.enemy_tiles = []
 		players = self.get_other_players()
-		for p in range(len(players)):
-			characters = players[p].get_characters()
-			for c in range(len(characters)):
-				coords = characters[c].get_coords()
+		for player in players:
+			for character in player.get_characters():
+				coords = character.get_coords()
 				print "enemy at (%d,%d)" % (coords[0], coords[1])
 				tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
 				self.enemy_tiles.append(tile)
