@@ -5,6 +5,7 @@ import math
 import random
 from pygame.locals import *
 from resources import *
+from algo import *
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -73,11 +74,10 @@ class xadir_main:
 
 	def main_loop(self):
 		clock = pygame.time.Clock()
-
 		self.load_sprites()
 		self.update_enemy_tiles()
-
-		hue = 0
+	
+		hue = 0		
 		while 1:
 			self.screen.fill((159, 182, 205))
 			# XXX: less flashy way to indicate that we're running smoothly
@@ -306,6 +306,7 @@ class xadir_main:
 
 	def get_path(self, start, end):
 		path = []
+		"""
 		if start == end:
 			return [start, end]
 		else:
@@ -316,19 +317,8 @@ class xadir_main:
 				for c in self.get_surroundings(temp):
 					if self.get_distance(temp, end) > self.get_distance(c, end): temp = c
 				path.append(temp)
-				"""
-				if temp[0] > start[0] and :
-				if abs(temp[0] - start[0]) > abs(temp[1] - start[1]):
-					temp[0] -= 1
-					path.append(temp)
-				elif abs(temp[0] - start[0]) < abs(temp[1] - start[1]):
-					temp[1] -= 1
-					path.append(temp)
-				else:
-					temp[0] -= 1
-					temp[1] -= 1
-					path.append(temp)
-				"""
+		"""
+		path = shortest_path(self, tuple(start), tuple(end), xadir_main.get_surroundings)
 		return path
 
 	def attack(self, attacker, target):
@@ -345,7 +335,7 @@ class xadir_main:
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
-				temp_coords = [coords[0] + x, coords[1] + y]
+				temp_coords = (coords[0] + x, coords[1] + y)
 				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
 		return return_grid
 
@@ -406,7 +396,7 @@ class background_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
+				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 
 	def get_sprites(self):
 		return self.sprites
@@ -427,7 +417,7 @@ class player:
 			y = coords[i][1]
 			x = coords[i][2]
 			tile = chartypes[character_type]
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
 
 	def get_sprites(self):
@@ -461,7 +451,7 @@ class player:
 				coords = self.characters[i].get_coords()
 				character_type = self.characters[i].get_type()
 				tile = chartypes[character_type]
-				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
+				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
@@ -472,7 +462,7 @@ class player:
 
 	def reset_movement_points(self):
 		for c in self.characters:
-			c.set_movement_points(2)
+			c.set_movement_points(5)
 
 class character:
 	"""Universal class for any character in the game"""
@@ -641,10 +631,11 @@ class character:
 # Following classes define the graphical elements, or Sprites.
 
 class Tile(pygame.sprite.Sprite):
-	def __init__(self, image, rect=None):
+	def __init__(self, image, rect=None, layer=0):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = image
 		self.rect = image.get_rect()
+		self.layer = layer
 		if rect is not None:
 			self.rect = rect
 
