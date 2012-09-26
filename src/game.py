@@ -47,22 +47,20 @@ class xadir_main:
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
 		self.font = pygame.font.Font(None, 50)
+		self.playerfont = pygame.font.Font(None, 20)
 		self.healthbars = []
 		self.enemy_tiles = []
 
 	def main_loop(self):
 		self.load_sprites()
-		self.update_turntext()
 		self.update_enemy_tiles()
 		while 1:
 			self.screen.fill((159, 182, 205))
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
-			self.screen.blit(self.turntext, self.textRect)
-			self.update_healthbars()
-			for healthbar in self.healthbars:
-				self.screen.blit(healthbar[0], healthbar[1])
+			self.draw_turntext()
+			self.draw_healthbars()
 			for enemy_tiles in self.enemy_tiles:
 				self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 			for event in pygame.event.get():
@@ -194,36 +192,32 @@ class xadir_main:
 			print self.turn
 		self.players[self.turn].reset_movement_points()
 		self.update_enemy_tiles()
-		self.update_turntext()
 
-	def update_turntext(self):
+	def draw_turntext(self):
 		turnstring = self.players[self.turn].name
-		self.turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
-		self.textRect = self.turntext.get_rect()
-		self.textRect.centerx = self.sidebar.centerx
-		self.textRect.centery = 50
+		turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
+		rect = turntext.get_rect()
+		rect.centerx = self.sidebar.centerx
+		rect.centery = 50
+		self.screen.blit(turntext, rect)
 
-	def update_healthbars(self):
+	def draw_healthbars(self):
 		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
 		width = self.sidebar.width - 20
 		height = self.sidebar.height - 110
 		bar_height = 20
 		margin = 5
 		bar_size = [width, bar_height]
-		self.healthbars = []
 		players = self.get_all_players()
 		for player in players:
-			player_health = []
-			characters = player.get_characters()
 			text = player.name
-			playerfont = pygame.font.Font(None, 20)
-			playertext = playerfont.render(text, True, (255,255, 255), (159, 182, 205))
-			playertextRect = playertext.get_rect()
-			playertextRect.left = coords[0]
-			playertextRect.top = coords[1]
-			self.healthbars.append([playertext, playertextRect])
+			playertext = self.playerfont.render(text, True, (255,255, 255), (159, 182, 205))
+			rect = playertext.get_rect()
+			rect.left = coords[0]
+			rect.top = coords[1]
+			self.screen.blit(playertext, rect)
 			coords[1] += 12 + margin
-			for character in characters:
+			for character in player.get_characters():
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
 				draw_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
 				coords[1] += (bar_height + margin)
