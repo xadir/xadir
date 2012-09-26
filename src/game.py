@@ -129,7 +129,7 @@ class xadir_main:
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.get_sprites()
 		self.masking_sprites = pygame.sprite.Group()
-		self.player_sprites = pygame.sprite.Group()
+		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
 			self.player_sprites.add(p.get_sprites())
 
@@ -202,7 +202,7 @@ class xadir_main:
 				characters[i].unselect()
 
 	def update_sprites(self):
-		self.player_sprites = pygame.sprite.Group()
+		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
 			p.update_sprites()
 			self.player_sprites.add(p.get_sprites())
@@ -390,7 +390,7 @@ class background_map:
 		self.width = width
 		self.height = height
 		self.map = map
-		self.sprites = pygame.sprite.Group()
+		self.sprites = pygame.sprite.LayeredUpdates()
 		for y in range(self.height):
 			for x in range(self.width):
 				tiletype = self.map[y][x]
@@ -410,7 +410,7 @@ class player:
 		self.name = name
 		self.main = main
 		self.coords = coords
-		self.sprites = pygame.sprite.Group()
+		self.sprites = pygame.sprite.LayeredUpdates()
 		self.characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
@@ -445,7 +445,7 @@ class player:
 		characters.pop(i)
 
 	def update_sprites(self):
-		self.sprites = pygame.sprite.Group()
+		self.sprites = pygame.sprite.LayeredUpdates()
 		for i in range(len(self.characters)):
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
@@ -635,7 +635,7 @@ class Tile(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = image
 		self.rect = image.get_rect()
-		self.layer = layer
+		self.layer = -layer
 		if rect is not None:
 			self.rect = rect
 
