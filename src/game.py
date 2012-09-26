@@ -34,6 +34,26 @@ def draw_solid_hp_bar(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill(color, rect)
 
+def get_hue_color(i):
+	# red-yellow-green-cyan-blue-magenta-red
+	# 6*256-6 = 1530
+
+	#0 = red
+	#255 = yellow
+	#510 = green
+	#765 = cyan
+	#1020 = blue
+	#1275 = magenta
+	#1530 = red
+
+	n = lambda c: max(min(c, 255), 0)
+
+	r = n(abs(765-((i+0)%1530))-255)
+	g = n(abs(765-((i+510)%1530))-255)
+	b = n(abs(765-((i+1020)%1530))-255)
+
+	return (r, g, b)
+
 # Change to suit your mood
 draw_hp_bar = draw_gradient_hp_bar
 
@@ -52,10 +72,16 @@ class xadir_main:
 		self.enemy_tiles = []
 
 	def main_loop(self):
+		clock = pygame.time.Clock()
+
 		self.load_sprites()
 		self.update_enemy_tiles()
+
+		hue = 0
 		while 1:
 			self.screen.fill((159, 182, 205))
+			# XXX: less flashy way to indicate that we're running smoothly
+			self.draw_fps(clock.get_fps(), get_hue_color(hue))
 			self.map_sprites.draw(self.screen)
 			self.player_sprites.draw(self.screen)
 			self.grid_sprites.draw(self.screen)
@@ -74,7 +100,14 @@ class xadir_main:
 			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
-			time.sleep(0.05)
+			clock.tick(30)
+			hue += 10
+
+	def draw_fps(self, fps, color):
+		text = self.playerfont.render('fps: %d' % fps, True, color)
+		rect = text.get_rect()
+		rect.centerx = self.sidebar.centerx
+		self.screen.blit(text, rect)
 
 	def load_sprites(self):
 		"""Load the sprites that we need"""
