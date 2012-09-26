@@ -1,3 +1,5 @@
+Total: 49t
+
 - 17.9 (3t) Pre-Alphan kehitys
 	- kartan renderöinti
 
@@ -42,3 +44,6 @@
 
 - 25.9 (4t)
 	- Hyökkäyksen ja liikkumisreitin bugien korjaus
+	- Healthbarit sivupalkkiin
+	- Hahmojen hyökkäys, vahingoittaminen ja kuolema
+	- Vastustajien hahmojen tummennus, jolloin omat hahmot on helpompi erottaa kartalta
