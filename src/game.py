@@ -225,7 +225,7 @@ class xadir_main:
 			coords[1] += 12 + margin
 			for character in characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_hp_bar(self.screen, character_healthbar_rect, 200, character.get_health())
+				draw_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
@@ -440,7 +440,8 @@ class character:
 	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
 		self.type = character_type
 		self.movement = movement # Movement points left
-		self.health = health     # Health left (0-100)
+		self.max_health = health
+		self.health = random.randrange(health) # Health left (0-100)
 		self.attack = attack     # Attack points (0-50)
 		self.coords = coords     # Array of x and y
 		self.heading = heading   # Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
@@ -476,6 +477,9 @@ class character:
 
 	def is_selected(self):
 		return self.selected
+
+	def get_max_health(self):
+		return self.max_health
 
 	def get_health(self):
 		return self.health
