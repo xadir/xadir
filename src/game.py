@@ -93,7 +93,7 @@ class xadir_main:
 		player_ids = random.sample(self.spawns, player_count)
 		for player_id in player_ids:
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player([('b', x, y) for x, y in spawn_points])
+			self.add_player([('ball', x, y) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -121,10 +121,10 @@ class xadir_main:
 				else:
 					characters[i].select()
 					if characters[i].get_movement_points() <= 0:
-						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), tiletypes['r'])
+						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), imgs['red'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 					else:
-						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), tiletypes['g'])
+						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), imgs['green'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
@@ -387,7 +387,7 @@ class player:
 			character_type = coords[i][0]
 			y = coords[i][1]
 			x = coords[i][2]
-			tile = tiletypes[character_type]
+			tile = chartypes[character_type]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE)))
 			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
 
@@ -421,7 +421,7 @@ class player:
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
 				character_type = self.characters[i].get_type()
-				tile = tiletypes[character_type]
+				tile = chartypes[character_type]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE)))
 
 	def movement_points_left(self):
@@ -610,11 +610,15 @@ if __name__ == "__main__":
 	characters = parse_tiles(tiles[1][2], TILE_SIZE)
 
 	tiletypes = load_named_tiles('placeholder_tilemap', TILE_SIZE, (255, 0, 255), SCALE)
-	tiletypes['b'] = characters[0][0]
-	tiletypes['g'] = characters[1][0]
-	tiletypes['r'] = characters[2][0]
-	tiletypes['g'].set_alpha(120)
-	tiletypes['r'].set_alpha(120)
+
+	chartypes = {}
+	chartypes['ball'] = characters[0][0]
+
+	imgs = {}
+	imgs['green'] = characters[1][0]
+	imgs['red'] = characters[2][0]
+	imgs['green'].set_alpha(120)
+	imgs['red'].set_alpha(120)
 
 	game.main_loop()
 
