@@ -642,12 +642,13 @@ class Tile(pygame.sprite.Sprite):
 if __name__ == "__main__":
 	game = xadir_main()
 
+	tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 	chars = load_tiles('sprite_collection.png', (SCALE*24, SCALE*32), (255, 0, 255), SCALE)
 
 	tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
 	chartypes = {}
-	chartypes['ball'] = tiles[0][0]
+	chartypes['ball'] = chars[0][0]
 
 	imgs = {}
 	imgs['green'] = tiles[1][0]
