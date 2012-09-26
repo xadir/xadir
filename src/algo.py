@@ -16,6 +16,20 @@ def bfs(graph, src, dst, neighbours):
 				queue.append(u)
 	return {}
 
+def bfs_area(graph, src, max_dist, neighbours):
+	"""Reachable neighbours"""
+	seen = set([src])
+	queue = deque([(src, 0)])
+	while queue:
+		v, dist = queue.popleft()
+		dist += 1
+		for u in neighbours(graph, v):
+			if u not in seen:
+				seen.add(u)
+				if dist < max_dist:
+					queue.append((u, dist))
+	return seen
+
 def read_path(path, dst):
 	if dst not in path:
 		return []
