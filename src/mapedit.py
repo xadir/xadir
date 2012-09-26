@@ -17,7 +17,7 @@ class MapEditor:
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 
-		self.tiles = load_named_tiles('placeholder_tilemap', ORIG_TILE_SIZE, (255, 0, 255))
+		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
 		self.grid = Grid(29, 29)
