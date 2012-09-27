@@ -27,7 +27,7 @@ class MapEditor:
 		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
-		self.grid = Grid(29, 29)
+		self.grid = Grid(24, 14)
 		self.tools = Grid(9, 29)
 
 		for y, row in enumerate(tools):
@@ -81,14 +81,20 @@ class MapEditor:
 						if area == 'right' and right.contains(*event.pos):
 							x, y = right.translate(*event.pos)
 							x, y = x/17, y/17
-							self.grid[x, y] = tool
+							try:
+								self.grid[x, y] = tool
+							except:
+								pass
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
 					if area == 'right' and right.contains(*event.pos):
 						x, y = right.translate(*event.pos)
 						x, y = x/17, y/17
-						self.grid[x, y] = tool
+						try:
+							self.grid[x, y] = tool
+						except:
+							print "You went outside the borders"
 				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
 						for pos, value in self.grid.items():
