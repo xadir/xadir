@@ -39,19 +39,19 @@ class MapEditor:
 
 		# XXX: add tools that arent specified in toolfile
 
-		self.left = UIComponent(0, 0, self.tools.width * 17, self.tools.height * 17)
-		self.right = UIComponent(self.left.width + 5, 0, self.grid.width * 17, self.grid.height * 17)
+		self.left = UIGrid(0, 0, self.tools, (16, 16), 1)
+		self.right = UIGrid(self.left.width + 6, 0, self.grid, (16, 16), 1)
 
 	def draw(self):
 		for (x, y), tile in self.tools.items():
 			if tile:
-				self.screen.blit(self.tiles[tile], (x * 17, y * 17))
+				self.screen.blit(self.tiles[tile], self.left.grid2screen_translate(x, y))
 
-		self.screen.fill((63, 63, 63), pygame.Rect(self.left.width, 0, 4, 480))
+		self.screen.fill((63, 63, 63), pygame.Rect(self.left.width + 1, 0, 4, 480))
 
 		for (x, y), tile in self.grid.items():
 			if tile:
-				self.screen.blit(self.tiles[tile], (self.right.x + x * 17, y * 17))
+				self.screen.blit(self.tiles[tile], self.right.grid2screen_translate(x, y))
 
 	def loop(self):
 		left, right = self.left, self.right
@@ -74,25 +74,21 @@ class MapEditor:
 						start = event.pos
 					else:
 						if right.contains(*event.pos):
-							x, y = right.translate(*event.pos)
-							x, y = x/17, y/17
+							x, y = right.screen2grid_translate(*event.pos)
 							inpaint(self.grid, self.tiles.keys(), (x, y))
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						if area == 'left' and left.contains(*event.pos):
-							x, y = left.translate(*event.pos)
-							x, y = x/17, y/17
+							x, y = left.screen2grid_translate(*event.pos)
 							tool = self.tools[x, y]
 						if area == 'right' and right.contains(*event.pos):
-							x, y = right.translate(*event.pos)
-							x, y = x/17, y/17
+							x, y = right.screen2grid_translate(*event.pos)
 							self.grid[x, y] = tool
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
 					if area == 'right' and right.contains(*event.pos):
-						x, y = right.translate(*event.pos)
-						x, y = x/17, y/17
+						x, y = right.screen2grid_translate(*event.pos)
 						self.grid[x, y] = tool
 				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
@@ -149,6 +145,20 @@ class UIComponent:
 
 	def translate(self, x, y):
 		return x - self.x, y - self.y
+
+class UIGrid(UIComponent):
+	def __init__(self, x, y, grid, cell_size, border_width = 0):
+		UIComponent.__init__(self, x, y, grid.width * (cell_size[0] + border_width) - 1, grid.height * (cell_size[1] + border_width) - 1)
+		self.grid = grid
+		self.cell_size = cell_size
+		self.border_width = border_width
+
+	def screen2grid_translate(self, x, y):
+		x, y = self.translate(x, y)
+		return x / (self.cell_size[0] + self.border_width), y / (self.cell_size[1] + self.border_width)
+
+	def grid2screen_translate(self, x, y):
+		return self.x + x * (self.cell_size[0] + self.border_width), self.y + y * (self.cell_size[1] + self.border_width)
 
 if __name__ == "__main__":
 	#if len(sys.argv) < 2:
