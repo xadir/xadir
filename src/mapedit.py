@@ -27,8 +27,11 @@ class MapEditor:
 		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
+		# Ensure toolbar has empty squares too (aka. removal tool)
+		size = size[0], max(size[1], height/17)
+
 		self.grid = Grid(25, 15)
-		self.tools = Grid(9, 29)
+		self.tools = Grid(*size)
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -36,20 +39,22 @@ class MapEditor:
 
 		# XXX: add tools that arent specified in toolfile
 
+		self.left = UIComponent(0, 0, self.tools.width * 17, self.tools.height * 17)
+		self.right = UIComponent(self.left.width + 5, 0, self.grid.width * 17, self.grid.height * 17)
+
 	def draw(self):
 		for (x, y), tile in self.tools.items():
 			if tile:
 				self.screen.blit(self.tiles[tile], (x * 17, y * 17))
 
-		self.screen.fill((63, 63, 63), pygame.Rect(154, 0, 4, 480))
+		self.screen.fill((63, 63, 63), pygame.Rect(self.left.width, 0, 4, 480))
 
 		for (x, y), tile in self.grid.items():
 			if tile:
-				self.screen.blit(self.tiles[tile], (160 + x * 17, y * 17))
+				self.screen.blit(self.tiles[tile], (self.right.x + x * 17, y * 17))
 
 	def loop(self):
-		left = UIComponent(0, 0, 160, 480)
-		right = UIComponent(160, 0, 480, 480)
+		left, right = self.left, self.right
 
 		area = None
 		start = None
@@ -81,20 +86,14 @@ class MapEditor:
 						if area == 'right' and right.contains(*event.pos):
 							x, y = right.translate(*event.pos)
 							x, y = x/17, y/17
-							try:
-								self.grid[x, y] = tool
-							except:
-								pass
+							self.grid[x, y] = tool
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
 					if area == 'right' and right.contains(*event.pos):
 						x, y = right.translate(*event.pos)
 						x, y = x/17, y/17
-						try:
-							self.grid[x, y] = tool
-						except:
-							print "You went outside the borders"
+						self.grid[x, y] = tool
 				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
 						for pos, value in self.grid.items():
