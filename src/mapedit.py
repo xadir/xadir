@@ -27,7 +27,7 @@ class MapEditor:
 		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
-		self.grid = Grid(24, 14)
+		self.grid = Grid(25, 15)
 		self.tools = Grid(9, 29)
 
 		for y, row in enumerate(tools):
