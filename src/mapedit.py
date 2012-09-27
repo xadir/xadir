@@ -111,6 +111,7 @@ class MapEditor:
 
 			time.sleep(0.05)
 
+# XXX: try to do better - borders and holes remain unfilled atm
 def inpaint(grid, tile_names, pos):
 	items = list(grid.env_values(pos, 1))
 	if len(items) != 9:
