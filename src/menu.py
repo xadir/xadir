@@ -111,7 +111,7 @@ class Menu:
 						#		self.mapname = m[0]
 						#		area = 'maplist'
 						for b in self.buttons:
-							if b.get_UI().contains(*event.pos):
+							if b.contains(*event.pos):
 								area = b.get_name()
 						"""
 						if load.contains(*event.pos):
@@ -126,7 +126,7 @@ class Menu:
 						#if area == 'maplist' and maplist.contains(*event.pos):
 						#	print "selected map %d" % (mapname)
 						for b in self.buttons:
-							if area == b.get_name() and b.get_UI().contains(*event.pos):
+							if area == b.get_name() and b.contains(*event.pos):
 								f = b.get_function()
 								if b.get_name() == "Quit":
 									f()
@@ -146,15 +146,24 @@ class Menu:
 
 			time.sleep(0.05)
 
-class Button:
-	def __init__(self, x, y, width, height, name, surface, function):
+class UIComponent:
+	def __init__(self, x, y, width, height):
 		self.x = x
 		self.y = y
 		self.width = width
 		self.height = height
+
+	def contains(self, x, y):
+		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
+
+	def translate(self, x, y):
+		return x - self.x, y - self.y
+
+class Button(UIComponent):
+	def __init__(self, x, y, width, height, name, surface, function):
+		UIComponent.__init__(self, x, y, width, height)
 		self.name = name
 		self.function = function
-		self.buttonUI = UIComponent(x, y, width, height)
 		self.surface = surface
 		self.create_text(self.name)
 
@@ -181,22 +190,6 @@ class Button:
 
 	def draw(self):
 		self.surface.blit(self.buttontext, self.buttonrect)
-
-	def get_UI(self):
-		return self.buttonUI
-
-class UIComponent:
-	def __init__(self, x, y, width, height):
-		self.x = x
-		self.y = y
-		self.width = width
-		self.height = height
-
-	def contains(self, x, y):
-		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
-
-	def translate(self, x, y):
-		return x - self.x, y - self.y
 
 if __name__ == "__main__":
 	#if len(sys.argv) < 2:
