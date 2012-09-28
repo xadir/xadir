@@ -217,6 +217,7 @@ class xadir_main:
 						print path
 						distance = self.get_distance(start,end)
 						#print "Moved %d tiles" % (distance)
+						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
 						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
@@ -229,17 +230,12 @@ class xadir_main:
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
-	### Tried to create nice animation of character moving on path. Alexer, help! ###
-	"""
 	def move_character(self, path, character):
-		for i in range(len(path) - 1):
-			character.set_heading(self.get_heading(path[p], path[p+1]))
-			character.set_coords(path[p])
-			self.player_sprites = pygame.sprite.LayeredUpdates()
-			for p in self.players:
-				self.player_sprites.add(p.get_sprites())
-			self.player_sprites.draw(self.screen)
-	"""
+		for i in range(1, len(path) - 1):
+			character.set_heading(self.get_heading(path[i], path[i+1]))
+			character.set_coords(path[i])
+			self.draw()
+			self.clock.tick(3)
 
 	def get_heading(self, a, b):
 		print a
