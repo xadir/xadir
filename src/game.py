@@ -76,6 +76,8 @@ class xadir_main:
 		self.playerfont = pygame.font.Font(None, 20)
 		self.healthbars = []
 		self.enemy_tiles = []
+		self.clock = pygame.time.Clock()
+		self.fps = 30
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -101,22 +103,12 @@ class xadir_main:
 		self.imgs['red'].set_alpha(120)
 
 	def main_loop(self):
-		clock = pygame.time.Clock()
 		self.load_sprites()
 		self.update_enemy_tiles()
 
-		hue = 0
+		self.hue = 0
 		while 1:
-			self.screen.fill((159, 182, 205))
-			# XXX: less flashy way to indicate that we're running smoothly
-			self.draw_fps(clock.get_fps(), get_hue_color(hue))
-			self.map_sprites.draw(self.screen)
-			self.player_sprites.draw(self.screen)
-			self.grid_sprites.draw(self.screen)
-			self.draw_turntext()
-			self.draw_healthbars()
-			for enemy_tiles in self.enemy_tiles:
-				self.screen.blit(enemy_tiles[0], enemy_tiles[1])
+			self.draw()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -124,12 +116,24 @@ class xadir_main:
 					self.click()
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
-			pygame.display.flip()
-			self.update_sprites()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
-			clock.tick(30)
-			hue += 10
+			self.clock.tick(self.fps)
+			self.hue += 10
+
+	def draw(self):
+		self.update_sprites()
+		self.screen.fill((159, 182, 205))
+		# XXX: less flashy way to indicate that we're running smoothly
+		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
+		self.map_sprites.draw(self.screen)
+		self.player_sprites.draw(self.screen)
+		self.grid_sprites.draw(self.screen)
+		self.draw_turntext()
+		self.draw_healthbars()
+		for enemy_tiles in self.enemy_tiles:
+			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
+		pygame.display.flip()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
