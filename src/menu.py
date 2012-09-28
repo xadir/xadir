@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from resources import *
 from config import *
+import game
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -15,6 +16,9 @@ class Menu:
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
+		self.sidebar = pygame.Surface((200, 480))
+		self.sidebar_rect = pygame.Rect(0, 0, 200, 480)
+		self.sidebar.fill((159, 182, 205))
 		self.buttonfont = pygame.font.Font(None, 40)
 		self.mapname = "nomap"
 
@@ -30,29 +34,23 @@ class Menu:
 		return maps
 
 	def add_map(self, mapname, x, y, w, h):
-		"""
-		map_UIComponent = UIComponent(x, y, w, h)
-		mapfont = pygame.font.Font(None, 30)
-		maptext = mapfont.render(mapname, True, (255,255, 255), (159, 182, 205))
-		maprect = maptext.get_rect()
-		maprect.left = (x + 5)
-		maprect.centery = (y + (h/2))
-		"""
-		self.maplinks.append(Button(x, y, w, h, mapname, self.screen, self.select_map))
+		self.maplinks.append(Button(x, y, w, h, mapname, 20, self.screen, self.select_map))
 
 	def update_maplist(self):
 		maps = self.list_maps()
 		print "from update_maplist"
 		print maps
 		print
-		x = 0
-		y = 0
+		x = 10
+		y = 10
 		w = 300
-		h = 40
+		h = 20
 		margin = 2
 		self.maplist = []
 		for m in maps:
 			self.maplist.append(self.add_map(m, x, y, h, w))
+			self.add_map(m, x, y, w, h)
+			print self.maplinks			
 			y = (y + h) + margin
 
 	def write_button(self, surface, text, x, y):
@@ -63,7 +61,10 @@ class Menu:
 		surface.blit(buttontext, buttonrect)
 
 	def load_map(self, mapname):
-		print "loading map: " + mapname
+		if self.mapname == 'nomap': print "No map selected"
+		else:
+			print "starting game"
+			game.start_game(self.mapname)
 
 	def edit_map(self, mapname):
 		print "loading map: " + mapname
@@ -79,52 +80,34 @@ class Menu:
 		self.update_maplist()
 		#mapimage = UIComponent(300, 0, 480, 340)
 
-		self.buttons.append(Button(20, 300, 80, 40, "Load", self.screen, self.load_map))
-		self.buttons.append(Button(120, 300, 80, 40, "Edit", self.screen, self.edit_map))
-		self.buttons.append(Button(70, 350, 160, 40, "Quit", self.screen, self.quit))
-		"""
-		load = UIComponent(20, 300, 80, 40)
-		edit = UIComponent(120, 300, 80, 40)
-		quit = UIComponent(0, 350, 160, 40)
-		"""
+		self.buttons.append(Button(20, 350, 80, 40, "Load", 40, self.screen, self.load_map))
+		self.buttons.append(Button(120, 350, 80, 40, "Edit", 40, self.screen, self.edit_map))
+		self.buttons.append(Button(57, 400, 160, 60, "Quit", 60, self.screen, self.quit))
 
 		area = None
-		while 1:
-			self.screen.fill((255, 255, 255))
-			"""
-			self.write_button(self.screen, "load", 50, 300)
-			self.write_button(self.screen, "edit", 170, 300)
-			self.write_button(self.screen, "quit", 80, 350)
-			"""
+		self.screen.fill((0, 0, 0))
+		self.screen.blit(self.sidebar, self.sidebar_rect)
+		while 1:			
 			for b in self.buttons:
 				b.draw()
+			for m in self.maplinks:
+				m.draw()
 			pygame.display.flip()
-			#for m in maplist:
-			#	print m[0]
-			#	self.screen.blit(m[2], m[3])
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
-						#for m in maplist:
-						#	if m[1].contains(*event.pos):
-						#		print "selected: " + m[0]
-						#		self.mapname = m[0]
-						#		area = 'maplist'
+						for m in self.maplinks:
+							if m.contains(*event.pos):
+								area = 'maplist'						
 						for b in self.buttons:
 							if b.contains(*event.pos):
 								area = b.get_name()
-						"""
-						if load.contains(*event.pos):
-							area = 'load'
-						elif edit.contains(*event.pos):
-							area = 'edit'
-						elif quit.contains(*event.pos):
-							area = 'quit'
-						"""
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
-						#if area == 'maplist' and maplist.contains(*event.pos):
-						#	print "selected map %d" % (mapname)
+						for m in self.maplinks:
+							if area == 'maplist' and m.contains(*event.pos):
+								f = m.get_function()
+								f(m.get_name())
 						for b in self.buttons:
 							if area == b.get_name() and b.contains(*event.pos):
 								f = b.get_function()
@@ -132,14 +115,6 @@ class Menu:
 									f()
 								else:
 									f(self.mapname)
-						"""
-						if area == 'load' and load.contains(*event.pos):
-							print "loading map %d for game" % (mapname)
-						if area == 'edit' and edit.contains(*event.pos):
-							print "loading map %d for mapeditor" % (mapname)
-						if area == 'quit' and quit.contains(*event.pos):
-							sys.exit()
-						"""
 						area = None
 				elif event.type == pygame.QUIT:
 					sys.exit()
@@ -160,16 +135,17 @@ class UIComponent:
 		return x - self.x, y - self.y
 
 class Button(UIComponent):
-	def __init__(self, x, y, width, height, name, surface, function):
+	def __init__(self, x, y, width, height, name, fontsize, surface, function):
 		UIComponent.__init__(self, x, y, width, height)
 		self.name = name
 		self.function = function
 		self.surface = surface
-		self.create_text(self.name)
+		self.fontsize = fontsize
+		self.create_text(self.name, self.fontsize)
 
-	def create_text(self, text):
-		self.buttonfont = pygame.font.Font(None, 40)
-		self.buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
+	def create_text(self, text, fontsize):
+		self.buttonfont = pygame.font.Font(None, fontsize)
+		self.buttontext = self.buttonfont.render(text, True, (255,255, 255), (105, 105, 105))
 		self.buttonrect = self.buttontext.get_rect()
 		self.buttonrect.left = self.x
 		self.buttonrect.top = self.y
@@ -192,9 +168,6 @@ class Button(UIComponent):
 		self.surface.blit(self.buttontext, self.buttonrect)
 
 if __name__ == "__main__":
-	#if len(sys.argv) < 2:
-	#	print 'syntax: %s FILE' % (sys.argv[0], )
-	#	sys.exit()
 
 	win = Menu()
 	win.loop()
