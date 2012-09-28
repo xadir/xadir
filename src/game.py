@@ -123,7 +123,7 @@ class xadir_main:
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
 		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player(name, [('ball', x, y) for x, y in spawn_points])
+			self.add_player(name, [(random.choice(chartypes.keys()), x, y) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -637,12 +637,19 @@ if __name__ == "__main__":
 	game = xadir_main()
 
 	tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
-	chars = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
+	chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
+	chars2 = load_tiles('sprite_collection_2.png', CHAR_SIZE, (255, 0, 255), SCALE)
 
 	tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
 	chartypes = {}
-	chartypes['ball'] = chars[0][0]
+	chartypes['11'] = chars1[0][0]
+	chartypes['12'] = chars1[1][0]
+	chartypes['13'] = chars1[2][0]
+	chartypes['21'] = chars2[0][0]
+	chartypes['22'] = chars2[1][0]
+	chartypes['23'] = chars2[2][0]
+	chartypes['24'] = chars2[3][0]
 
 	imgs = {}
 	imgs['green'] = tiles[1][0]
