@@ -195,7 +195,7 @@ class xadir_main:
 						path = self.get_path(start, mouse_coords)
 						print path
 						end = path[(len(path) - 2)]
-						distance = self.get_distance(start,end)
+						distance = len(path) - 2
 						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
@@ -215,7 +215,7 @@ class xadir_main:
 						end = mouse_coords
 						path = self.get_path(start, end)
 						print path
-						distance = self.get_distance(start,end)
+						distance = len(path) - 1
 						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
@@ -413,9 +413,6 @@ class xadir_main:
 				return True
 
 		return False
-
-	def get_distance(self, a, b):
-		return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
 
 	def add_text(self, surface, text, size, coords):
 		textfont = pygame.font.Font(None, size)
