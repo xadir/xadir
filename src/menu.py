@@ -18,13 +18,12 @@ class Menu:
 		self.buttonfont = pygame.font.Font(None, 40)
 		self.mapname = "nomap"
 
+		self.buttons = []
+		self.maplist = []
+		self.maplinks = []
+
 	def list_maps(self):
-		#return os.listdir(MAPDIR)
-		path = "map/"
-		files = os.listdir(path)
-		maps = []
-		for f in files:
-			maps.append(f)
+		maps = os.listdir(MAPDIR)
 		print "from list_maps"
 		print maps
 		print
@@ -51,7 +50,7 @@ class Menu:
 		w = 300
 		h = 40
 		margin = 2
-		maplist = []
+		self.maplist = []
 		for m in maps:
 			self.maplist.append(self.add_map(m, x, y, h, w))
 			y = (y + h) + margin
@@ -78,9 +77,6 @@ class Menu:
 
 	def loop(self):
 		self.update_maplist()
-		self.buttons = []
-		self.maplist = []
-		self.maplinks = []
 		#mapimage = UIComponent(300, 0, 480, 340)
 
 		self.buttons.append(Button(20, 300, 80, 40, "Load", self.screen, self.load_map))
