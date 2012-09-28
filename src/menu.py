@@ -22,7 +22,7 @@ class Menu:
 		#return os.listdir(MAPDIR)
 		path = "map/"
 		files = os.listdir(path)
-		maps = []		
+		maps = []
 		for f in files:
 			maps.append(f)
 		print "from list_maps"
@@ -31,7 +31,7 @@ class Menu:
 		return maps
 
 	def add_map(self, mapname, x, y, w, h):
-		"""		
+		"""
 		map_UIComponent = UIComponent(x, y, w, h)
 		mapfont = pygame.font.Font(None, 30)
 		maptext = mapfont.render(mapname, True, (255,255, 255), (159, 182, 205))
@@ -43,13 +43,13 @@ class Menu:
 
 	def update_maplist(self):
 		maps = self.list_maps()
-		print "from update_maplist"		
+		print "from update_maplist"
 		print maps
 		print
 		x = 0
 		y = 0
 		w = 300
-		h = 40		
+		h = 40
 		margin = 2
 		maplist = []
 		for m in maps:
@@ -81,7 +81,7 @@ class Menu:
 		self.buttons = []
 		self.maplist = []
 		self.maplinks = []
-		#mapimage = UIComponent(300, 0, 480, 340)	
+		#mapimage = UIComponent(300, 0, 480, 340)
 
 		self.buttons.append(Button(20, 300, 80, 40, "Load", self.screen, self.load_map))
 		self.buttons.append(Button(120, 300, 80, 40, "Edit", self.screen, self.edit_map))
@@ -111,7 +111,7 @@ class Menu:
 					if event.button == 1:
 						#for m in maplist:
 						#	if m[1].contains(*event.pos):
-						#		print "selected: " + m[0]								
+						#		print "selected: " + m[0]
 						#		self.mapname = m[0]
 						#		area = 'maplist'
 						for b in self.buttons:
@@ -143,7 +143,7 @@ class Menu:
 							print "loading map %d for mapeditor" % (mapname)
 						if area == 'quit' and quit.contains(*event.pos):
 							sys.exit()
-						"""						
+						"""
 						area = None
 				elif event.type == pygame.QUIT:
 					sys.exit()
