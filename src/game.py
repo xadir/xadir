@@ -12,6 +12,10 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+def get_distance_2(pos1, pos2):
+	"""Get squared euclidean distance"""
+	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
+
 # XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
 def scale(value, old_max, new_max):
 	assert value <= old_max
@@ -80,7 +84,14 @@ class xadir_main:
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
 		self.chartypes = {}
-		self.chartypes['ball'] = self.chars[0][0]
+		self.chartypes['char1_270'] = self.chars[0][0]
+		self.chartypes['char1_180'] = self.chars[0][1]
+		self.chartypes['char1_0'] = self.chars[0][2]
+		self.chartypes['char1_90'] = self.chars[0][3]
+		self.chartypes['char2_270'] = self.chars[1][0]
+		self.chartypes['char2_180'] = self.chars[1][1]
+		self.chartypes['char2_0'] = self.chars[1][2]
+		self.chartypes['char2_90'] = self.chars[1][3]
 
 		self.imgs = {}
 		self.imgs['green'] = self.tiles[1][0]
@@ -139,7 +150,7 @@ class xadir_main:
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
 		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player(name, [('ball', x, y) for x, y in spawn_points])
+			self.add_player(name, [('char1', x, y, 0) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -181,8 +192,10 @@ class xadir_main:
 						end = path[(len(path) - 2)]
 						distance = self.get_distance(start,end)
 						#print "Moved %d tiles" % (distance)
+						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
+						characters[i].set_heading(self.get_heading(end, mouse_coords))
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect
 						target = 0
@@ -195,10 +208,14 @@ class xadir_main:
 						self.attack(characters[i], target)
 					else:
 						end = mouse_coords
+						path = self.get_path(start, end)
+						print path
 						distance = self.get_distance(start,end)
 						#print "Moved %d tiles" % (distance)
 						characters[i].set_coords(end)
 						characters[i].reduce_movement_points(distance)
+						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
+						characters[i].set_heading(new_heading)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
 				else:
@@ -206,6 +223,46 @@ class xadir_main:
 					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
 				characters[i].unselect()
+
+	### Tried to create nice animation of character moving on path. Alexer, help! ###
+	"""	
+	def move_character(self, path, character):
+		for i in range(len(path) - 1):
+			character.set_heading(self.get_heading(path[p], path[p+1]))
+			character.set_coords(path[p])
+			self.player_sprites = pygame.sprite.LayeredUpdates()
+			for p in self.players:
+				self.player_sprites.add(p.get_sprites())
+			self.player_sprites.draw(self.screen)
+	"""
+
+	def get_heading(self, a, b):
+		print a
+		print b
+		delta_coords = (b[0] - a[0], b[1] - a[1])
+		print delta_coords
+		if delta_coords == (1, 0):
+			return 0
+		elif delta_coords == (1, 1):
+			#return 45
+			return 0
+		elif delta_coords == (0, 1):
+			return 270
+		elif delta_coords == (-1, 1):
+			#return 135
+			return 180
+		elif delta_coords == (-1, 0):
+			return 180
+		elif delta_coords == (-1, -1):
+			#return 225
+			return 180
+		elif delta_coords == (0, -1):
+			return 90
+		elif delta_coords == (1, -1):
+			#return 315
+			return 0
+		else:
+			return 0
 
 	def update_sprites(self):
 		self.player_sprites = pygame.sprite.LayeredUpdates()
@@ -334,6 +391,7 @@ class xadir_main:
 			for y in range(-1, 2):
 				temp_coords = (coords[0] + x, coords[1] + y)
 				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
+		return_grid.sort(key = lambda pos2: get_distance_2(pos2, coords))
 		return return_grid
 
 	def is_walkable_tile(self, coords):
@@ -413,9 +471,10 @@ class player:
 			character_type = coords[i][0]
 			y = coords[i][1]
 			x = coords[i][2]
-			tile = main.chartypes[character_type]
+			heading = coords[i][3]
+			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
+			self.characters.append(character(character_type, 2, [y, x], heading, self.main))
 
 	def get_sprites(self):
 		return self.sprites
@@ -446,8 +505,9 @@ class player:
 		for i in range(len(self.characters)):
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
+				heading = self.characters[i].get_heading()
 				character_type = self.characters[i].get_type()
-				tile = self.main.chartypes[character_type]
+				tile = self.main.chartypes[character_type + '_' + str(heading)]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
@@ -470,7 +530,7 @@ class character:
 		self.health = random.randrange(health) # Health left (0-100)
 		self.attack = attack     # Attack points (0-50)
 		self.coords = coords     # Array of x and y
-		self.heading = heading   # Angle from north in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
+		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
 		self.main = main
