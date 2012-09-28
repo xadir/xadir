@@ -275,7 +275,7 @@ class xadir_main:
 				if character.is_alive():
 					coords = character.get_coords()
 					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-					tile = self.opaque_rect(pygame.Rect(coords[0]*TARGET_SIZE, coords[1]*TARGET_SIZE, 48, 48), (0, 0, 0), 50)
+					tile = self.opaque_rect(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE), (0, 0, 0), 50)
 					self.enemy_tiles.append(tile)
 				else:
 					coords = character.get_coords()
@@ -637,7 +637,7 @@ if __name__ == "__main__":
 	game = xadir_main()
 
 	tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
-	chars = load_tiles('sprite_collection.png', (SCALE*24, SCALE*32), (255, 0, 255), SCALE)
+	chars = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
 
 	tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
