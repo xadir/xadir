@@ -112,7 +112,7 @@ class xadir_main:
 	def load_sprites(self):
 		"""Load the sprites that we need"""
 		self.walkable = [name for name in tiletypes.keys() if name.count('W') <= 1]
-		map, mapsize, spawns = load_map('map2.txt')
+		map, mapsize, spawns = load_map('map3.txt')
 		self.map = background_map(map, *mapsize)
 		self.spawns = spawns
 		self.players = []
