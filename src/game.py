@@ -451,7 +451,7 @@ class player:
 				coords = self.characters[i].get_coords()
 				character_type = self.characters[i].get_type()
 				tile = chartypes[character_type]
-				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1], *TILE_SIZE), layer = coords[1]))
+				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
