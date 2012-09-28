@@ -30,7 +30,7 @@ class MapEditor:
 		# Ensure toolbar has empty squares too (aka. removal tool)
 		size = size[0], max(size[1], height/17)
 
-		self.grid = Grid(25, 15)
+		self.grid = Grid(20, 15)
 		self.tools = Grid(*size)
 
 		for y, row in enumerate(tools):
