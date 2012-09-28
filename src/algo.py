@@ -19,7 +19,7 @@ def bfs(graph, src, dst, neighbours):
 def bfs_area(graph, src, max_dist, neighbours):
 	"""Reachable neighbours"""
 	seen = set([src])
-	queue = deque([(src, 0)])
+	queue = deque([(src, 0)]) if max_dist > 0 else None
 	while queue:
 		v, dist = queue.popleft()
 		dist += 1
