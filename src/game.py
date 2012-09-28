@@ -60,9 +60,10 @@ draw_hp_bar = draw_gradient_hp_bar
 
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
-	def __init__(self, width=1200, height=720):
+	def __init__(self, width=1200, height=720, mapname='map2.txt'):
 		pygame.init()
 		pygame.display.set_caption('Xadir')
+		self.mapname = mapname
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
@@ -71,6 +72,21 @@ class xadir_main:
 		self.playerfont = pygame.font.Font(None, 20)
 		self.healthbars = []
 		self.enemy_tiles = []
+
+	def load_resources(self):
+		self.tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
+		self.chars = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
+
+		self.tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
+
+		self.chartypes = {}
+		self.chartypes['ball'] = self.chars[0][0]
+
+		self.imgs = {}
+		self.imgs['green'] = self.tiles[1][0]
+		self.imgs['red'] = self.tiles[2][0]
+		self.imgs['green'].set_alpha(120)
+		self.imgs['red'].set_alpha(120)
 
 	def main_loop(self):
 		clock = pygame.time.Clock()
@@ -112,8 +128,8 @@ class xadir_main:
 	def load_sprites(self):
 		"""Load the sprites that we need"""
 		self.walkable = ['GGGG1']
-		map, mapsize, spawns = load_map('map2.txt')
-		self.map = background_map(map, *mapsize)
+		map, mapsize, spawns = load_map(self.mapname)
+		self.map = background_map(map, *mapsize, tiletypes = self.tiletypes)
 		self.spawns = spawns
 		self.players = []
 
@@ -151,10 +167,10 @@ class xadir_main:
 				else:
 					characters[i].select()
 					if characters[i].get_movement_points() <= 0:
-						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), imgs['red'])
+						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 					else:
-						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), imgs['green'])
+						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
@@ -185,16 +201,6 @@ class xadir_main:
 						characters[i].reduce_movement_points(distance)
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
-
-					"""
-					end = mouse_coords
-					distance = max(abs(start[0] - end[0]), abs(start[1] - end[1]))
-					#print "Moved %d tiles" % (distance)
-					characters[i].set_coords(end)
-					characters[i].reduce_movement_points(distance)
-					self.grid_sprites = pygame.sprite.Group()
-					characters[i].unselect()
-					"""
 				else:
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
@@ -206,15 +212,6 @@ class xadir_main:
 		for p in self.players:
 			p.update_sprites()
 			self.player_sprites.add(p.get_sprites())
-		"""
-		self.masking_sprites = pygame.sprite.Group()
-		tile = tiletypes['r']
-		other_players = self.get_other_players()
-		for p in other_players:
-			coords = p.get_characters_coords()
-			for c in coords:
-				self.masking_sprites.add(Tile(tile, pygame.Rect(c[0]*TILE_SIZE[0], c[1]*TILE_SIZE[1], *TILE_SIZE)))
-		"""
 
 	def next_turn(self):
 		if len(self.players) < 1:
@@ -386,7 +383,7 @@ class sprite_grid:
 
 class background_map:
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
-	def __init__(self, map, width, height):
+	def __init__(self, map, width, height, tiletypes):
 		self.width = width
 		self.height = height
 		self.map = map
@@ -416,7 +413,7 @@ class player:
 			character_type = coords[i][0]
 			y = coords[i][1]
 			x = coords[i][2]
-			tile = chartypes[character_type]
+			tile = main.chartypes[character_type]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 			self.characters.append(character(character_type, 2, [y, x], 90, self.main))
 
@@ -450,7 +447,7 @@ class player:
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
 				character_type = self.characters[i].get_type()
-				tile = chartypes[character_type]
+				tile = self.main.chartypes[character_type]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
@@ -633,22 +630,10 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-if __name__ == "__main__":
-	game = xadir_main()
-
-	tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
-	chars = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
-
-	tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
-
-	chartypes = {}
-	chartypes['ball'] = chars[0][0]
-
-	imgs = {}
-	imgs['green'] = tiles[1][0]
-	imgs['red'] = tiles[2][0]
-	imgs['green'].set_alpha(120)
-	imgs['red'].set_alpha(120)
-
+def start_game(mapname):
+	game = xadir_main(mapname = mapname)
+	game.load_resources()
 	game.main_loop()
 
+if __name__ == "__main__":
+	start_game('map2.txt')
