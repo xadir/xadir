@@ -104,8 +104,8 @@ class xadir_main:
 		clock = pygame.time.Clock()
 		self.load_sprites()
 		self.update_enemy_tiles()
-	
-		hue = 0		
+
+		hue = 0
 		while 1:
 			self.screen.fill((159, 182, 205))
 			# XXX: less flashy way to indicate that we're running smoothly
@@ -226,7 +226,7 @@ class xadir_main:
 				characters[i].unselect()
 
 	### Tried to create nice animation of character moving on path. Alexer, help! ###
-	"""	
+	"""
 	def move_character(self, path, character):
 		for i in range(len(path) - 1):
 			character.set_heading(self.get_heading(path[p], path[p+1]))
