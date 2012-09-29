@@ -684,7 +684,7 @@ class Tile(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 		self.image = image
 		self.rect = image.get_rect()
-		self.layer = -layer
+		self._layer = layer
 		if rect is not None:
 			self.rect = rect
 
