@@ -489,7 +489,7 @@ class player:
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 2, [y, x], heading, self.main))
+			self.characters.append(character(character_type, 5, [y, x], heading, self.main))
 
 	def get_sprites(self):
 		return self.sprites
