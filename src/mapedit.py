@@ -24,6 +24,8 @@ class MapEditor:
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 
+		self.spawnfont = pygame.font.Font(None, 20)
+
 		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
@@ -31,6 +33,7 @@ class MapEditor:
 		size = size[0], max(size[1], height/17)
 
 		self.grid = Grid(20, 15)
+		self.spawns = Grid(20, 15)
 		self.tools = Grid(*size)
 
 		if mapname:
@@ -39,6 +42,9 @@ class MapEditor:
 			for y, row in enumerate(map):
 				for x, col in enumerate(row):
 					self.grid[x, y] = col
+			for player_id, points in spawns.items():
+				for point in points:
+					self.spawns[point] = player_id
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -59,6 +65,13 @@ class MapEditor:
 		for (x, y), tile in self.grid.items():
 			if tile:
 				self.screen.blit(self.tiles[tile], self.right.grid2screen_translate(x, y))
+
+		for (x, y), num in self.spawns.items():
+			if num:
+				text = self.spawnfont.render(str(num), True, (255, 255, 255))
+				rect = text.get_rect()
+				rect.topleft = self.right.grid2screen_translate(x, y)
+				self.screen.blit(text, rect)
 
 	def loop(self):
 		left, right = self.left, self.right
