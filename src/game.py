@@ -39,6 +39,11 @@ def draw_solid_hp_bar(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill(color, rect)
 
+def draw_solid_hp_bar2(surface, rect, total, left):
+	color = get_hp_bar_color(total, left)
+	surface.fill((0, 0, 0), rect)
+	surface.fill(color, (rect.x, rect.y, scale(left, total, rect.width), rect.height))
+
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
 	# 6*256-6 = 1530
@@ -61,7 +66,7 @@ def get_hue_color(i):
 
 # Change to suit your mood
 draw_main_hp_bar = draw_gradient_hp_bar
-draw_char_hp_bar = draw_gradient_hp_bar
+draw_char_hp_bar = draw_solid_hp_bar2
 
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
