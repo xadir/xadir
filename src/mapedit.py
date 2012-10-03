@@ -18,7 +18,7 @@ def parse_tile(s):
 	return [tl, tr, br, bl, n]
 
 class MapEditor:
-	def __init__(self, width=640, height=480):
+	def __init__(self, mapname=None, width=640, height=480):
 		pygame.init()
 		self.width = width
 		self.height = height
@@ -32,6 +32,13 @@ class MapEditor:
 
 		self.grid = Grid(20, 15)
 		self.tools = Grid(*size)
+
+		if mapname:
+			map, mapsize, spawns = load_map(mapname)
+			assert mapsize[0] <= 20 and mapsize[1] <= 15
+			for y, row in enumerate(map):
+				for x, col in enumerate(row):
+					self.grid[x, y] = col
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -161,10 +168,10 @@ class UIGrid(UIComponent):
 		return self.x + x * (self.cell_size[0] + self.border_width), self.y + y * (self.cell_size[1] + self.border_width)
 
 if __name__ == "__main__":
-	#if len(sys.argv) < 2:
-	#	print 'syntax: %s FILE' % (sys.argv[0], )
-	#	sys.exit()
+	mapname = None
+	if len(sys.argv) >= 2:
+		mapname = sys.argv[1]
 
-	win = MapEditor()
+	win = MapEditor(mapname)
 	win.loop()
 
