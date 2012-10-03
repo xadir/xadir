@@ -183,23 +183,15 @@ class xadir_main:
 	def click(self):
 		mouse_coords = pygame.mouse.get_pos()
 		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
-		print 'CLICK', mouse_coords
 		player = self.players[self.turn]
 		characters = player.get_characters()
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
-			print '- char:', i, char_coords
-			#print mouse_coords
 			if char_coords == mouse_coords:
-				print '  - at mouse'
-				#print "You can move %d tiles" % (characters[i].mp)
-				#print "Clicked on character"
 				if characters[i].is_selected():
-					print '    - is selected, unselecting'
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
-					print '    - not selected, selecting'
 					characters[i].select()
 					if characters[i].mp <= 0:
 						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
@@ -208,38 +200,28 @@ class xadir_main:
 						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
-				print '  - is selected'
 				if characters[i].is_legal_move(mouse_coords):
-					print '    - is legal move'
 					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
-						print '      - is attack move, attack (& unselect)'
 						path = self.get_path(start, mouse_coords)
-						print path
-						end = path[(len(path) - 2)]
+						end = path[len(path) - 2]
 						distance = len(path) - 2
-						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].mp -= distance
 						characters[i].set_heading(self.get_heading(end, mouse_coords))
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
-						target = 0
+						target = None
 						for p in self.get_other_players():
 							for c in p.get_characters():
 								if c.get_coords() == mouse_coords:
 									target = c
-						if target == 0:
-							print "Unable to fetch the character"
 						self.attack(characters[i], target)
 					else:
-						print '      - not attack move, move (& unselect)'
 						end = mouse_coords
 						path = self.get_path(start, end)
-						print path
 						distance = len(path) - 1
-						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].mp -= distance
@@ -248,14 +230,10 @@ class xadir_main:
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
 				else:
-					print '    - not legal move, unselecting'
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
-				print '  - not at mouse, unselecting'
 				characters[i].unselect()
-		print
-		print
 
 	def move_character(self, path, character):
 		for i in range(1, len(path) - 1):
