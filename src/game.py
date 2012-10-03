@@ -60,7 +60,8 @@ def get_hue_color(i):
 	return (r, g, b)
 
 # Change to suit your mood
-draw_hp_bar = draw_gradient_hp_bar
+draw_main_hp_bar = draw_gradient_hp_bar
+draw_char_hp_bar = draw_gradient_hp_bar
 
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
@@ -78,6 +79,7 @@ class xadir_main:
 		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
+		self.showhealth = True
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -311,7 +313,9 @@ class xadir_main:
 			coords[1] += 12 + margin
 			for character in player.get_characters():
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
+				draw_main_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
+				if self.showhealth:
+					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.get_max_health(), character.get_health())
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
