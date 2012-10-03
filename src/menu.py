@@ -11,16 +11,20 @@ if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
 class Menu:
-	def __init__(self, width=640, height=480):
+	def __init__(self, width=1200, height=720):
 		pygame.init()
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
-		self.sidebar = pygame.Surface((200, 480))
-		self.sidebar_rect = pygame.Rect(0, 0, 200, 480)
+		self.sidebar = pygame.Surface((200, 720))
+		self.sidebar_rect = pygame.Rect(0, 0, 200, 720)
 		self.sidebar.fill((159, 182, 205))
+		self.mapfield = pygame.Surface((1000, 720))
+		self.mapfield_rect = pygame.Rect(200, 0, 1000, 720)
+		self.mapfield.fill((10, 10, 10))
 		self.buttonfont = pygame.font.Font(None, 40)
 		self.mapname = "nomap"
+		self.tiletypes = load_named_tiles('placeholder_tilemap24', ORIG_TILE_SIZE, (255, 0, 255), 1)
 
 		self.buttons = []
 		self.maplist = []
@@ -38,6 +42,14 @@ class Menu:
 
 	def update_maplist(self):
 		maps = self.list_maps()
+		i = 0
+		while i < len(maps):
+			try:
+				map, mapsize, spawns = load_map(maps[i])
+			except:
+				maps.pop(i)
+				i = i - 1
+			i = i + 1
 		print "from update_maplist"
 		print maps
 		print
@@ -72,6 +84,18 @@ class Menu:
 	def select_map(self, mapname):
 		self.mapname = mapname
 		print "selected map: " + mapname
+		map, mapsize, spawns = load_map(self.mapname)
+		self.map = preview_map(map, *mapsize, tiletypes = self.tiletypes)
+		self.map_sprites = self.map.get_sprites()
+		self.mapfield.fill((10, 10, 10))
+		self.screen.blit(self.mapfield, self.mapfield_rect)
+		self.map_sprites.draw(self.screen)
+
+	def get_sprites(self):
+		return self.sprites
+
+	def get_map(self):
+		return self.map
 
 	def quit(self):
 		sys.exit()
@@ -80,13 +104,14 @@ class Menu:
 		self.update_maplist()
 		#mapimage = UIComponent(300, 0, 480, 340)
 
-		self.buttons.append(Button(20, 350, 80, 40, "Load", 40, self.screen, self.load_map))
-		self.buttons.append(Button(120, 350, 80, 40, "Edit", 40, self.screen, self.edit_map))
-		self.buttons.append(Button(57, 400, 160, 60, "Quit", 60, self.screen, self.quit))
+		self.buttons.append(Button(20, 600, 80, 40, "Load", 40, self.screen, self.load_map))
+		self.buttons.append(Button(120, 600, 80, 40, "Edit", 40, self.screen, self.edit_map))
+		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
 
 		area = None
 		self.screen.fill((0, 0, 0))
 		self.screen.blit(self.sidebar, self.sidebar_rect)
+		self.screen.blit(self.mapfield, self.mapfield_rect)
 		while 1:			
 			for b in self.buttons:
 				b.draw()
@@ -98,7 +123,7 @@ class Menu:
 					if event.button == 1:
 						for m in self.maplinks:
 							if m.contains(*event.pos):
-								area = 'maplist'						
+								area = 'maplist'
 						for b in self.buttons:
 							if b.contains(*event.pos):
 								area = b.get_name()
@@ -145,7 +170,7 @@ class Button(UIComponent):
 
 	def create_text(self, text, fontsize):
 		self.buttonfont = pygame.font.Font(None, fontsize)
-		self.buttontext = self.buttonfont.render(text, True, (255,255, 255), (105, 105, 105))
+		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
 		self.buttonrect = self.buttontext.get_rect()
 		self.buttonrect.left = self.x
 		self.buttonrect.top = self.y
@@ -166,6 +191,34 @@ class Button(UIComponent):
 
 	def draw(self):
 		self.surface.blit(self.buttontext, self.buttonrect)
+
+class preview_map:
+	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
+	def __init__(self, map, width, height, tiletypes):
+		self.width = width
+		self.height = height
+		self.map = map
+		self.sprites = pygame.sprite.LayeredUpdates()
+		for y in range(self.height):
+			for x in range(self.width):
+				tiletype = self.map[y][x]
+				tile = tiletypes[tiletype]
+				#print x, y
+				self.sprites.add(Tile(tile, pygame.Rect(200+x*ORIG_TILE_SIZE[0], y*ORIG_TILE_SIZE[1], *ORIG_TILE_SIZE), layer = y))
+	def get_sprites(self):
+		return self.sprites
+
+	def get_map(self):
+		return self.map
+
+class Tile(pygame.sprite.Sprite):
+	def __init__(self, image, rect=None, layer=0):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = image
+		self.rect = image.get_rect()
+		self._layer = layer
+		if rect is not None:
+			self.rect = rect
 
 if __name__ == "__main__":
 
