@@ -181,21 +181,25 @@ class xadir_main:
 			self.player_sprites.add(p.get_sprites())
 
 	def click(self):
+		mouse_coords = pygame.mouse.get_pos()
+		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
+		print 'CLICK', mouse_coords
 		player = self.players[self.turn]
 		characters = player.get_characters()
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
-			mouse_coords = list(pygame.mouse.get_pos())
-			mouse_coords = [mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1]]
-			#print char_coords
+			print '- char:', i, char_coords
 			#print mouse_coords
 			if char_coords == mouse_coords:
+				print '  - at mouse'
 				#print "You can move %d tiles" % (characters[i].mp)
 				#print "Clicked on character"
 				if characters[i].is_selected():
+					print '    - is selected, unselecting'
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
+					print '    - not selected, selecting'
 					characters[i].select()
 					if characters[i].mp <= 0:
 						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
@@ -204,9 +208,12 @@ class xadir_main:
 						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 			elif characters[i].is_selected():
+				print '  - is selected'
 				if characters[i].is_legal_move(mouse_coords):
+					print '    - is legal move'
 					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
+						print '      - is attack move, attack (& unselect)'
 						path = self.get_path(start, mouse_coords)
 						print path
 						end = path[(len(path) - 2)]
@@ -227,6 +234,7 @@ class xadir_main:
 							print "Unable to fetch the character"
 						self.attack(characters[i], target)
 					else:
+						print '      - not attack move, move (& unselect)'
 						end = mouse_coords
 						path = self.get_path(start, end)
 						print path
@@ -240,10 +248,14 @@ class xadir_main:
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect()
 				else:
+					print '    - not legal move, unselecting'
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
+				print '  - not at mouse, unselecting'
 				characters[i].unselect()
+		print
+		print
 
 	def move_character(self, path, character):
 		for i in range(1, len(path) - 1):
@@ -404,6 +416,7 @@ class xadir_main:
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
+		assert isinstance(coords, tuple)
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
@@ -414,6 +427,7 @@ class xadir_main:
 
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
+		assert isinstance(coords, tuple)
 		if coords[1] >= 15: return False
 		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
@@ -432,6 +446,7 @@ class xadir_main:
 		return False
 
 	def add_text(self, surface, text, size, coords):
+		assert isinstance(coords, tuple)
 		textfont = pygame.font.Font(None, size)
 		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
 		text_rect = text_surface.get_rect()
@@ -484,12 +499,12 @@ class player:
 		self.characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
-			y = coords[i][1]
-			x = coords[i][2]
+			x = coords[i][1]
+			y = coords[i][2]
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 5, [y, x], heading, self.main))
+			self.characters.append(character(character_type, 5, (x, y), heading, self.main))
 
 	def get_sprites(self):
 		return self.sprites
@@ -549,7 +564,8 @@ class character:
 		# Stats
 		self.attack_stat = attack_stat     # Attack multiplier
 		# Status
-		self.coords = coords     # Array of x and y
+		assert isinstance(coords, tuple)
+		self.coords = coords     # Tuple of x and y
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
@@ -560,11 +576,13 @@ class character:
 		self.players = self.main.get_all_players()
 
 	def get_coords(self):
-		"""Returns coordinates of the character, return is array [x, y]"""
+		"""Returns coordinates of the character, return is tuple (x, y)"""
+		assert isinstance(self.coords, tuple)
 		return self.coords
 
 	def set_coords(self, coords):
-		"""Sets coordinates of characte, input is array of [x, y]"""
+		"""Sets coordinates of characte, input is tuple of (x, y)"""
+		assert isinstance(coords, tuple)
 		self.coords = coords
 
 	def get_heading(self):
@@ -622,10 +640,11 @@ class character:
 
 	def get_movement_grid(self):
 		"""Return grid of available cells to move to"""
-		return map(list, bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
+		return list(bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
+		assert isinstance(coords, tuple)
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
@@ -636,6 +655,7 @@ class character:
 
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
+		assert isinstance(coords, tuple)
 		if coords[1] >= 15: return False
 		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
@@ -655,6 +675,7 @@ class character:
 
 	def is_legal_move(self, coords):
 		"""Before moving, check if target is inside movement grid"""
+		assert isinstance(coords, tuple)
 		movement_grid = self.get_movement_grid()
 		for i in range(len(movement_grid)):
 			if coords == movement_grid[i]:
@@ -662,6 +683,7 @@ class character:
 		return False
 
 	def is_attack_move(self, coords):
+		assert isinstance(coords, tuple)
 		for p in self.main.get_other_players():
 			for c in p.get_characters_coords():
 				if c == coords:
