@@ -119,6 +119,9 @@ class MapEditor:
 							inpaint(self.grid, self.tiles.keys(), pos)
 				elif event.type == pygame.QUIT:
 					print 'SIZE', self.grid.width, self.grid.height
+					for (x, y), player_id in self.spawns.items():
+						if player_id:
+							print 'SPAWN', player_id, x, y
 					print
 					for y in range(self.grid.height):
 						for x in range(self.grid.width):
