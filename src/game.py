@@ -224,7 +224,7 @@ class xadir_main:
 						characters[i].mp -= distance
 						characters[i].set_heading(self.get_heading(end, mouse_coords))
 						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect
+						characters[i].unselect()
 						target = 0
 						for p in self.get_other_players():
 							for c in p.get_characters():
