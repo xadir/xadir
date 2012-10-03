@@ -190,14 +190,14 @@ class xadir_main:
 			#print char_coords
 			#print mouse_coords
 			if char_coords == mouse_coords:
-				#print "You can move %d tiles" % (characters[i].get_movement_points())
+				#print "You can move %d tiles" % (characters[i].mp)
 				#print "Clicked on character"
 				if characters[i].is_selected():
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
 					characters[i].select()
-					if characters[i].get_movement_points() <= 0:
+					if characters[i].mp <= 0:
 						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.get_sprites()
 					else:
@@ -214,7 +214,7 @@ class xadir_main:
 						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
-						characters[i].reduce_movement_points(distance)
+						characters[i].mp -= distance
 						characters[i].set_heading(self.get_heading(end, mouse_coords))
 						self.grid_sprites = pygame.sprite.Group()
 						characters[i].unselect
@@ -234,7 +234,7 @@ class xadir_main:
 						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
-						characters[i].reduce_movement_points(distance)
+						characters[i].mp -= distance
 						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
 						characters[i].set_heading(new_heading)
 						self.grid_sprites = pygame.sprite.Group()
@@ -326,9 +326,9 @@ class xadir_main:
 			coords[1] += 12 + margin
 			for character in player.get_characters():
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_main_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
+				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
-					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.get_max_health(), character.get_health())
+					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
@@ -397,9 +397,9 @@ class xadir_main:
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.get_movement_points() > 0:	
-			target.take_hit((attacker.get_attack() * attacker.get_movement_points()))
-			attacker.set_movement_points(0)
+		if attacker.mp > 0:	
+			target.take_hit((attacker.attack_stat * attacker.mp))
+			attacker.mp = 0
 		self.update_enemy_tiles()
 
 	def get_surroundings(self, coords):
@@ -521,7 +521,7 @@ class player:
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
 				heading = self.characters[i].get_heading()
-				character_type = self.characters[i].get_type()
+				character_type = self.characters[i].type
 				tile = self.main.chartypes[character_type + '_' + str(heading)]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
@@ -529,36 +529,35 @@ class player:
 		points_left = 0
 		for c in self.characters:
 			if c.is_alive():
-				points_left += c.get_movement_points()
+				points_left += c.mp
 		return points_left
 
 	def reset_movement_points(self):
 		for c in self.characters:
-			c.set_movement_points(5)
+			c.mp = c.max_mp
 
 class character:
 	"""Universal class for any character in the game"""
-	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
-		self.type = character_type
-		self.movement = movement # Movement points left
-		self.max_health = health
-		self.health = random.randrange(health) # Health left (0-100)
-		self.attack = attack     # Attack points (0-50)
+	def __init__(self, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		self.type = type
+		# Movement points
+		self.max_mp = max_mp
+		self.mp = max_mp
+		# Health points
+		self.max_hp = max_hp
+		self.hp = random.randrange(max_hp) # Randomized for testing look&feel
+		# Stats
+		self.attack_stat = attack_stat     # Attack multiplier
+		# Status
 		self.coords = coords     # Array of x and y
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
-		self.main = main
 
+		self.main = main
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
-
-	def get_type(self):
-		return self.type
-
-	def set_type(self, character_type):
-		self.type = character_type
 
 	def get_coords(self):
 		"""Returns coordinates of the character, return is array [x, y]"""
@@ -579,25 +578,10 @@ class character:
 	def is_selected(self):
 		return self.selected
 
-	def get_max_health(self):
-		return self.max_health
-
-	def get_health(self):
-		return self.health
-
-	def set_health(self, health):
-		self.health = health
-
 	def take_hit(self, attack_points):
-		self.health -= attack_points
-		if self.health < 1:
+		self.hp -= attack_points
+		if self.hp < 1:
 			self.kill()
-
-	def get_attack(self):
-		return self.attack
-
-	def set_attack(self):
-		self.attack = attack
 
 	def select(self):
 		self.selected = True
@@ -613,16 +597,6 @@ class character:
 
 	def kill(self):
 		self.alive = False
-
-	def get_movement_points(self):
-		return self.movement
-
-	def set_movement_points(self, points):
-		self.movement = points
-
-	def reduce_movement_points(self, points):
-		self.movement = self.movement - points
-		print "%d movement points left" % (self.movement)
 
 	def turn(self, angle):
 		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
@@ -648,7 +622,7 @@ class character:
 
 	def get_movement_grid(self):
 		"""Return grid of available cells to move to"""
-		return map(list, bfs_area(self, tuple(self.coords), self.movement, character.get_surroundings))
+		return map(list, bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
