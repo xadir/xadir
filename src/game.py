@@ -174,17 +174,17 @@ class xadir_main:
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
-		self.map_sprites = self.map.get_sprites()
+		self.map_sprites = self.map.sprites
 		self.masking_sprites = pygame.sprite.Group()
 		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
-			self.player_sprites.add(p.get_sprites())
+			self.player_sprites.add(p.sprites)
 
 	def click(self):
 		mouse_coords = pygame.mouse.get_pos()
 		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
 		player = self.players[self.turn]
-		characters = player.get_characters()
+		characters = player.characters
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
 			if char_coords == mouse_coords:
@@ -195,10 +195,10 @@ class xadir_main:
 					characters[i].select()
 					if characters[i].mp <= 0:
 						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
-						self.grid_sprites = self.movement_grid.get_sprites()
+						self.grid_sprites = self.movement_grid.sprites
 					else:
 						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
-						self.grid_sprites = self.movement_grid.get_sprites()
+						self.grid_sprites = self.movement_grid.sprites
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
 					start = characters[i].get_coords()
@@ -214,7 +214,7 @@ class xadir_main:
 						characters[i].unselect()
 						target = None
 						for p in self.get_other_players():
-							for c in p.get_characters():
+							for c in p.characters:
 								if c.get_coords() == mouse_coords:
 									target = c
 						self.attack(characters[i], target)
@@ -274,7 +274,7 @@ class xadir_main:
 		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
 			p.update_sprites()
-			self.player_sprites.add(p.get_sprites())
+			self.player_sprites.add(p.sprites)
 
 	def next_turn(self):
 		if len(self.players) < 1:
@@ -314,7 +314,7 @@ class xadir_main:
 			self.screen.blit(playertext, rect)
 			# XXX: take this from text rect size?
 			coords[1] += 12 + margin
-			for character in player.get_characters():
+			for character in player.characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
 				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
@@ -324,7 +324,7 @@ class xadir_main:
 	def update_character_numbers(self):
 		players = self.get_all_players()
 		for p, player in enumerate(players):
-			for character in player.get_characters():
+			for character in player.characters:
 				coords = character.get_coords()
 				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
 				self.add_text(self.screen, str(p), 20, (0, 0))
@@ -333,7 +333,7 @@ class xadir_main:
 		self.enemy_tiles = []
 		players = self.get_other_players()
 		for player in players:
-			for character in player.get_characters():
+			for character in player.characters:
 				if character.is_alive():
 					coords = character.get_coords()
 					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
@@ -444,9 +444,6 @@ class sprite_grid:
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
-	def get_sprites(self):
-		return self.sprites
-
 class background_map:
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
@@ -460,9 +457,6 @@ class background_map:
 				tile = tiletypes[tiletype]
 				#print x, y
 				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-
-	def get_sprites(self):
-		return self.sprites
 
 	def get_map(self):
 		return self.map
@@ -484,12 +478,6 @@ class player:
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 			self.characters.append(character(character_type, 5, (x, y), heading, self.main))
 
-	def get_sprites(self):
-		return self.sprites
-
-	def get_characters(self):
-		return self.characters
-
 	def get_characters_coords(self):
 		coords = []
 		for i in self.characters:
@@ -504,9 +492,6 @@ class player:
 
 	def character_is_selected(self, character):
 		return self.characters[character].is_selected()
-
-	def remove_character(self, i):
-		characters.pop(i)
 
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
@@ -640,7 +625,7 @@ class character:
 		if coords[1] < 0: return False
 
 		p = self.main.get_current_player()
-		for c in p.get_characters():
+		for c in p.characters:
 			if c.get_coords() == coords:
 				if c.is_alive():
 					return False
