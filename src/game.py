@@ -45,7 +45,7 @@ def get_hp_bar_color(total, value):
 # XXX: Possible optimization: Cache 100% health and do a partial blit instead of N+1 fills?
 def draw_gradient_hp_bar(surface, rect, total, left):
 	surface.fill((0, 0, 0), rect)
-	for i in range(scale(left, total, rect.width)):
+	for i in range(scale_ceil(left, total, rect.width)):
 		color = get_hp_bar_color(rect.width - 1, i)
 		surface.fill(color, (rect.x + i, rect.y, 1, rect.height))
 
@@ -56,7 +56,7 @@ def draw_solid_hp_bar(surface, rect, total, left):
 def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
-	surface.fill(color, (rect.x, rect.y, scale(left, total, rect.width), rect.height))
+	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
 
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
