@@ -18,20 +18,34 @@ def parse_tile(s):
 	return [tl, tr, br, bl, n]
 
 class MapEditor:
-	def __init__(self, width=640, height=480):
+	def __init__(self, mapname=None, width=640, height=480):
 		pygame.init()
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 
+		self.spawnfont = pygame.font.Font(None, 20)
+
 		self.tiles = load_named_tiles('placeholder_tilemap', (16, 16), (255, 0, 255))
 		tools, size, _ = load_map('tools.txt')
 
 		# Ensure toolbar has empty squares too (aka. removal tool)
-		size = size[0], max(size[1], height/17)
+		# Ensure at least same width than spawnpoint toolbox
+		size = max(size[0], 6), max(size[1], height/17)
 
 		self.grid = Grid(20, 15)
+		self.spawns = Grid(20, 15)
 		self.tools = Grid(*size)
+
+		if mapname:
+			map, mapsize, spawns = load_map(mapname)
+			assert mapsize[0] <= 20 and mapsize[1] <= 15
+			for y, row in enumerate(map):
+				for x, col in enumerate(row):
+					self.grid[x, y] = col
+			for player_id, points in spawns.items():
+				for point in points:
+					self.spawns[point] = player_id
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -39,10 +53,22 @@ class MapEditor:
 
 		# XXX: add tools that arent specified in toolfile
 
-		self.left = UIGrid(0, 0, self.tools, (16, 16), 1)
+		self.spawntools = Grid(6, 2, [range(1, 7), [None]*6])
+		self.spawnui = UIGrid(0, 0, self.spawntools, (16, 16), 1)
+		self.left = UIGrid(0, self.spawnui.height + 6, self.tools, (16, 16), 1)
 		self.right = UIGrid(self.left.width + 6, 0, self.grid, (16, 16), 1)
 
 	def draw(self):
+		for (x, y), num in self.spawntools.items():
+			if num:
+				text = self.spawnfont.render(str(num), True, (255, 255, 255))
+				rect = text.get_rect()
+				rx, ry = self.spawnui.grid2screen_translate(x, y)
+				rect.center = (rx + 8, ry + 8)
+				self.screen.blit(text, rect)
+
+		self.screen.fill((63, 63, 63), pygame.Rect(0, self.spawnui.height + 1, self.left.width + 1, 4))
+
 		for (x, y), tile in self.tools.items():
 			if tile:
 				self.screen.blit(self.tiles[tile], self.left.grid2screen_translate(x, y))
@@ -53,8 +79,16 @@ class MapEditor:
 			if tile:
 				self.screen.blit(self.tiles[tile], self.right.grid2screen_translate(x, y))
 
+		for (x, y), num in self.spawns.items():
+			if num:
+				text = self.spawnfont.render(str(num), True, (255, 255, 255))
+				rect = text.get_rect()
+				rx, ry = self.right.grid2screen_translate(x, y)
+				rect.center = (rx + 8, ry + 8)
+				self.screen.blit(text, rect)
+
 	def loop(self):
-		left, right = self.left, self.right
+		left, right, spawnui = self.left, self.right, self.spawnui
 
 		area = None
 		start = None
@@ -71,6 +105,8 @@ class MapEditor:
 							area = 'left'
 						elif right.contains(*event.pos):
 							area = 'right'
+						elif spawnui.contains(*event.pos):
+							area = 'spawn'
 						start = event.pos
 					else:
 						if right.contains(*event.pos):
@@ -80,16 +116,25 @@ class MapEditor:
 					if event.button == 1:
 						if area == 'left' and left.contains(*event.pos):
 							x, y = left.screen2grid_translate(*event.pos)
-							tool = self.tools[x, y]
+							tool = ('tile', self.tools[x, y])
 						if area == 'right' and right.contains(*event.pos):
 							x, y = right.screen2grid_translate(*event.pos)
-							self.grid[x, y] = tool
+							if tool[0] == 'tile':
+								self.grid[x, y] = tool[1]
+							elif tool[0] == 'spawn':
+								self.spawns[x, y] = tool[1]
+						if area == 'spawn' and spawnui.contains(*event.pos):
+							x, y = spawnui.screen2grid_translate(*event.pos)
+							tool = ('spawn', self.spawntools[x, y])
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
 					if area == 'right' and right.contains(*event.pos):
 						x, y = right.screen2grid_translate(*event.pos)
-						self.grid[x, y] = tool
+						if tool[0] == 'tile':
+							self.grid[x, y] = tool[1]
+						elif tool[0] == 'spawn':
+							self.spawns[x, y] = tool[1]
 				elif event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
 						for pos, value in self.grid.items():
@@ -98,6 +143,9 @@ class MapEditor:
 							inpaint(self.grid, self.tiles.keys(), pos)
 				elif event.type == pygame.QUIT:
 					print 'SIZE', self.grid.width, self.grid.height
+					for (x, y), player_id in self.spawns.items():
+						if player_id:
+							print 'SPAWN', player_id, x, y
 					print
 					for y in range(self.grid.height):
 						for x in range(self.grid.width):
@@ -161,10 +209,10 @@ class UIGrid(UIComponent):
 		return self.x + x * (self.cell_size[0] + self.border_width), self.y + y * (self.cell_size[1] + self.border_width)
 
 if __name__ == "__main__":
-	#if len(sys.argv) < 2:
-	#	print 'syntax: %s FILE' % (sys.argv[0], )
-	#	sys.exit()
+	mapname = None
+	if len(sys.argv) >= 2:
+		mapname = sys.argv[1]
 
-	win = MapEditor()
+	win = MapEditor(mapname)
 	win.loop()
 
