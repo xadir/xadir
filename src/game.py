@@ -17,9 +17,17 @@ def get_distance_2(pos1, pos2):
 	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
 
 # XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
-def scale(value, old_max, new_max):
+def scale1(value, old_max, new_max):
+	assert value >= 0
 	assert value <= old_max
 	return new_max * value / old_max
+
+def scale2(value, old_max, new_max):
+	assert value >= 0
+	assert value <= old_max
+	return int(math.ceil(float(new_max * value) / old_max))
+
+scale = scale2
 
 def get_hp_bar_color(total, value):
 	"""Linearly generates colors from red to yellow to green"""
