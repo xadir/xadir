@@ -70,7 +70,8 @@ class MapEditor:
 			if num:
 				text = self.spawnfont.render(str(num), True, (255, 255, 255))
 				rect = text.get_rect()
-				rect.topleft = self.right.grid2screen_translate(x, y)
+				rx, ry = self.right.grid2screen_translate(x, y)
+				rect.center = (rx + 8, ry + 8)
 				self.screen.blit(text, rect)
 
 	def loop(self):
