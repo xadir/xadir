@@ -25,7 +25,7 @@ def scale1(value, old_max, new_max):
 def scale2(value, old_max, new_max):
 	assert value >= 0
 	assert value <= old_max
-	return int(math.ceil(float(new_max * value) / old_max))
+	return (new_max * value - 1) / old_max + 1
 
 scale = scale2
 
