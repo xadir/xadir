@@ -16,18 +16,24 @@ def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
 	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
 
+def div_ceil(dividend, divisor):
+	"""Integer division, but with result rounded up instead"""
+	return (dividend - 1) / divisor + 1
+
 # XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
-def scale1(value, old_max, new_max):
+def scale_floor(value, old_max, new_max):
+	"""Scaling function where the result is new_max only when the input is old_max"""
 	assert value >= 0
 	assert value <= old_max
 	return new_max * value / old_max
 
-def scale2(value, old_max, new_max):
+def scale_ceil(value, old_max, new_max):
+	"""Scaling function where the result is 0 only when the input is 0"""
 	assert value >= 0
 	assert value <= old_max
-	return int(math.ceil(float(new_max * value) / old_max))
+	return div_ceil(new_max * value, old_max)
 
-scale = scale2
+scale = scale_ceil
 
 def get_hp_bar_color(total, value):
 	"""Linearly generates colors from red to yellow to green"""
@@ -39,7 +45,7 @@ def get_hp_bar_color(total, value):
 # XXX: Possible optimization: Cache 100% health and do a partial blit instead of N+1 fills?
 def draw_gradient_hp_bar(surface, rect, total, left):
 	surface.fill((0, 0, 0), rect)
-	for i in range(scale(left, total, rect.width)):
+	for i in range(scale_ceil(left, total, rect.width)):
 		color = get_hp_bar_color(rect.width - 1, i)
 		surface.fill(color, (rect.x + i, rect.y, 1, rect.height))
 
@@ -50,7 +56,7 @@ def draw_solid_hp_bar(surface, rect, total, left):
 def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
-	surface.fill(color, (rect.x, rect.y, scale(left, total, rect.width), rect.height))
+	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
 
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
@@ -174,67 +180,57 @@ class xadir_main:
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
-		self.map_sprites = self.map.get_sprites()
+		self.map_sprites = self.map.sprites
 		self.masking_sprites = pygame.sprite.Group()
 		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
-			self.player_sprites.add(p.get_sprites())
+			self.player_sprites.add(p.sprites)
 
 	def click(self):
+		mouse_coords = pygame.mouse.get_pos()
+		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
 		player = self.players[self.turn]
-		characters = player.get_characters()
+		characters = player.characters
 		for i in range(len(characters)):
 			char_coords = characters[i].get_coords()
-			mouse_coords = list(pygame.mouse.get_pos())
-			mouse_coords = [mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1]]
-			#print char_coords
-			#print mouse_coords
 			if char_coords == mouse_coords:
-				#print "You can move %d tiles" % (characters[i].get_movement_points())
-				#print "Clicked on character"
 				if characters[i].is_selected():
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
 					characters[i].select()
-					if characters[i].get_movement_points() <= 0:
+					if characters[i].mp <= 0:
 						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
-						self.grid_sprites = self.movement_grid.get_sprites()
+						self.grid_sprites = self.movement_grid.sprites
 					else:
 						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
-						self.grid_sprites = self.movement_grid.get_sprites()
+						self.grid_sprites = self.movement_grid.sprites
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
 					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
 						path = self.get_path(start, mouse_coords)
-						print path
-						end = path[(len(path) - 2)]
+						end = path[len(path) - 2]
 						distance = len(path) - 2
-						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
-						characters[i].reduce_movement_points(distance)
+						characters[i].mp -= distance
 						characters[i].set_heading(self.get_heading(end, mouse_coords))
 						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect
-						target = 0
+						characters[i].unselect()
+						target = None
 						for p in self.get_other_players():
-							for c in p.get_characters():
+							for c in p.characters:
 								if c.get_coords() == mouse_coords:
 									target = c
-						if target == 0:
-							print "Unable to fetch the character"
 						self.attack(characters[i], target)
 					else:
 						end = mouse_coords
 						path = self.get_path(start, end)
-						print path
 						distance = len(path) - 1
-						#print "Moved %d tiles" % (distance)
 						self.move_character(path, characters[i])
 						characters[i].set_coords(end)
-						characters[i].reduce_movement_points(distance)
+						characters[i].mp -= distance
 						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
 						characters[i].set_heading(new_heading)
 						self.grid_sprites = pygame.sprite.Group()
@@ -284,7 +280,7 @@ class xadir_main:
 		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
 			p.update_sprites()
-			self.player_sprites.add(p.get_sprites())
+			self.player_sprites.add(p.sprites)
 
 	def next_turn(self):
 		if len(self.players) < 1:
@@ -324,17 +320,17 @@ class xadir_main:
 			self.screen.blit(playertext, rect)
 			# XXX: take this from text rect size?
 			coords[1] += 12 + margin
-			for character in player.get_characters():
+			for character in player.characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_main_hp_bar(self.screen, character_healthbar_rect, character.get_max_health(), character.get_health())
+				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
-					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.get_max_health(), character.get_health())
+					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
 	def update_character_numbers(self):
 		players = self.get_all_players()
 		for p, player in enumerate(players):
-			for character in player.get_characters():
+			for character in player.characters:
 				coords = character.get_coords()
 				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
 				self.add_text(self.screen, str(p), 20, (0, 0))
@@ -343,7 +339,7 @@ class xadir_main:
 		self.enemy_tiles = []
 		players = self.get_other_players()
 		for player in players:
-			for character in player.get_characters():
+			for character in player.characters:
 				if character.is_alive():
 					coords = character.get_coords()
 					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
@@ -397,13 +393,14 @@ class xadir_main:
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.get_movement_points() > 0:	
-			target.take_hit((attacker.get_attack() * attacker.get_movement_points()))
-			attacker.set_movement_points(0)
+		if attacker.mp > 0:	
+			target.take_hit((attacker.attack_stat * attacker.mp))
+			attacker.mp = 0
 		self.update_enemy_tiles()
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
+		assert isinstance(coords, tuple)
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
@@ -414,6 +411,7 @@ class xadir_main:
 
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
+		assert isinstance(coords, tuple)
 		if coords[1] >= 15: return False
 		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
@@ -432,6 +430,7 @@ class xadir_main:
 		return False
 
 	def add_text(self, surface, text, size, coords):
+		assert isinstance(coords, tuple)
 		textfont = pygame.font.Font(None, size)
 		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
 		text_rect = text_surface.get_rect()
@@ -451,9 +450,6 @@ class sprite_grid:
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
-	def get_sprites(self):
-		return self.sprites
-
 class background_map:
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
@@ -468,9 +464,6 @@ class background_map:
 				#print x, y
 				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 
-	def get_sprites(self):
-		return self.sprites
-
 	def get_map(self):
 		return self.map
 
@@ -484,18 +477,12 @@ class player:
 		self.characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
-			y = coords[i][1]
-			x = coords[i][2]
+			x = coords[i][1]
+			y = coords[i][2]
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 2, [y, x], heading, self.main))
-
-	def get_sprites(self):
-		return self.sprites
-
-	def get_characters(self):
-		return self.characters
+			self.characters.append(character(character_type, 5, (x, y), heading, self.main))
 
 	def get_characters_coords(self):
 		coords = []
@@ -512,16 +499,13 @@ class player:
 	def character_is_selected(self, character):
 		return self.characters[character].is_selected()
 
-	def remove_character(self, i):
-		characters.pop(i)
-
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for i in range(len(self.characters)):
 			if self.characters[i].is_alive():
 				coords = self.characters[i].get_coords()
 				heading = self.characters[i].get_heading()
-				character_type = self.characters[i].get_type()
+				character_type = self.characters[i].type
 				tile = self.main.chartypes[character_type + '_' + str(heading)]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
@@ -529,43 +513,45 @@ class player:
 		points_left = 0
 		for c in self.characters:
 			if c.is_alive():
-				points_left += c.get_movement_points()
+				points_left += c.mp
 		return points_left
 
 	def reset_movement_points(self):
 		for c in self.characters:
-			c.set_movement_points(5)
+			c.mp = c.max_mp
 
 class character:
 	"""Universal class for any character in the game"""
-	def __init__(self, character_type, movement, coords, heading, main, health = 100, attack = 10):
-		self.type = character_type
-		self.movement = movement # Movement points left
-		self.max_health = health
-		self.health = random.randrange(health) # Health left (0-100)
-		self.attack = attack     # Attack points (0-50)
-		self.coords = coords     # Array of x and y
+	def __init__(self, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		self.type = type
+		# Movement points
+		self.max_mp = max_mp
+		self.mp = max_mp
+		# Health points
+		self.max_hp = max_hp
+		self.hp = random.randrange(max_hp) # Randomized for testing look&feel
+		# Stats
+		self.attack_stat = attack_stat     # Attack multiplier
+		# Status
+		assert isinstance(coords, tuple)
+		self.coords = coords     # Tuple of x and y
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
-		self.main = main
 
+		self.main = main
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
 
-	def get_type(self):
-		return self.type
-
-	def set_type(self, character_type):
-		self.type = character_type
-
 	def get_coords(self):
-		"""Returns coordinates of the character, return is array [x, y]"""
+		"""Returns coordinates of the character, return is tuple (x, y)"""
+		assert isinstance(self.coords, tuple)
 		return self.coords
 
 	def set_coords(self, coords):
-		"""Sets coordinates of characte, input is array of [x, y]"""
+		"""Sets coordinates of characte, input is tuple of (x, y)"""
+		assert isinstance(coords, tuple)
 		self.coords = coords
 
 	def get_heading(self):
@@ -579,25 +565,10 @@ class character:
 	def is_selected(self):
 		return self.selected
 
-	def get_max_health(self):
-		return self.max_health
-
-	def get_health(self):
-		return self.health
-
-	def set_health(self, health):
-		self.health = health
-
 	def take_hit(self, attack_points):
-		self.health -= attack_points
-		if self.health < 1:
+		self.hp -= attack_points
+		if self.hp < 1:
 			self.kill()
-
-	def get_attack(self):
-		return self.attack
-
-	def set_attack(self):
-		self.attack = attack
 
 	def select(self):
 		self.selected = True
@@ -613,16 +584,6 @@ class character:
 
 	def kill(self):
 		self.alive = False
-
-	def get_movement_points(self):
-		return self.movement
-
-	def set_movement_points(self, points):
-		self.movement = points
-
-	def reduce_movement_points(self, points):
-		self.movement = self.movement - points
-		print "%d movement points left" % (self.movement)
 
 	def turn(self, angle):
 		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
@@ -648,10 +609,11 @@ class character:
 
 	def get_movement_grid(self):
 		"""Return grid of available cells to move to"""
-		return map(list, bfs_area(self, tuple(self.coords), self.movement, character.get_surroundings))
+		return list(bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
 
 	def get_surroundings(self, coords):
 		"""Return surrounding tiles that are walkable"""
+		assert isinstance(coords, tuple)
 		return_grid = []
 		for x in range(-1, 2):
 			for y in range(-1, 2):
@@ -662,13 +624,14 @@ class character:
 
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
+		assert isinstance(coords, tuple)
 		if coords[1] >= 15: return False
 		if coords[0] >= 20: return False
 		if coords[0] < 0: return False
 		if coords[1] < 0: return False
 
 		p = self.main.get_current_player()
-		for c in p.get_characters():
+		for c in p.characters:
 			if c.get_coords() == coords:
 				if c.is_alive():
 					return False
@@ -681,6 +644,7 @@ class character:
 
 	def is_legal_move(self, coords):
 		"""Before moving, check if target is inside movement grid"""
+		assert isinstance(coords, tuple)
 		movement_grid = self.get_movement_grid()
 		for i in range(len(movement_grid)):
 			if coords == movement_grid[i]:
@@ -688,6 +652,7 @@ class character:
 		return False
 
 	def is_attack_move(self, coords):
+		assert isinstance(coords, tuple)
 		for p in self.main.get_other_players():
 			for c in p.get_characters_coords():
 				if c == coords:
