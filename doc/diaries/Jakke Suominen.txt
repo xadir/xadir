@@ -6,6 +6,25 @@
 
 - 19.9 (2t) Palaveri 2 (kaikki paikalla)
 	- Grafiikka suunnittelu
-	- Layout suunnittelu
+	- Ui-suunnittelu
 	- Class/race suunnittelu
+
+
+- 22.9 (4t)
+	- Ui-suunnittelu 
+	- Class/race suunnittelu
+
+- 1.10 (2t)
+	- Muiden taktisten pelien käyttöliittymään tutustuminen
 	
+
+- 3.10 (3t) Koodausryhmän palaveri (Heikki, Aleksi, Jakke)
+	- health baarien tyyli
+	- keskustelua sääntöjärjestelmästä
+- 4.10 (6t)
+	- muiden pelien sääntöjärjestelmiin tutustuminen
+	- ui-suunnittelu
+	- sääntöjärjestelmän suunnittelu
+
+- 7.10 (t) 
+	- sääntöjärjestelmän suunittelu
