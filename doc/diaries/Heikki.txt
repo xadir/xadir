@@ -64,6 +64,10 @@ Total: 49t
 	- Spriten päivitys suunnan vaihtuessa
 	- Pelin käynnistysrutiinin muokkaus siten, että pelin voi käynnistää myös päävalikosta
 
-- 3.10 (8t)
+- 3.10 (3t) Koodausryhmän palaveri (Aleksi, Jakke, Heikki)
+	- Sääntöjärjestelmän suunnittelua
+	- Bugien korjailua
+
+- 3.10 (4t)
 	- Päävalikon korjailua
 	- Kartan preview päävalikkoon
