@@ -45,5 +45,25 @@ Total: 49t
 - 25.9 (4t)
 	- Hyökkäyksen ja liikkumisreitin bugien korjaus
 	- Healthbarit sivupalkkiin
-	- Hahmojen hyökkäys, vahingoittaminen ja kuolema
+	- Hahmojen hyökkäys, vahingoittaminen ja hahmon hävittäminen kartalta
 	- Vastustajien hahmojen tummennus, jolloin omat hahmot on helpompi erottaa kartalta
+
+- 26.9 (8t)
+	- Koodin merge
+	- Bugien korjailua
+	- Layer support taustakartalle ja hahmoille, piirtää "ylempänä" olevat ruudut taaemmalle layerille
+	- Grafiikoiden fiksailua
+
+- 27.9 (4t)
+	- Päävalikko
+	- Pari bugia mapeditorissa 
+
+- 28.9 (8t)
+	- Grafiikoiden fiksailua
+	- Hahmojen suunta päivittyy liikkuessa
+	- Spriten päivitys suunnan vaihtuessa
+	- Pelin käynnistysrutiinin muokkaus siten, että pelin voi käynnistää myös päävalikosta
+
+- 3.10 (8t)
+	- Päävalikon korjailua
+	- Kartan preview päävalikkoon
