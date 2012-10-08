@@ -568,6 +568,7 @@ class character:
 	def take_hit(self, attack_points):
 		self.hp -= attack_points
 		if self.hp < 1:
+			self.hp = 0
 			self.kill()
 
 	def select(self):
