@@ -14,7 +14,7 @@
 	- Ui-suunnittelu 
 	- Class/race suunnittelu
 
-- 1.10 (2t)
+- 1.10 (3t)
 	- Muiden taktisten pelien käyttöliittymään tutustuminen
 	
 
