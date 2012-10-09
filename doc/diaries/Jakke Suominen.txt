@@ -14,7 +14,7 @@
 	- Ui-suunnittelu 
 	- Class/race suunnittelu
 
-- 1.10 (2t)
+- 1.10 (3t)
 	- Muiden taktisten pelien käyttöliittymään tutustuminen
 	
 
@@ -29,3 +29,12 @@
 - 7.10 (5t) 
 	- sääntöjärjestelmän suunittelu
 	- race suunnittelu
+
+- 8.10 (6t)
+	- sääntöjärjestelmän suunnittelu
+	- race suunnittelu
+
+- 9.10 (5t)
+	- sääntöjärjestelmän suunnittelu
+	- race sunnittelu
+
