@@ -6,7 +6,8 @@ SNDDIR = os.path.join(BASEDIR, 'snd')
 MAPDIR = os.path.join(BASEDIR, 'map')
 FONTDIR = os.path.join(BASEDIR, 'font')
 
-FONT = None#os.path.join(FONTDIR, 'FreeSansBold.ttf')
+FONT = os.path.join(FONTDIR, 'FreeSansBold.ttf')
+FONTSCALE = 0.6875
 
 SCALE = 2
 ORIG_SIZE = 24
