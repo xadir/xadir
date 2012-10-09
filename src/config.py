@@ -1,6 +1,8 @@
 import os
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASEDIR.endswith('.zip'): # Because py2exe, that's why (and deadlines)
+	BASEDIR = os.path.dirname(BASEDIR)
 GFXDIR = os.path.join(BASEDIR, 'gfx')
 SNDDIR = os.path.join(BASEDIR, 'snd')
 MAPDIR = os.path.join(BASEDIR, 'map')
