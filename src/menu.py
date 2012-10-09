@@ -22,7 +22,7 @@ class Menu:
 		self.mapfield = pygame.Surface((1000, 720))
 		self.mapfield_rect = pygame.Rect(200, 0, 1000, 720)
 		self.mapfield.fill((10, 10, 10))
-		self.buttonfont = pygame.font.Font(None, 40)
+		self.buttonfont = pygame.font.Font(FONT, 40)
 		self.mapname = "nomap"
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', ORIG_TILE_SIZE, (255, 0, 255), 1)
 
@@ -169,7 +169,7 @@ class Button(UIComponent):
 		self.create_text(self.name, self.fontsize)
 
 	def create_text(self, text, fontsize):
-		self.buttonfont = pygame.font.Font(None, fontsize)
+		self.buttonfont = pygame.font.Font(FONT, fontsize)
 		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
 		self.buttonrect = self.buttontext.get_rect()
 		self.buttonrect.left = self.x

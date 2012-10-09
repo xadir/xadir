@@ -4,6 +4,9 @@ BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GFXDIR = os.path.join(BASEDIR, 'gfx')
 SNDDIR = os.path.join(BASEDIR, 'snd')
 MAPDIR = os.path.join(BASEDIR, 'map')
+FONTDIR = os.path.join(BASEDIR, 'font')
+
+FONT = None#os.path.join(FONTDIR, 'FreeSansBold.ttf')
 
 SCALE = 2
 ORIG_SIZE = 24

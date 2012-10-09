@@ -92,8 +92,8 @@ class xadir_main:
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
-		self.font = pygame.font.Font(None, 50)
-		self.playerfont = pygame.font.Font(None, 20)
+		self.font = pygame.font.Font(FONT, 50)
+		self.playerfont = pygame.font.Font(FONT, 20)
 		self.healthbars = []
 		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
@@ -431,7 +431,7 @@ class xadir_main:
 
 	def add_text(self, surface, text, size, coords):
 		assert isinstance(coords, tuple)
-		textfont = pygame.font.Font(None, size)
+		textfont = pygame.font.Font(FONT, size)
 		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
 		text_rect = text_surface.get_rect()
 		text_rect.centerx = coords[0]
