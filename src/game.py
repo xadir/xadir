@@ -3,6 +3,7 @@ import pygame
 import numpy
 import math
 import random
+import Image
 from pygame.locals import *
 from resources import *
 from algo import *
@@ -248,6 +249,24 @@ class xadir_main:
 			self.draw()
 			self.clock.tick(3)
 
+	def animation(self, coords, file_path):
+		anim = Image.open(file_path).convert("RGBA")
+		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
+		try:
+			while 1:
+				anim.seek(anim.tell()+1)
+				mode = anim.mode
+				size = anim.size
+				data = anim.tostring()
+
+				assert mode in "RGB", "RGBA"
+
+				surface = pygame.image.fromstring(data, size, mode)
+				self.screen.blit(surface, anim_rect)
+				self.clock.tick(3)
+		except EOFError:
+			    pass # end of sequence
+
 	def get_heading(self, a, b):
 		print a
 		print b
@@ -395,6 +414,7 @@ class xadir_main:
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:	
 			target.take_hit((attacker.attack_stat * attacker.mp))
+			self.animation((target_position[0]*TILE_SIZE, target_position[1]*TILE_SIZE), os.path.join(GFXDIR, "sword_hit_small.gif"))
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
