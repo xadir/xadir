@@ -1,11 +1,33 @@
-- 18.9 (3t) Palaveri 1 (kaikki paikalla)
-	- Peli idean varmistuminen
-	- Ui-suunnittelu
-	- Grafiikka suunnittelu
-	- yms.
+- 12.9 (4t) Alkuideointi (Daniel, Jakke)
+   * Aikaisemmin oli p‰‰tetty vuoropohjainen strategiapeli 
+   * Hioimme ideaa ja p‰‰dyimme Areenan inspiroimaan peliin
 
-- 19.9 (2t) Palaveri 2 (kaikki paikalla)
-	- Grafiikka suunnittelu
-	- Layout suunnittelu
-	- Class/race suunnittelu
-	
+- 18.09. (3h) Palaveri 1 (kaikki paikalla)
+   * Peli-idean varmistuminen
+   * Ui-suunnittelu
+   * Grafiikkasuunnittelu
+   * yms.
+
+- 18.09. (1h) Placeholder tileset
+   * Something for the codemonkeys to play around with while I slack
+
+- 19.09. (2h) Palaveri 2 (kaikki paikalla)
+   * Grafiikka-suunnittelu
+   * Layout suunnittelu
+   * Class/race-suunnittelu
+
+- 19.09. (1h) Character template (chibidude)
+   * A template for future characters
+
+- 28.09. (2h) Tileset
+   * Added water
+   * Animated water
+
+- 10.10 (2h) Tileset
+   * Added grass
+   * Added grass-water borders
+
+- 10.10 (5h) Palaveri 3 (Aleksi, Daniel, Heikki, Jakke)
+   * Tile-suunnittelu
+   * Dokumentointi
+   * 1 palautuksen valmistelu
