@@ -1,4 +1,4 @@
-Total: 49t
+Total: 85t
 
 - 17.9 (3t) Pre-Alphan kehitys
 	- kartan renderöinti
@@ -71,3 +71,11 @@ Total: 49t
 - 3.10 (4t)
 	- Päävalikon korjailua
 	- Kartan preview päävalikkoon
+
+- 9.10. (6h)
+	- Exen generointia
+
+- 10.10 (3h) Palaveri 3 (Aleksi, Jakke, Daniel, Heikki)
+	- Dokumentin kirjoitus
+	- Ideointia
+	- Karttatiilien suunnittelua
