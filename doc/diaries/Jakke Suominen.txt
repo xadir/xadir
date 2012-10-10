@@ -1,3 +1,7 @@
+- 12.9 (4t) Alkuideointi (Daniel, Jakke)
+	- Aikaisemmin oli päätetty vuoropohjainen strategiapeli 
+	- Hioimme ideaa ja päädyimme Areenan inspiroimaan peliin
+
 - 18.9 (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
 	- Ui-suunnittelu
@@ -9,7 +13,6 @@
 	- Ui-suunnittelu
 	- Class/race suunnittelu
 
-
 - 22.9 (4t)
 	- Ui-suunnittelu 
 	- Class/race suunnittelu
@@ -17,7 +20,6 @@
 - 1.10 (3t)
 	- Muiden taktisten pelien käyttöliittymään tutustuminen
 	
-
 - 3.10 (3t) Koodausryhmän palaveri (Heikki, Aleksi, Jakke)
 	- health baarien tyyli
 	- keskustelua sääntöjärjestelmästä
@@ -44,6 +46,10 @@
 	- sääntöjärjestelmä suunnittelu
 
 - 10.10 (5t) Palaveri 3 (Aleksi, Daniel, Heikki, Jakke)
+	- Tile-suunnittelu
+  	- Dokumentointi
+   	- 1 palautuksen valmistelu 
+	
 
 	
 
