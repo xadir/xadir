@@ -5,11 +5,13 @@ SYSTEM RULESET
 Strength (Str)
  - melee ck damage
  - knockback chance increase?
+ - crit?
 
 Dexterity (Dex)
  - ranged attack damage
  - movement points
  - miss chance?
+ - crit?
 
 Constitution (Con)
  - increase HP
@@ -20,7 +22,7 @@ Intelligence (Int)
 - spell resist
 
 Health Points (HP)
-- display health
+- defined by constitution and class
 
 Damage Reduction (DR)
 - negates damage
@@ -29,11 +31,53 @@ Hit Chance (Hit)
 Miss Chance (Miss)
 Critical Chance (Crit) 
 
-2. Combat and weapons
+Experience (Exp)
+- 
+
+2. Combat
 
 2.1 Hitting with a weapon
 
-Every character has natural ability to miss (10-20%) a attack. This will be reduced when character uses a certain weapon long enough. Hit chance will also be affecte from the terrain, armor, classes and magical equipment.
+Every character has natural chance to miss (10-20%) an attack. This will be reduced when character uses a certain weapon long enough. Hit chance will also be affecte from the terrain, armor, classes and magical equipment.
+ 
+ex1. Chance to miss with daggers 10%. Target has a heavy armor, slowing his movement and reducing his miss chance by -5%. Target is in forest giving him bonus 20% to miss chance. Resulting in (10%-5%+20%=) 25% miss chance.
 
-ex1. Chance to miss with daggers 10%. Target has a heavy amor, slowing his movement and reducing his miss chance by -5%. Target is in forest giving him bonus 20% to miss chance. Resulting in (10+
+formula: (attacker miss)+-(attacker buffs/debuffs/items)+-(terrain)+-(defender buffs/debuffs/items/armor) 
+
+2.2 Damage
+
+light weapons: daggers, short swords, wand (light magic), etc
+damage range: 1-4, 1-6, 
+
+normal weapons: large swords, spears, maces, staff (normal magic), etc
+damage range: 2-6, 1-8, 1-10,  
+
+heavy weapons: large axes, large mace
+damage range: 2-10, 1-12, 2-12 
+
+
+(Magic attacks bypass damage reduction completely)
+
+2.2.1 Critical
+
+Critical chance is increased with ability scores? and magical items.
+
+Critical multiplier	Critical chance
+1,5x light weapons 		15%
+2,0x normal weapons		10%
+3,0x heavy weapons		5%
+
+ex1. magical dagger could possibly have a critical chance of 17%
+
+2.3 Armor
+
+Armor gives damage reduction that reduces damage taken
+	Damage Reduction	Miss chance bonus
+Light		0%			5%   			
+Medium		10%			0%
+Heavy		20%			-5%
+
+
+
+
 

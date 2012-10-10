@@ -33,9 +33,15 @@
 - 8.10 (6t)
 	- sääntöjärjestelmän suunnittelu
 	- race suunnittelu
+	- class suunnittelu
 
 - 9.10 (8t)
 	- sääntöjärjestelmän suunnittelu
-	- race sunnittelu
+	- race sunnittelu (valmis)
+	- class suunnittelu (valmis)
+
+- 10.10
+	- sääntöjärjestelmä suunnittelu
+	
 
 
