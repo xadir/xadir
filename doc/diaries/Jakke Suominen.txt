@@ -40,8 +40,11 @@
 	- race sunnittelu (valmis)
 	- class suunnittelu (valmis)
 
-- 10.10
+- 10.10 (4t)
 	- sääntöjärjestelmä suunnittelu
+
+- 10.10 (5t) Palaveri 3 (Aleksi, Daniel, Heikki, Jakke)
+
 	
 
 
