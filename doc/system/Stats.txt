@@ -1,0 +1,39 @@
+SYSTEM RULESET
+
+1. Ability Scores and other stats
+
+Strength (Str)
+ - melee ck damage
+ - knockback chance increase?
+
+Dexterity (Dex)
+ - ranged attack damage
+ - movement points
+ - miss chance?
+
+Constitution (Con)
+ - increase HP
+ - DR? 
+
+Intelligence (Int)
+- magic attack damage
+- spell resist
+
+Health Points (HP)
+- display health
+
+Damage Reduction (DR)
+- negates damage
+
+Hit Chance (Hit)
+Miss Chance (Miss)
+Critical Chance (Crit) 
+
+2. Combat and weapons
+
+2.1 Hitting with a weapon
+
+Every character has natural ability to miss (10-20%) a attack. This will be reduced when character uses a certain weapon long enough. Hit chance will also be affecte from the terrain, armor, classes and magical equipment.
+
+ex1. Chance to miss with daggers 10%. Target has a heavy amor, slowing his movement and reducing his miss chance by -5%. Target is in forest giving him bonus 20% to miss chance. Resulting in (10+
+
