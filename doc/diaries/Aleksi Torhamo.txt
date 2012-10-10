@@ -1,3 +1,5 @@
+total: 53t
+
 - 18.9. (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
 	- Ui-suunnittelu
