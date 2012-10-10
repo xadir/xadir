@@ -34,7 +34,8 @@
 	- sääntöjärjestelmän suunnittelu
 	- race suunnittelu
 
-- 9.10 (5t)
+- 9.10 (8t)
 	- sääntöjärjestelmän suunnittelu
 	- race sunnittelu
+
 
