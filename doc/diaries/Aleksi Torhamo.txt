@@ -16,3 +16,50 @@
 	- Figured out what format best works for tile naming
 	  (so that maps made for older tiles still work)
 
+- 22.9. (2h) Maps
+	- Load maps from files
+	- Bugfixes
+
+- 23.9. (5h) Maps
+	- Load spawn positions from map
+	- Cleaned code
+
+- 24.9. (3h) Map editor
+	- Added map editor
+	- Added hp bar calculation
+	- Various other stuff
+
+- 25.9. (6h) Various
+	- Planning
+	- Visual "improvements"
+	- New shortest-path-algorithm
+	- Various other stuff
+	- Code cleanup
+
+- 26.9. (8h) Meeting
+	- Inpainting in map editor
+	- Bfs_area for movement grid
+	- Use character sprites
+	- New placeholders
+	- Various other stuff
+
+- 28.9. (4h) Various
+	- Bug fixes
+	- Code cleanup
+
+- 30.9. (2h) Bugfix
+	- Fixed sprite drawing order (pygame documentation bug)
+
+- 3.10. (6h) Meeting
+	- Inline hp
+	- HP bar fine tuning
+	- Map loading & spawnpoints to map editor
+	- Cleaned up code
+	- Bugfixes: movement points, coordinates, characters getting stuck after attack
+
+- 8.10. (1h) Various
+	- Fixed negative HP crash
+
+- 9.10. (6h) py2exe
+	- Made building .exe with py2exe work
+
