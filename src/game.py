@@ -254,7 +254,6 @@ class xadir_main:
 		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
 		try:
 			while 1:
-				anim.seek(anim.tell()+1)
 				mode = anim.mode
 				size = anim.size
 				data = anim.tostring()
@@ -264,6 +263,7 @@ class xadir_main:
 				surface = pygame.image.fromstring(data, size, mode)
 				self.screen.blit(surface, anim_rect)
 				self.clock.tick(3)
+				anim.seek(anim.tell()+1)
 		except EOFError:
 			pass # end of sequence
 
