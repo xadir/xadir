@@ -89,6 +89,26 @@ def pygame_surface_from_pil_image(im):
 	data = im.tostring()
 	return pygame.image.fromstring(data, im.size, im.mode)
 
+def get_animation_frames(path):
+	anim = Image.open(path)
+	try:
+		while 1:
+			yield anim
+			# This is ugly, but PIL seems to corrupt all the
+			# other frames of animation as soon as you do
+			# *anything* with one of them. You can't even
+			# copy() each frame, you've just got to open the
+			# image again for each frame and iterate to the
+			# correct position. (Yeah, you can't even use
+			# one seek to get there...)
+			end = anim.tell()
+			anim = Image.open(path)
+			start = anim.tell()
+			for pos in range(start, end + 1):
+				anim.seek(pos+1)
+	except EOFError:
+		pass # end of sequence
+
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720, mapname='map2.txt'):
@@ -257,29 +277,9 @@ class xadir_main:
 			self.clock.tick(3)
 
 	def animation(self, coords, file_path):
-		anim = Image.open(file_path)
 		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
 
-		ims = []
-		try:
-			while 1:
-				ims.append(anim)
-				# This is ugly, but PIL seems to corrupt all the
-				# other frames of animation as soon as you do
-				# *anything* with one of them. You can't even
-				# copy() each frame, you've just got to open the
-				# image again for each frame and iterate to the
-				# correct position. (Yeah, you can't even use
-				# one seek to get there...)
-				end = anim.tell()
-				anim = Image.open(file_path)
-				start = anim.tell()
-				for pos in range(start, end + 1):
-					anim.seek(pos+1)
-		except EOFError:
-			pass # end of sequence
-
-		for im in ims:
+		for im in get_animation_frames(file_path):
 			surface = pygame_surface_from_pil_image(im)
 			self.draw()
 			self.screen.blit(surface, anim_rect)
