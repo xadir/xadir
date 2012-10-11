@@ -253,23 +253,39 @@ class xadir_main:
 	def animation(self, coords, file_path):
 		anim = Image.open(file_path)
 		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
+
+		ims = []
 		try:
 			while 1:
-				im = anim.convert('RGBA')
-				mode = im.mode
-				size = im.size
-				data = im.tostring()
-
-				assert mode in ("RGB", "RGBA")
-
-				surface = pygame.image.fromstring(data, size, mode)
-				self.draw()
-				self.screen.blit(surface, anim_rect)
-				pygame.display.flip()
-				self.clock.tick(3)
-				anim.seek(anim.tell()+1)
+				ims.append(anim)
+				# This is ugly, but PIL seems to corrupt all the
+				# other frames of animation as soon as you do
+				# *anything* with one of them. You can't even
+				# copy() each frame, you've just got to open the
+				# image again for each frame and iterate to the
+				# correct position. (Yeah, you can't even use
+				# one seek to get there...)
+				end = anim.tell()
+				anim = Image.open(file_path)
+				start = anim.tell()
+				for pos in range(start, end + 1):
+					anim.seek(pos+1)
 		except EOFError:
 			pass # end of sequence
+
+		for im in ims:
+			im = im.convert('RGBA')
+			mode = im.mode
+			size = im.size
+			data = im.tostring()
+
+			assert mode in ("RGB", "RGBA")
+
+			surface = pygame.image.fromstring(data, size, mode)
+			self.draw()
+			self.screen.blit(surface, anim_rect)
+			pygame.display.flip()
+			self.clock.tick(3)
 
 	def get_heading(self, a, b):
 		print a
