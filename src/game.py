@@ -265,7 +265,7 @@ class xadir_main:
 				self.screen.blit(surface, anim_rect)
 				self.clock.tick(3)
 		except EOFError:
-			    pass # end of sequence
+			pass # end of sequence
 
 	def get_heading(self, a, b):
 		print a
@@ -412,7 +412,7 @@ class xadir_main:
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.mp > 0:	
+		if attacker.mp > 0:
 			target.take_hit((attacker.attack_stat * attacker.mp))
 			self.animation((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
 			attacker.mp = 0
