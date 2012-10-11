@@ -131,6 +131,7 @@ class xadir_main:
 		self.hue = 0
 		while 1:
 			self.draw()
+			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -155,7 +156,6 @@ class xadir_main:
 		self.draw_healthbars()
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
-		pygame.display.flip()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
@@ -247,6 +247,7 @@ class xadir_main:
 			character.set_heading(self.get_heading(path[i], path[i+1]))
 			character.set_coords(path[i])
 			self.draw()
+			pygame.display.flip()
 			self.clock.tick(3)
 
 	def animation(self, coords, file_path):
