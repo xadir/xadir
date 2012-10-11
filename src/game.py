@@ -259,7 +259,7 @@ class xadir_main:
 				size = anim.size
 				data = anim.tostring()
 
-				assert mode in "RGB", "RGBA"
+				assert mode in ("RGB", "RGBA")
 
 				surface = pygame.image.fromstring(data, size, mode)
 				self.screen.blit(surface, anim_rect)
