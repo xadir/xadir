@@ -3,6 +3,7 @@ import pygame
 import numpy
 import math
 import random
+import Image
 from pygame.locals import *
 from resources import *
 from algo import *
@@ -130,6 +131,7 @@ class xadir_main:
 		self.hue = 0
 		while 1:
 			self.draw()
+			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -154,7 +156,6 @@ class xadir_main:
 		self.draw_healthbars()
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
-		pygame.display.flip()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
@@ -246,6 +247,44 @@ class xadir_main:
 			character.set_heading(self.get_heading(path[i], path[i+1]))
 			character.set_coords(path[i])
 			self.draw()
+			pygame.display.flip()
+			self.clock.tick(3)
+
+	def animation(self, coords, file_path):
+		anim = Image.open(file_path)
+		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
+
+		ims = []
+		try:
+			while 1:
+				ims.append(anim)
+				# This is ugly, but PIL seems to corrupt all the
+				# other frames of animation as soon as you do
+				# *anything* with one of them. You can't even
+				# copy() each frame, you've just got to open the
+				# image again for each frame and iterate to the
+				# correct position. (Yeah, you can't even use
+				# one seek to get there...)
+				end = anim.tell()
+				anim = Image.open(file_path)
+				start = anim.tell()
+				for pos in range(start, end + 1):
+					anim.seek(pos+1)
+		except EOFError:
+			pass # end of sequence
+
+		for im in ims:
+			im = im.convert('RGBA')
+			mode = im.mode
+			size = im.size
+			data = im.tostring()
+
+			assert mode in ("RGB", "RGBA")
+
+			surface = pygame.image.fromstring(data, size, mode)
+			self.draw()
+			self.screen.blit(surface, anim_rect)
+			pygame.display.flip()
 			self.clock.tick(3)
 
 	def get_heading(self, a, b):
@@ -393,8 +432,9 @@ class xadir_main:
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.mp > 0:	
+		if attacker.mp > 0:
 			target.take_hit((attacker.attack_stat * attacker.mp))
+			self.animation((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
