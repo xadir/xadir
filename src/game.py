@@ -83,6 +83,11 @@ def get_hue_color(i):
 draw_main_hp_bar = draw_gradient_hp_bar
 draw_char_hp_bar = draw_solid_hp_bar2
 
+def pygame_surface_from_pil_image(im):
+	assert im.mode in ('RGB', 'RGBA')
+	data = im.tostring()
+	return pygame.image.fromstring(data, im.size, im.mode)
+
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720, mapname='map2.txt'):
@@ -275,13 +280,7 @@ class xadir_main:
 
 		for im in ims:
 			im = im.convert('RGBA')
-			mode = im.mode
-			size = im.size
-			data = im.tostring()
-
-			assert mode in ("RGB", "RGBA")
-
-			surface = pygame.image.fromstring(data, size, mode)
+			surface = pygame_surface_from_pil_image(im)
 			self.draw()
 			self.screen.blit(surface, anim_rect)
 			pygame.display.flip()
