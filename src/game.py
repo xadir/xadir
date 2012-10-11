@@ -250,13 +250,14 @@ class xadir_main:
 			self.clock.tick(3)
 
 	def animation(self, coords, file_path):
-		anim = Image.open(file_path).convert("RGBA")
+		anim = Image.open(file_path)
 		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
 		try:
 			while 1:
-				mode = anim.mode
-				size = anim.size
-				data = anim.tostring()
+				im = anim.convert('RGBA')
+				mode = im.mode
+				size = im.size
+				data = im.tostring()
 
 				assert mode in ("RGB", "RGBA")
 
