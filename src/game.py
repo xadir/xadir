@@ -263,7 +263,9 @@ class xadir_main:
 				assert mode in ("RGB", "RGBA")
 
 				surface = pygame.image.fromstring(data, size, mode)
+				self.draw()
 				self.screen.blit(surface, anim_rect)
+				pygame.display.flip()
 				self.clock.tick(3)
 				anim.seek(anim.tell()+1)
 		except EOFError:
