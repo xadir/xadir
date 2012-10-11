@@ -84,7 +84,8 @@ draw_main_hp_bar = draw_gradient_hp_bar
 draw_char_hp_bar = draw_solid_hp_bar2
 
 def pygame_surface_from_pil_image(im):
-	assert im.mode in ('RGB', 'RGBA')
+	if im.mode not in ('RGB', 'RGBA'):
+		im = im.convert('RGBA')
 	data = im.tostring()
 	return pygame.image.fromstring(data, im.size, im.mode)
 
@@ -279,7 +280,6 @@ class xadir_main:
 			pass # end of sequence
 
 		for im in ims:
-			im = im.convert('RGBA')
 			surface = pygame_surface_from_pil_image(im)
 			self.draw()
 			self.screen.blit(surface, anim_rect)
