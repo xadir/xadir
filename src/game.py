@@ -239,7 +239,7 @@ class xadir_main:
 						path = self.get_path(start, mouse_coords)
 						end = path[len(path) - 2]
 						distance = len(path) - 2
-						self.move_character(path, characters[i])
+						self.animate_move(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].mp -= distance
 						characters[i].set_heading(self.get_heading(end, mouse_coords))
@@ -255,7 +255,7 @@ class xadir_main:
 						end = mouse_coords
 						path = self.get_path(start, end)
 						distance = len(path) - 1
-						self.move_character(path, characters[i])
+						self.animate_move(path, characters[i])
 						characters[i].set_coords(end)
 						characters[i].mp -= distance
 						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
@@ -268,7 +268,7 @@ class xadir_main:
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
-	def move_character(self, path, character):
+	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
 			character.set_heading(self.get_heading(path[i], path[i+1]))
 			character.set_coords(path[i])
@@ -276,7 +276,7 @@ class xadir_main:
 			pygame.display.flip()
 			self.clock.tick(5)
 
-	def animation(self, coords, file_path):
+	def animate_hit(self, coords, file_path):
 		anim_rect = pygame.Rect(coords[0], coords[1] - 8*SCALE, 24, 32)
 
 		for im in get_animation_frames(file_path):
@@ -434,7 +434,7 @@ class xadir_main:
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			target.take_hit((attacker.attack_stat * attacker.mp))
-			self.animation((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
+			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
