@@ -274,7 +274,7 @@ class xadir_main:
 			character.set_coords(path[i])
 			self.draw()
 			pygame.display.flip()
-			self.clock.tick(3)
+			self.clock.tick(5)
 
 	def animation(self, coords, file_path):
 		anim_rect = pygame.Rect(coords[0], coords[1] - 8*SCALE, 24, 32)
@@ -285,7 +285,7 @@ class xadir_main:
 			self.draw()
 			self.screen.blit(surface, anim_rect)
 			pygame.display.flip()
-			self.clock.tick(3)
+			self.clock.tick(10)
 
 	def get_heading(self, a, b):
 		print a
