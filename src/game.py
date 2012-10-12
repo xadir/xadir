@@ -277,10 +277,11 @@ class xadir_main:
 			self.clock.tick(3)
 
 	def animation(self, coords, file_path):
-		anim_rect = pygame.Rect(coords[0], coords[1], 24, 32)
+		anim_rect = pygame.Rect(coords[0], coords[1] - 8*SCALE, 24, 32)
 
 		for im in get_animation_frames(file_path):
 			surface = pygame_surface_from_pil_image(im)
+			surface = pygame.transform.scale(surface, (24*SCALE, 32*SCALE))
 			self.draw()
 			self.screen.blit(surface, anim_rect)
 			pygame.display.flip()
