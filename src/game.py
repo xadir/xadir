@@ -433,8 +433,8 @@ class xadir_main:
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
-			target.take_hit((attacker.attack_stat * attacker.mp))
 			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
+			target.take_hit((attacker.attack_stat * attacker.mp))
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
