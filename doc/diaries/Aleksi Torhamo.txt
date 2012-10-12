@@ -1,4 +1,4 @@
-total: 56h (+4h)
+total: 57h (+4h)
 
 - 18.9. (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
@@ -65,7 +65,7 @@ total: 56h (+4h)
 - 9.10. (6h) py2exe
 	- Made building .exe with py2exe work
 
-- 12.10. (3h+4h) Animation
-	- Hit animation
+- 12.10. (4h+4h) Animations
+	- Animations
 	- Spent 4h finding out whether the PIL behavior is a bug or not...
 
