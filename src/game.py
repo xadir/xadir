@@ -21,6 +21,9 @@ def div_ceil(dividend, divisor):
 	"""Integer division, but with result rounded up instead"""
 	return (dividend - 1) / divisor + 1
 
+def sign(value):
+	return cmp(value, 0)
+
 # XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
 def scale_floor(value, old_max, new_max):
 	"""Scaling function where the result is new_max only when the input is old_max"""
@@ -286,6 +289,19 @@ class xadir_main:
 			self.screen.blit(surface, anim_rect)
 			pygame.display.flip()
 			self.clock.tick(10)
+
+	def animate_hp_change(self, character, change):
+		change_sign = sign(change)
+		change_amount = abs(change)
+		orig_hp = character.hp
+		for i in range(1, 30):
+			character.hp = orig_hp + change_sign * scale(i, 30, change_amount)
+			if character.hp < 1:
+				break
+			self.draw()
+			pygame.display.flip()
+			self.clock.tick(30)
+		character.hp = orig_hp
 
 	def get_heading(self, a, b):
 		print a
@@ -606,6 +622,7 @@ class character:
 		return self.selected
 
 	def take_hit(self, attack_points):
+		self.main.animate_hp_change(self, -attack_points)
 		self.hp -= attack_points
 		if self.hp < 1:
 			self.hp = 0
