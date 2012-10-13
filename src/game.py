@@ -236,14 +236,13 @@ class xadir_main:
 						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
 			elif characters[i].is_selected():
+				self.grid_sprites = pygame.sprite.Group()
+				characters[i].unselect()
 				if characters[i].is_legal_move(mouse_coords):
 					if characters[i].is_attack_move(mouse_coords):
 						self.do_attack(characters[i], mouse_coords)
 					else:
 						self.do_move(characters[i], mouse_coords)
-				else:
-					characters[i].unselect()
-					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
 				characters[i].unselect()
 
@@ -256,8 +255,6 @@ class xadir_main:
 		character.set_coords(end)
 		character.mp -= distance
 		character.set_heading(self.get_heading(end, mouse_coords))
-		self.grid_sprites = pygame.sprite.Group()
-		character.unselect()
 		target = None
 		for p in self.get_other_players():
 			for c in p.characters:
@@ -275,8 +272,6 @@ class xadir_main:
 		character.mp -= distance
 		new_heading = self.get_heading(path[-2], mouse_coords)
 		character.set_heading(new_heading)
-		self.grid_sprites = pygame.sprite.Group()
-		character.unselect()
 
 	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
