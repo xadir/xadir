@@ -6,6 +6,7 @@ import random
 import Image
 from pygame.locals import *
 from resources import *
+from grid import *
 from algo import *
 
 if not pygame.font:
@@ -436,7 +437,7 @@ class xadir_main:
 
 		background_map = self.map.get_map()
 		for w in self.walkable:
-			if background_map[coords[1]][coords[0]] == w:
+			if background_map[coords] == w:
 				return True
 
 		return False
@@ -472,14 +473,12 @@ class background_map:
 	def __init__(self, map, width, height, tiletypes):
 		self.width = width
 		self.height = height
-		self.map = map
+		self.map = Grid(width, height, map)
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for y in range(self.height):
-			for x in range(self.width):
-				tiletype = self.map[y][x]
-				tile = tiletypes[tiletype]
-				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
+		for (x, y), tiletype in self.map.items():
+			tile = tiletypes[tiletype]
+			#print x, y
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 
 	def get_map(self):
 		return self.map
@@ -647,7 +646,7 @@ class character:
 				return False
 
 		for w in self.walkable_tiles:
-			if self.background_map[coords[1]][coords[0]] == w:
+			if self.background_map[coords] == w:
 				return True
 
 		return False
