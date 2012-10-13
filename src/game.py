@@ -305,32 +305,13 @@ class xadir_main:
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
-		print a
-		print b
-		delta_coords = (b[0] - a[0], b[1] - a[1])
-		print delta_coords
-		if delta_coords == (1, 0):
-			return 0
-		elif delta_coords == (1, 1):
-			#return 45
-			return 0
-		elif delta_coords == (0, 1):
-			return 270
-		elif delta_coords == (-1, 1):
-			#return 135
-			return 180
-		elif delta_coords == (-1, 0):
-			return 180
-		elif delta_coords == (-1, -1):
-			#return 225
-			return 180
-		elif delta_coords == (0, -1):
-			return 90
-		elif delta_coords == (1, -1):
-			#return 315
-			return 0
-		else:
-			return 0
+		delta = (b[0] - a[0], b[1] - a[1])
+		# Negate y because screen coordinates differ from math coordinates
+		angle = math.degrees(math.atan2(-delta[1], delta[0])) % 360
+		# Make the angle an integer and a multiple of 45
+		angle = int(round(angle / 45)) * 45
+		# Prefer horizontal directions when the direction is not a multiple of 90
+		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
 
 	def update_sprites(self):
 		self.player_sprites = pygame.sprite.LayeredUpdates()
