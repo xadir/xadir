@@ -250,7 +250,7 @@ class xadir_main:
 	def do_attack(self, character, mouse_coords):
 		start = character.get_coords()
 		path = self.get_path(start, mouse_coords)
-		end = path[len(path) - 2]
+		end = path[-2]
 		distance = len(path) - 2
 		self.animate_move(path, character)
 		character.set_coords(end)
@@ -273,7 +273,7 @@ class xadir_main:
 		self.animate_move(path, character)
 		character.set_coords(end)
 		character.mp -= distance
-		new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
+		new_heading = self.get_heading(path[-2], mouse_coords)
 		character.set_heading(new_heading)
 		self.grid_sprites = pygame.sprite.Group()
 		character.unselect()
