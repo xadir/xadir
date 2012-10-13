@@ -357,7 +357,7 @@ class xadir_main:
 			self.screen.blit(playertext, rect)
 			# XXX: take this from text rect size?
 			coords[1] += 12 + margin
-			for character in player.characters:
+			for character in player.all_characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
 				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
@@ -377,14 +377,10 @@ class xadir_main:
 		players = self.get_other_players()
 		for player in players:
 			for character in player.characters:
-				if character.is_alive():
-					coords = character.get_coords()
-					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-					tile = self.opaque_rect(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), (0, 0, 0), 50)
-					self.enemy_tiles.append(tile)
-				else:
-					coords = character.get_coords()
-					print "enemy dead at (%d,%d)" % (coords[0], coords[1])
+				coords = character.get_coords()
+				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
+				tile = self.opaque_rect(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), (0, 0, 0), 50)
+				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
 		return self.players
@@ -490,7 +486,7 @@ class player:
 		self.main = main
 		self.coords = coords
 		self.sprites = pygame.sprite.LayeredUpdates()
-		self.characters = []
+		self.all_characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
 			x = coords[i][1]
@@ -498,7 +494,10 @@ class player:
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 5, (x, y), heading, self.main))
+			self.all_characters.append(character(character_type, 5, (x, y), heading, self.main))
+
+	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
+	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
 
 	def get_characters_coords(self):
 		coords = []
@@ -509,22 +508,20 @@ class player:
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for character in self.characters:
-			if character.is_alive():
-				coords = character.get_coords()
-				heading = character.get_heading()
-				character_type = character.type
-				tile = self.main.chartypes[character_type + '_' + str(heading)]
-				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
+			coords = character.get_coords()
+			heading = character.get_heading()
+			character_type = character.type
+			tile = self.main.chartypes[character_type + '_' + str(heading)]
+			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
 		for c in self.characters:
-			if c.is_alive():
-				points_left += c.mp
+			points_left += c.mp
 		return points_left
 
 	def reset_movement_points(self):
-		for c in self.characters:
+		for c in self.all_characters:
 			c.mp = c.max_mp
 
 class character:
@@ -642,8 +639,7 @@ class character:
 		p = self.main.get_current_player()
 		for c in p.characters:
 			if c.get_coords() == coords:
-				if c.is_alive():
-					return False
+				return False
 
 		for w in self.walkable_tiles:
 			if self.background_map[coords[1]][coords[0]] == w:
