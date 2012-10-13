@@ -425,17 +425,15 @@ class xadir_main:
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
 		assert isinstance(coords, tuple)
-		if coords[1] >= 15: return False
-		if coords[0] >= 20: return False
-		if coords[0] < 0: return False
-		if coords[1] < 0: return False
+		background_map = self.map.get_map()
+		if coords not in background_map:
+			return False
 
 		p = self.get_current_player()
 		for c in p.get_characters_coords():
 			if c == coords:
 				return False
 
-		background_map = self.map.get_map()
 		for w in self.walkable:
 			if background_map[coords] == w:
 				return True
@@ -635,10 +633,8 @@ class character:
 	def is_walkable_tile(self, coords):
 		"""To check if tile is walkable"""
 		assert isinstance(coords, tuple)
-		if coords[1] >= 15: return False
-		if coords[0] >= 20: return False
-		if coords[0] < 0: return False
-		if coords[1] < 0: return False
+		if coords not in self.background_map:
+			return False
 
 		p = self.main.get_current_player()
 		for c in p.characters:
