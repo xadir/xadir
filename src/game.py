@@ -434,11 +434,7 @@ class xadir_main:
 			if c == coords:
 				return False
 
-		for w in self.walkable:
-			if background_map[coords] == w:
-				return True
-
-		return False
+		return background_map[coords] in self.walkable
 
 	def add_text(self, surface, text, size, coords):
 		assert isinstance(coords, tuple)
@@ -641,11 +637,7 @@ class character:
 			if c.get_coords() == coords:
 				return False
 
-		for w in self.walkable_tiles:
-			if self.background_map[coords] == w:
-				return True
-
-		return False
+		return self.background_map[coords] in self.walkable_tiles
 
 	def is_legal_move(self, coords):
 		"""Before moving, check if target is inside movement grid"""
