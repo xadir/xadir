@@ -237,39 +237,46 @@ class xadir_main:
 						self.grid_sprites = self.movement_grid.sprites
 			elif characters[i].is_selected():
 				if characters[i].is_legal_move(mouse_coords):
-					start = characters[i].get_coords()
 					if characters[i].is_attack_move(mouse_coords):
-						path = self.get_path(start, mouse_coords)
-						end = path[len(path) - 2]
-						distance = len(path) - 2
-						self.animate_move(path, characters[i])
-						characters[i].set_coords(end)
-						characters[i].mp -= distance
-						characters[i].set_heading(self.get_heading(end, mouse_coords))
-						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect()
-						target = None
-						for p in self.get_other_players():
-							for c in p.characters:
-								if c.get_coords() == mouse_coords:
-									target = c
-						self.attack(characters[i], target)
+						self.do_attack(characters[i], mouse_coords)
 					else:
-						end = mouse_coords
-						path = self.get_path(start, end)
-						distance = len(path) - 1
-						self.animate_move(path, characters[i])
-						characters[i].set_coords(end)
-						characters[i].mp -= distance
-						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
-						characters[i].set_heading(new_heading)
-						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect()
+						self.do_move(characters[i], mouse_coords)
 				else:
 					characters[i].unselect()
 					self.grid_sprites = pygame.sprite.Group()
 			if char_coords != mouse_coords:
 				characters[i].unselect()
+
+	def do_attack(self, character, mouse_coords):
+		start = character.get_coords()
+		path = self.get_path(start, mouse_coords)
+		end = path[len(path) - 2]
+		distance = len(path) - 2
+		self.animate_move(path, character)
+		character.set_coords(end)
+		character.mp -= distance
+		character.set_heading(self.get_heading(end, mouse_coords))
+		self.grid_sprites = pygame.sprite.Group()
+		character.unselect()
+		target = None
+		for p in self.get_other_players():
+			for c in p.characters:
+				if c.get_coords() == mouse_coords:
+					target = c
+		self.attack(character, target)
+
+	def do_move(self, character, mouse_coords):
+		start = character.get_coords()
+		end = mouse_coords
+		path = self.get_path(start, end)
+		distance = len(path) - 1
+		self.animate_move(path, character)
+		character.set_coords(end)
+		character.mp -= distance
+		new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
+		character.set_heading(new_heading)
+		self.grid_sprites = pygame.sprite.Group()
+		character.unselect()
 
 	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
