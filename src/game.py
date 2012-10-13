@@ -506,15 +506,6 @@ class player:
 			coords.append(i.get_coords())
 		return coords
 
-	def select_character(self, character):
-		self.characters[character].select()
-
-	def unselect_character(self, character):
-		self.characters[character].unselect()
-
-	def character_is_selected(self, character):
-		return self.characters[character].is_selected()
-
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for i in range(len(self.characters)):
