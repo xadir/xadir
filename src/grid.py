@@ -13,6 +13,9 @@ class Grid:
 	def __setitem__(self, (x, y), value):
 		self.data[y][x] = value
 
+	def __contains__(self, (x, y)):
+		return x >= 0 and y >= 0 and x < self.width and y < self.height
+
 	def keys(self):
 		for y in range(self.height):
 			for x in range(self.width):
