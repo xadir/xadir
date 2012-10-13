@@ -36,9 +36,7 @@ class MapEditor:
 		self.grid = Grid(20, 15)
 		self.spawns = Grid(20, 15)
 		self.tools = Grid(*size)
-
-		if mapname:
-			self._load(mapname)
+		self.spawntools = Grid(6, 2, [range(1, 7), [None]*6])
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -46,7 +44,12 @@ class MapEditor:
 
 		# XXX: add tools that arent specified in toolfile
 
-		self.spawntools = Grid(6, 2, [range(1, 7), [None]*6])
+		self._update_ui_elements()
+
+		if mapname:
+			self.load(mapname)
+
+	def _update_ui_elements(self):
 		self.spawnui = UIGrid(0, 0, self.spawntools, (16, 16), 1)
 		self.left = UIGrid(0, self.spawnui.height + 6, self.tools, (16, 16), 1)
 		self.right = UIGrid(self.left.width + 6, 0, self.grid, (16, 16), 1)
@@ -74,6 +77,25 @@ class MapEditor:
 			for x in range(self.grid.width):
 				print >>f, self.grid[x, y] or '?????',
 			print >>f
+
+	def load(self, mapname):
+		self.mapname = mapname
+		self._load(mapname)
+		self._update_ui_elements()
+
+	def save(self, mapname):
+		path = os.path.join(MAPDIR, mapname)
+		with file(path + '.new', 'wb') as f:
+			self._save(f)
+		# XXX: Figure out which error rename() raises on Windows when the file already exists
+		#try:
+		os.rename(path + '.new', path)
+		#except xxx:
+		#	os.remove(path + '.old')
+		#	os.rename(path, path + '.old')
+		#	os.rename(path + '.new', path)
+		#	os.remove(path + '.old')
+		# XXX: should we leave the old map in path.old?
 
 	def draw(self):
 		for (x, y), num in self.spawntools.items():
