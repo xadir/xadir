@@ -428,21 +428,7 @@ class xadir_main:
 		self.players.append(player(name, characters, self))
 
 	def get_path(self, start, end):
-		path = []
-		"""
-		if start == end:
-			return [start, end]
-		else:
-			temp = start
-			path.append(temp)
-			while temp != end:
-				print path
-				for c in self.get_surroundings(temp):
-					if self.get_distance(temp, end) > self.get_distance(c, end): temp = c
-				path.append(temp)
-		"""
-		path = shortest_path(self, tuple(start), tuple(end), xadir_main.get_surroundings)
-		return path
+		return shortest_path(self, tuple(start), tuple(end), xadir_main.get_surroundings)
 
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
