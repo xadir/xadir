@@ -409,15 +409,7 @@ class xadir_main:
 		return self.players
 
 	def get_other_players(self):
-		if self.turn == 0:
-			other_players = self.players[1:]
-		elif self.turn == (len(self.players) - 1):
-			other_players = self.players[:(len(self.players) - 1)]
-		else:
-			other_players = []
-			other_players.append(self.players[0:(self.turn - 1)])
-			other_players.append(self.players[(self.turn + 1):(len(self.players) - 1)])
-		return other_players
+		return [player for i, player in enumerate(self.players) if i != self.turn]
 
 	def get_current_player(self):
 		return self.players[self.turn]
