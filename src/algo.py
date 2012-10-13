@@ -16,6 +16,22 @@ def bfs(graph, src, dst, neighbours):
 				queue.append(u)
 	return {}
 
+def bfs_any(graph, src, dsts, neighbours):
+	"""Breadth-first search, shortest path to any target"""
+	path = {src: None}
+	seen = set([src])
+	queue = deque([src])
+	while queue:
+		v = queue.popleft()
+		for u in neighbours(graph, v):
+			if u not in seen:
+				path[u] = v
+				if u in dsts:
+					return path, u
+				seen.add(u)
+				queue.append(u)
+	return {}, None
+
 def bfs_area(graph, src, max_dist, neighbours):
 	"""Reachable neighbours"""
 	seen = set([src])
@@ -42,5 +58,9 @@ def read_path(path, dst):
 
 def shortest_path(graph, src, dst, neighbours):
 	path = bfs(graph, src, dst, neighbours)
+	return read_path(path, dst)
+
+def shortest_path_any(graph, src, dsts, neighbours):
+	path, dst = bfs_any(graph, src, dsts, neighbours)
 	return read_path(path, dst)
 
