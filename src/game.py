@@ -220,31 +220,30 @@ class xadir_main:
 		mouse_coords = pygame.mouse.get_pos()
 		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
 		player = self.players[self.turn]
-		characters = player.characters
-		for i in range(len(characters)):
-			char_coords = characters[i].get_coords()
+		for character in player.characters:
+			char_coords = character.get_coords()
 			if char_coords == mouse_coords:
-				if characters[i].is_selected():
-					characters[i].unselect()
+				if character.is_selected():
+					character.unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
-					characters[i].select()
-					if characters[i].mp <= 0:
-						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
+					character.select()
+					if character.mp <= 0:
+						self.movement_grid = sprite_grid([character.get_coords()], character.get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
+						self.movement_grid = sprite_grid(character.get_movement_grid(), character.get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
-			elif characters[i].is_selected():
+			elif character.is_selected():
 				self.grid_sprites = pygame.sprite.Group()
-				characters[i].unselect()
-				if characters[i].is_legal_move(mouse_coords):
-					if characters[i].is_attack_move(mouse_coords):
-						self.do_attack(characters[i], mouse_coords)
+				character.unselect()
+				if character.is_legal_move(mouse_coords):
+					if character.is_attack_move(mouse_coords):
+						self.do_attack(character, mouse_coords)
 					else:
-						self.do_move(characters[i], mouse_coords)
+						self.do_move(character, mouse_coords)
 			if char_coords != mouse_coords:
-				characters[i].unselect()
+				character.unselect()
 
 	def do_attack(self, character, mouse_coords):
 		start = character.get_coords()
