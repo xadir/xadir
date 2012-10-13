@@ -38,14 +38,7 @@ class MapEditor:
 		self.tools = Grid(*size)
 
 		if mapname:
-			map, mapsize, spawns = load_map(mapname)
-			assert mapsize[0] <= 20 and mapsize[1] <= 15
-			for y, row in enumerate(map):
-				for x, col in enumerate(row):
-					self.grid[x, y] = col
-			for player_id, points in spawns.items():
-				for point in points:
-					self.spawns[point] = player_id
+			self._load(mapname)
 
 		for y, row in enumerate(tools):
 			for x, tile_name in enumerate(row):
@@ -57,6 +50,30 @@ class MapEditor:
 		self.spawnui = UIGrid(0, 0, self.spawntools, (16, 16), 1)
 		self.left = UIGrid(0, self.spawnui.height + 6, self.tools, (16, 16), 1)
 		self.right = UIGrid(self.left.width + 6, 0, self.grid, (16, 16), 1)
+
+	def _load(self, mapname):
+		self.grid = Grid(20, 15)
+		self.spawns = Grid(20, 15)
+
+		map, mapsize, spawns = load_map(mapname)
+		assert mapsize[0] <= 20 and mapsize[1] <= 15
+		for y, row in enumerate(map):
+			for x, col in enumerate(row):
+				self.grid[x, y] = col
+		for player_id, points in spawns.items():
+			for point in points:
+				self.spawns[point] = player_id
+
+	def _save(self, f):
+		print >>f, 'SIZE', self.grid.width, self.grid.height
+		for (x, y), player_id in self.spawns.items():
+			if player_id:
+				print >>f, 'SPAWN', player_id, x, y
+		print >>f
+		for y in range(self.grid.height):
+			for x in range(self.grid.width):
+				print >>f, self.grid[x, y] or '?????',
+			print >>f
 
 	def draw(self):
 		for (x, y), num in self.spawntools.items():
@@ -142,15 +159,7 @@ class MapEditor:
 								continue
 							inpaint(self.grid, self.tiles.keys(), pos)
 				elif event.type == pygame.QUIT:
-					print 'SIZE', self.grid.width, self.grid.height
-					for (x, y), player_id in self.spawns.items():
-						if player_id:
-							print 'SPAWN', player_id, x, y
-					print
-					for y in range(self.grid.height):
-						for x in range(self.grid.width):
-							print self.grid[x, y] or '?????',
-						print
+					self._save(sys.stdout)
 					sys.exit()
 
 			time.sleep(0.05)
