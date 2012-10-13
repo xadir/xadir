@@ -508,11 +508,11 @@ class player:
 
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for i in range(len(self.characters)):
-			if self.characters[i].is_alive():
-				coords = self.characters[i].get_coords()
-				heading = self.characters[i].get_heading()
-				character_type = self.characters[i].type
+		for character in self.characters:
+			if character.is_alive():
+				coords = character.get_coords()
+				heading = character.get_heading()
+				character_type = character.type
 				tile = self.main.chartypes[character_type + '_' + str(heading)]
 				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
