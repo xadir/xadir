@@ -690,11 +690,7 @@ class character:
 	def is_legal_move(self, coords):
 		"""Before moving, check if target is inside movement grid"""
 		assert isinstance(coords, tuple)
-		movement_grid = self.get_movement_grid()
-		for i in range(len(movement_grid)):
-			if coords == movement_grid[i]:
-				return True
-		return False
+		return coords in self.get_movement_grid()
 
 	def is_attack_move(self, coords):
 		assert isinstance(coords, tuple)
