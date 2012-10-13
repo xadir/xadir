@@ -181,10 +181,10 @@ class xadir_main:
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
 		self.player_sprites.draw(self.screen)
-		self.draw_turntext()
-		self.draw_healthbars()
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
+		self.draw_turntext()
+		self.draw_healthbars()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
@@ -379,7 +379,7 @@ class xadir_main:
 			for character in player.characters:
 				coords = character.get_coords()
 				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-				tile = self.opaque_rect(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), (0, 0, 0), 50)
+				tile = self.character_mask(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), character)
 				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
@@ -455,6 +455,11 @@ class xadir_main:
 		box.fill(color)
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
+
+	def character_mask(self, rect, character):
+		tile = self.chartypes[character.type + '_' + str(character.get_heading())].convert_alpha()
+		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
+		return (tile, (rect.left, rect.top))
 
 class sprite_grid:
 	def __init__(self, grid, coords, tile):
