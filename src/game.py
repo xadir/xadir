@@ -179,8 +179,8 @@ class xadir_main:
 		# XXX: less flashy way to indicate that we're running smoothly
 		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
-		self.player_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
+		self.player_sprites.draw(self.screen)
 		self.draw_turntext()
 		self.draw_healthbars()
 		for enemy_tiles in self.enemy_tiles:
