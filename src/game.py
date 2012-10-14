@@ -233,12 +233,12 @@ class xadir_main:
 						self.movement_grid = sprite_grid([character.get_coords()], character.get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = sprite_grid(character.get_movement_grid(), character.get_coords(), self.imgs['green'])
+						self.movement_grid = sprite_grid(self.get_action_area_for(character), character.get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
 			elif character.is_selected():
 				self.grid_sprites = pygame.sprite.Group()
 				character.unselect()
-				if character.is_legal_move(mouse_coords):
+				if mouse_coords in self.get_action_area_for(character):
 					if character.is_attack_move(mouse_coords):
 						self.do_attack(character, mouse_coords)
 					else:
@@ -248,7 +248,7 @@ class xadir_main:
 
 	def do_attack(self, character, mouse_coords):
 		start = character.get_coords()
-		path = self.get_path(start, mouse_coords)
+		path = self.get_attack_path_for(character, start, mouse_coords)
 		end = path[-2]
 		distance = len(path) - 2
 		self.animate_move(path, character)
@@ -265,7 +265,7 @@ class xadir_main:
 	def do_move(self, character, mouse_coords):
 		start = character.get_coords()
 		end = mouse_coords
-		path = self.get_path(start, end)
+		path = self.get_move_path_for(character, start, end)
 		distance = len(path) - 1
 		self.animate_move(path, character)
 		character.set_coords(end)
@@ -398,9 +398,6 @@ class xadir_main:
 	def add_player(self, name, characters):
 		self.players.append(player(name, characters, self))
 
-	def get_path(self, start, end):
-		return shortest_path(self, tuple(start), tuple(end), xadir_main.get_surroundings)
-
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
@@ -411,30 +408,51 @@ class xadir_main:
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
-	def get_surroundings(self, coords):
-		"""Return surrounding tiles that are walkable"""
-		assert isinstance(coords, tuple)
-		return_grid = []
-		for x in range(-1, 2):
-			for y in range(-1, 2):
-				temp_coords = (coords[0] + x, coords[1] + y)
-				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
-		return_grid.sort(key = lambda pos2: get_distance_2(pos2, coords))
-		return return_grid
+	def is_walkable(self, coords):
+		"""Is the terrain at this point walkable?"""
+		grid = self.map.get_map()
+		return coords in grid and grid[coords] in self.walkable
 
-	def is_walkable_tile(self, coords):
-		"""To check if tile is walkable"""
-		assert isinstance(coords, tuple)
-		background_map = self.map.get_map()
-		if coords not in background_map:
-			return False
+	def is_passable_for(self, character, coords):
+		"""Is it okay for <character> to pass through this point without stopping?"""
+		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if p != character.player]
 
-		p = self.get_current_player()
-		for c in p.get_characters_coords():
-			if c == coords:
-				return False
+	def is_haltable_for(self, character, coords):
+		"""Is it okay for <character> to stop at this point?"""
+		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if c != character]
 
-		return background_map[coords] in self.walkable
+	def get_move_path_for(self, character, start, end):
+		"""Get path from start to end; all the intermediate points will be passable and the last one haltable"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert self.is_haltable_for(character, end)
+		return shortest_path(self, start, end, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
+
+	def get_attack_path_for(self, character, start, end):
+		"""Get path suitable for attacking from start to end; ie. a path where you can stop on the point just *before* the last one"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert end in [c.get_coords() for p in self.players for c in p.characters if p != character.player], 'Target square must contain enemy character'
+		# Get possible stopping points, one square away from the enemy
+		ends = self.get_neighbours(end, lambda pos: self.is_haltable_for(character, pos))
+		path = shortest_path_any(self, start, set(ends), lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
+		if path:
+			path.append(end)
+		return path
+
+	def get_action_area_for(self, character):
+		"""Get points where the character can either move or attack"""
+		result = bfs_area(self, character.coords, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
+		return list(set(result) - set(c.get_coords() for c in character.player.characters))
+
+	def get_neighbours(self, coords, filter = None, size = 1):
+		"""Get surrounding points, filtered by some function"""
+		if filter is None:
+			filter = lambda pos: True
+		grid = self.map.get_map()
+		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
+		result.sort(key = lambda pos: get_distance_2(pos, coords))
+		return result
 
 	def add_text(self, surface, text, size, coords):
 		assert isinstance(coords, tuple)
@@ -611,39 +629,6 @@ class character:
 				self.coords[1] += steps
 			elif self.heading == 270:
 				self.coords[0] -= steps
-
-	def get_movement_grid(self):
-		"""Return grid of available cells to move to"""
-		return list(bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
-
-	def get_surroundings(self, coords):
-		"""Return surrounding tiles that are walkable"""
-		assert isinstance(coords, tuple)
-		return_grid = []
-		for x in range(-1, 2):
-			for y in range(-1, 2):
-				temp_coords = (coords[0] + x, coords[1] + y)
-				#print temp_coords
-				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
-		return return_grid
-
-	def is_walkable_tile(self, coords):
-		"""To check if tile is walkable"""
-		assert isinstance(coords, tuple)
-		if coords not in self.background_map:
-			return False
-
-		p = self.main.get_current_player()
-		for c in p.characters:
-			if c.get_coords() == coords:
-				return False
-
-		return self.background_map[coords] in self.walkable_tiles
-
-	def is_legal_move(self, coords):
-		"""Before moving, check if target is inside movement grid"""
-		assert isinstance(coords, tuple)
-		return coords in self.get_movement_grid()
 
 	def is_attack_move(self, coords):
 		assert isinstance(coords, tuple)
