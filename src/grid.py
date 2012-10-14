@@ -42,15 +42,36 @@ class Grid:
 		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
 		for y in range(y_min, y_max + 1):
 			for x in range(x_min, x_max + 1):
-				yield (x, y)
+				if (x, y) != pos:
+					yield (x, y)
 
 	def env_values(self, pos, size = 1):
 		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
 		for y in range(y_min, y_max + 1):
 			for x in range(x_min, x_max + 1):
-				yield self[x, y]
+				if (x, y) != pos:
+					yield self[x, y]
 
 	def env_items(self, pos, size = 1):
+		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
+		for y in range(y_min, y_max + 1):
+			for x in range(x_min, x_max + 1):
+				if (x, y) != pos:
+					yield (x, y), self[x, y]
+
+	def full_env_keys(self, pos, size = 1):
+		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
+		for y in range(y_min, y_max + 1):
+			for x in range(x_min, x_max + 1):
+				yield (x, y)
+
+	def full_env_values(self, pos, size = 1):
+		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
+		for y in range(y_min, y_max + 1):
+			for x in range(x_min, x_max + 1):
+				yield self[x, y]
+
+	def full_env_items(self, pos, size = 1):
 		x_min, x_max, y_min, y_max = self.env_minmax(pos, size)
 		for y in range(y_min, y_max + 1):
 			for x in range(x_min, x_max + 1):
