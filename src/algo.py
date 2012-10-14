@@ -3,6 +3,8 @@ from collections import deque
 def bfs(graph, src, dst, neighbours):
 	"""Breadth-first search"""
 	path = {src: None}
+	if src == dst:
+		return path
 	seen = set([src])
 	queue = deque([src])
 	while queue:
@@ -19,6 +21,8 @@ def bfs(graph, src, dst, neighbours):
 def bfs_any(graph, src, dsts, neighbours):
 	"""Breadth-first search, shortest path to any target"""
 	path = {src: None}
+	if src in dsts:
+		return path, src
 	seen = set([src])
 	queue = deque([src])
 	while queue:
