@@ -443,7 +443,11 @@ class xadir_main:
 	def get_action_area_for(self, character):
 		"""Get points where the character can either move or attack"""
 		result = bfs_area(self, character.coords, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
-		return list(set(result) - set(c.get_coords() for c in character.player.characters))
+		# Remove own characters
+		result = set(result) - set(c.get_coords() for c in character.player.characters)
+		# Remove enemies that can't be reached
+		result = result - set(c.get_coords() for p in self.players for c in p.characters if p != character.player and not self.get_neighbours(c.get_coords(), lambda pos: pos == character.coords or pos in result))
+		return list(result)
 
 	def get_neighbours(self, coords, filter = None, size = 1):
 		"""Get surrounding points, filtered by some function"""
