@@ -492,7 +492,7 @@ class player:
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.all_characters.append(character(character_type, 5, (x, y), heading, self.main))
+			self.all_characters.append(character(self, character_type, 5, (x, y), heading, self.main))
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -524,7 +524,8 @@ class player:
 
 class character:
 	"""Universal class for any character in the game"""
-	def __init__(self, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		self.player = player
 		self.type = type
 		# Movement points
 		self.max_mp = max_mp
