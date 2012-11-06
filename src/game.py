@@ -3,8 +3,10 @@ import pygame
 import numpy
 import math
 import random
+import Image
 from pygame.locals import *
 from resources import *
+from grid import *
 from algo import *
 
 if not pygame.font:
@@ -19,6 +21,9 @@ def get_distance_2(pos1, pos2):
 def div_ceil(dividend, divisor):
 	"""Integer division, but with result rounded up instead"""
 	return (dividend - 1) / divisor + 1
+
+def sign(value):
+	return cmp(value, 0)
 
 # XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
 def scale_floor(value, old_max, new_max):
@@ -82,6 +87,32 @@ def get_hue_color(i):
 draw_main_hp_bar = draw_gradient_hp_bar
 draw_char_hp_bar = draw_solid_hp_bar2
 
+def pygame_surface_from_pil_image(im):
+	if im.mode not in ('RGB', 'RGBA'):
+		im = im.convert('RGBA')
+	data = im.tostring()
+	return pygame.image.fromstring(data, im.size, im.mode)
+
+def get_animation_frames(path):
+	anim = Image.open(path)
+	try:
+		while 1:
+			yield anim
+			# This is ugly, but PIL seems to corrupt all the
+			# other frames of animation as soon as you do
+			# *anything* with one of them. You can't even
+			# copy() each frame, you've just got to open the
+			# image again for each frame and iterate to the
+			# correct position. (Yeah, you can't even use
+			# one seek to get there...)
+			end = anim.tell()
+			anim = Image.open(path)
+			start = anim.tell()
+			for pos in range(start, end + 1):
+				anim.seek(pos+1)
+	except EOFError:
+		pass # end of sequence
+
 class xadir_main:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720, mapname='map2.txt'):
@@ -130,6 +161,7 @@ class xadir_main:
 		self.hue = 0
 		while 1:
 			self.draw()
+			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -148,13 +180,12 @@ class xadir_main:
 		# XXX: less flashy way to indicate that we're running smoothly
 		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
-		self.player_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
-		self.draw_turntext()
-		self.draw_healthbars()
+		self.player_sprites.draw(self.screen)
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
-		pygame.display.flip()
+		self.draw_turntext()
+		self.draw_healthbars()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
@@ -190,91 +221,98 @@ class xadir_main:
 		mouse_coords = pygame.mouse.get_pos()
 		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
 		player = self.players[self.turn]
-		characters = player.characters
-		for i in range(len(characters)):
-			char_coords = characters[i].get_coords()
+		for character in player.characters:
+			char_coords = character.get_coords()
 			if char_coords == mouse_coords:
-				if characters[i].is_selected():
-					characters[i].unselect()
+				if character.is_selected():
+					character.unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
-					characters[i].select()
-					if characters[i].mp <= 0:
-						self.movement_grid = sprite_grid([characters[i].get_coords()], characters[i].get_coords(), self.imgs['red'])
+					character.select()
+					if character.mp <= 0:
+						self.movement_grid = sprite_grid([character.get_coords()], character.get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = sprite_grid(characters[i].get_movement_grid(), characters[i].get_coords(), self.imgs['green'])
+						self.movement_grid = sprite_grid(self.get_action_area_for(character), character.get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
-			elif characters[i].is_selected():
-				if characters[i].is_legal_move(mouse_coords):
-					start = characters[i].get_coords()
-					if characters[i].is_attack_move(mouse_coords):
-						path = self.get_path(start, mouse_coords)
-						end = path[len(path) - 2]
-						distance = len(path) - 2
-						self.move_character(path, characters[i])
-						characters[i].set_coords(end)
-						characters[i].mp -= distance
-						characters[i].set_heading(self.get_heading(end, mouse_coords))
-						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect()
-						target = None
-						for p in self.get_other_players():
-							for c in p.characters:
-								if c.get_coords() == mouse_coords:
-									target = c
-						self.attack(characters[i], target)
+			elif character.is_selected():
+				self.grid_sprites = pygame.sprite.Group()
+				character.unselect()
+				if mouse_coords in self.get_action_area_for(character):
+					if character.is_attack_move(mouse_coords):
+						self.do_attack(character, mouse_coords)
 					else:
-						end = mouse_coords
-						path = self.get_path(start, end)
-						distance = len(path) - 1
-						self.move_character(path, characters[i])
-						characters[i].set_coords(end)
-						characters[i].mp -= distance
-						new_heading = self.get_heading(path[(len(path)-2)], mouse_coords)
-						characters[i].set_heading(new_heading)
-						self.grid_sprites = pygame.sprite.Group()
-						characters[i].unselect()
-				else:
-					characters[i].unselect()
-					self.grid_sprites = pygame.sprite.Group()
+						self.do_move(character, mouse_coords)
 			if char_coords != mouse_coords:
-				characters[i].unselect()
+				character.unselect()
 
-	def move_character(self, path, character):
+	def do_attack(self, character, mouse_coords):
+		start = character.get_coords()
+		path = self.get_attack_path_for(character, start, mouse_coords)
+		end = path[-2]
+		distance = len(path) - 2
+		self.animate_move(path, character)
+		character.set_coords(end)
+		character.mp -= distance
+		character.set_heading(self.get_heading(end, mouse_coords))
+		target = None
+		for p in self.get_other_players():
+			for c in p.characters:
+				if c.get_coords() == mouse_coords:
+					target = c
+		self.attack(character, target)
+
+	def do_move(self, character, mouse_coords):
+		start = character.get_coords()
+		end = mouse_coords
+		path = self.get_move_path_for(character, start, end)
+		distance = len(path) - 1
+		self.animate_move(path, character)
+		character.set_coords(end)
+		character.mp -= distance
+		new_heading = self.get_heading(path[-2], mouse_coords)
+		character.set_heading(new_heading)
+
+	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
 			character.set_heading(self.get_heading(path[i], path[i+1]))
 			character.set_coords(path[i])
 			self.draw()
-			self.clock.tick(3)
+			pygame.display.flip()
+			self.clock.tick(5)
+
+	def animate_hit(self, coords, file_path):
+		anim_rect = pygame.Rect(coords[0], coords[1] - 8*SCALE, 24, 32)
+
+		for im in get_animation_frames(file_path):
+			surface = pygame_surface_from_pil_image(im)
+			surface = pygame.transform.scale(surface, (24*SCALE, 32*SCALE))
+			self.draw()
+			self.screen.blit(surface, anim_rect)
+			pygame.display.flip()
+			self.clock.tick(10)
+
+	def animate_hp_change(self, character, change):
+		change_sign = sign(change)
+		change_amount = abs(change)
+		orig_hp = character.hp
+		for i in range(1, 30):
+			character.hp = orig_hp + change_sign * scale(i, 30, change_amount)
+			if character.hp < 1:
+				break
+			self.draw()
+			pygame.display.flip()
+			self.clock.tick(30)
+		character.hp = orig_hp
 
 	def get_heading(self, a, b):
-		print a
-		print b
-		delta_coords = (b[0] - a[0], b[1] - a[1])
-		print delta_coords
-		if delta_coords == (1, 0):
-			return 0
-		elif delta_coords == (1, 1):
-			#return 45
-			return 0
-		elif delta_coords == (0, 1):
-			return 270
-		elif delta_coords == (-1, 1):
-			#return 135
-			return 180
-		elif delta_coords == (-1, 0):
-			return 180
-		elif delta_coords == (-1, -1):
-			#return 225
-			return 180
-		elif delta_coords == (0, -1):
-			return 90
-		elif delta_coords == (1, -1):
-			#return 315
-			return 0
-		else:
-			return 0
+		delta = (b[0] - a[0], b[1] - a[1])
+		# Negate y because screen coordinates differ from math coordinates
+		angle = math.degrees(math.atan2(-delta[1], delta[0])) % 360
+		# Make the angle an integer and a multiple of 45
+		angle = int(round(angle / 45)) * 45
+		# Prefer horizontal directions when the direction is not a multiple of 90
+		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
 
 	def update_sprites(self):
 		self.player_sprites = pygame.sprite.LayeredUpdates()
@@ -320,7 +358,7 @@ class xadir_main:
 			self.screen.blit(playertext, rect)
 			# XXX: take this from text rect size?
 			coords[1] += 12 + margin
-			for character in player.characters:
+			for character in player.all_characters:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
 				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
@@ -340,28 +378,16 @@ class xadir_main:
 		players = self.get_other_players()
 		for player in players:
 			for character in player.characters:
-				if character.is_alive():
-					coords = character.get_coords()
-					print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-					tile = self.opaque_rect(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), (0, 0, 0), 50)
-					self.enemy_tiles.append(tile)
-				else:
-					coords = character.get_coords()
-					print "enemy dead at (%d,%d)" % (coords[0], coords[1])
+				coords = character.get_coords()
+				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
+				tile = self.character_mask(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), character)
+				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
 		return self.players
 
 	def get_other_players(self):
-		if self.turn == 0:
-			other_players = self.players[1:]
-		elif self.turn == (len(self.players) - 1):
-			other_players = self.players[:(len(self.players) - 1)]
-		else:
-			other_players = []
-			other_players.append(self.players[0:(self.turn - 1)])
-			other_players.append(self.players[(self.turn + 1):(len(self.players) - 1)])
-		return other_players
+		return [player for i, player in enumerate(self.players) if i != self.turn]
 
 	def get_current_player(self):
 		return self.players[self.turn]
@@ -372,62 +398,65 @@ class xadir_main:
 	def add_player(self, name, characters):
 		self.players.append(player(name, characters, self))
 
-	def get_path(self, start, end):
-		path = []
-		"""
-		if start == end:
-			return [start, end]
-		else:
-			temp = start
-			path.append(temp)
-			while temp != end:
-				print path
-				for c in self.get_surroundings(temp):
-					if self.get_distance(temp, end) > self.get_distance(c, end): temp = c
-				path.append(temp)
-		"""
-		path = shortest_path(self, tuple(start), tuple(end), xadir_main.get_surroundings)
-		return path
-
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
 		target_position = target.get_coords()
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.mp > 0:	
+		if attacker.mp > 0:
+			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
 			target.take_hit((attacker.attack_stat * attacker.mp))
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
-	def get_surroundings(self, coords):
-		"""Return surrounding tiles that are walkable"""
-		assert isinstance(coords, tuple)
-		return_grid = []
-		for x in range(-1, 2):
-			for y in range(-1, 2):
-				temp_coords = (coords[0] + x, coords[1] + y)
-				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
-		return_grid.sort(key = lambda pos2: get_distance_2(pos2, coords))
-		return return_grid
+	def is_walkable(self, coords):
+		"""Is the terrain at this point walkable?"""
+		grid = self.map.get_map()
+		return coords in grid and grid[coords] in self.walkable
 
-	def is_walkable_tile(self, coords):
-		"""To check if tile is walkable"""
-		assert isinstance(coords, tuple)
-		if coords[1] >= 15: return False
-		if coords[0] >= 20: return False
-		if coords[0] < 0: return False
-		if coords[1] < 0: return False
+	def is_passable_for(self, character, coords):
+		"""Is it okay for <character> to pass through this point without stopping?"""
+		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if p != character.player]
 
-		p = self.get_current_player()
-		for c in p.get_characters_coords():
-			if c == coords:
-				return False
+	def is_haltable_for(self, character, coords):
+		"""Is it okay for <character> to stop at this point?"""
+		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if c != character]
 
-		background_map = self.map.get_map()
-		for w in self.walkable:
-			if background_map[coords[1]][coords[0]] == w:
-				return True
+	def get_move_path_for(self, character, start, end):
+		"""Get path from start to end; all the intermediate points will be passable and the last one haltable"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert self.is_haltable_for(character, end)
+		return shortest_path(self, start, end, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
 
-		return False
+	def get_attack_path_for(self, character, start, end):
+		"""Get path suitable for attacking from start to end; ie. a path where you can stop on the point just *before* the last one"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert end in [c.get_coords() for p in self.players for c in p.characters if p != character.player], 'Target square must contain enemy character'
+		# Get possible stopping points, one square away from the enemy
+		ends = self.get_neighbours(end, lambda pos: self.is_haltable_for(character, pos))
+		path = shortest_path_any(self, start, set(ends), lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
+		if path:
+			path.append(end)
+		return path
+
+	def get_action_area_for(self, character):
+		"""Get points where the character can either move or attack"""
+		result = bfs_area(self, character.coords, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
+		# Remove own characters
+		result = set(result) - set(c.get_coords() for c in character.player.characters)
+		# Remove enemies that can't be reached
+		result = result - set(c.get_coords() for p in self.players for c in p.characters if p != character.player and not self.get_neighbours(c.get_coords(), lambda pos: pos == character.coords or pos in result))
+		return list(result)
+
+	def get_neighbours(self, coords, filter = None, size = 1):
+		"""Get surrounding points, filtered by some function"""
+		if filter is None:
+			filter = lambda pos: True
+		grid = self.map.get_map()
+		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
+		result.sort(key = lambda pos: get_distance_2(pos, coords))
+		return result
 
 	def add_text(self, surface, text, size, coords):
 		assert isinstance(coords, tuple)
@@ -444,6 +473,11 @@ class xadir_main:
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
 
+	def character_mask(self, rect, character):
+		tile = self.chartypes[character.type + '_' + str(character.get_heading())].convert_alpha()
+		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
+		return (tile, (rect.left, rect.top))
+
 class sprite_grid:
 	def __init__(self, grid, coords, tile):
 		self.sprites = pygame.sprite.Group()
@@ -455,14 +489,12 @@ class background_map:
 	def __init__(self, map, width, height, tiletypes):
 		self.width = width
 		self.height = height
-		self.map = map
+		self.map = Grid(width, height, map)
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for y in range(self.height):
-			for x in range(self.width):
-				tiletype = self.map[y][x]
-				tile = tiletypes[tiletype]
-				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
+		for (x, y), tiletype in self.map.items():
+			tile = tiletypes[tiletype]
+			#print x, y
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 
 	def get_map(self):
 		return self.map
@@ -474,7 +506,7 @@ class player:
 		self.main = main
 		self.coords = coords
 		self.sprites = pygame.sprite.LayeredUpdates()
-		self.characters = []
+		self.all_characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
 			x = coords[i][1]
@@ -482,7 +514,10 @@ class player:
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.characters.append(character(character_type, 5, (x, y), heading, self.main))
+			self.all_characters.append(character(self, character_type, 5, (x, y), heading, self.main))
+
+	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
+	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
 
 	def get_characters_coords(self):
 		coords = []
@@ -490,39 +525,29 @@ class player:
 			coords.append(i.get_coords())
 		return coords
 
-	def select_character(self, character):
-		self.characters[character].select()
-
-	def unselect_character(self, character):
-		self.characters[character].unselect()
-
-	def character_is_selected(self, character):
-		return self.characters[character].is_selected()
-
 	def update_sprites(self):
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for i in range(len(self.characters)):
-			if self.characters[i].is_alive():
-				coords = self.characters[i].get_coords()
-				heading = self.characters[i].get_heading()
-				character_type = self.characters[i].type
-				tile = self.main.chartypes[character_type + '_' + str(heading)]
-				self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
+		for character in self.characters:
+			coords = character.get_coords()
+			heading = character.get_heading()
+			character_type = character.type
+			tile = self.main.chartypes[character_type + '_' + str(heading)]
+			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
 		for c in self.characters:
-			if c.is_alive():
-				points_left += c.mp
+			points_left += c.mp
 		return points_left
 
 	def reset_movement_points(self):
-		for c in self.characters:
+		for c in self.all_characters:
 			c.mp = c.max_mp
 
 class character:
 	"""Universal class for any character in the game"""
-	def __init__(self, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		self.player = player
 		self.type = type
 		# Movement points
 		self.max_mp = max_mp
@@ -566,6 +591,7 @@ class character:
 		return self.selected
 
 	def take_hit(self, attack_points):
+		self.main.animate_hp_change(self, -attack_points)
 		self.hp -= attack_points
 		if self.hp < 1:
 			self.hp = 0
@@ -607,50 +633,6 @@ class character:
 				self.coords[1] += steps
 			elif self.heading == 270:
 				self.coords[0] -= steps
-
-	def get_movement_grid(self):
-		"""Return grid of available cells to move to"""
-		return list(bfs_area(self, tuple(self.coords), self.mp, character.get_surroundings))
-
-	def get_surroundings(self, coords):
-		"""Return surrounding tiles that are walkable"""
-		assert isinstance(coords, tuple)
-		return_grid = []
-		for x in range(-1, 2):
-			for y in range(-1, 2):
-				temp_coords = (coords[0] + x, coords[1] + y)
-				#print temp_coords
-				if self.is_walkable_tile(temp_coords): return_grid.append(temp_coords)
-		return return_grid
-
-	def is_walkable_tile(self, coords):
-		"""To check if tile is walkable"""
-		assert isinstance(coords, tuple)
-		if coords[1] >= 15: return False
-		if coords[0] >= 20: return False
-		if coords[0] < 0: return False
-		if coords[1] < 0: return False
-
-		p = self.main.get_current_player()
-		for c in p.characters:
-			if c.get_coords() == coords:
-				if c.is_alive():
-					return False
-
-		for w in self.walkable_tiles:
-			if self.background_map[coords[1]][coords[0]] == w:
-				return True
-
-		return False
-
-	def is_legal_move(self, coords):
-		"""Before moving, check if target is inside movement grid"""
-		assert isinstance(coords, tuple)
-		movement_grid = self.get_movement_grid()
-		for i in range(len(movement_grid)):
-			if coords == movement_grid[i]:
-				return True
-		return False
 
 	def is_attack_move(self, coords):
 		assert isinstance(coords, tuple)

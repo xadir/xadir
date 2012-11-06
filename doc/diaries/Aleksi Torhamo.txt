@@ -1,4 +1,4 @@
-total: 53t
+total: 67h (+4h)
 
 - 18.9. (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
@@ -64,4 +64,22 @@ total: 53t
 
 - 9.10. (6h) py2exe
 	- Made building .exe with py2exe work
+
+- 12.10. (4h+4h) Animations
+	- Animations
+	- Spent 4h finding out whether the PIL behavior is a bug or not...
+
+- 12.10. (1h) Checking and merging errors to github
+
+- 13.10. (4h) Various
+	- Finished merging errors to github issues
+	- Added real saving to map editor (not used yet)
+	- Improved look&feel
+	- Simplified code
+	- Fixed bugs (dead characters behaving like living ones)
+
+- 14.10. (5h) Revamped movement
+	- Replaced movement machinery
+	- Fixed inverted blocking logic
+	- Prevented characters ending up on same square
 
