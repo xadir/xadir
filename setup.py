@@ -19,7 +19,8 @@ for data_dir in data_dirs:
 	paths = []
 	for filename in filenames:
 		path = os.path.join(basedir, data_dir, filename)
-		paths.append(path)
+		if os.path.isfile(path):
+			paths.append(path)
 	data_files.append((data_dir, paths))
 
 setup(
