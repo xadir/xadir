@@ -17,14 +17,17 @@ class Menu:
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
-		self.sidebar = pygame.Surface((200, 720))
-		self.sidebar_rect = pygame.Rect(0, 0, 200, 720)
+		self.titlefield = pygame.Surface((1200, 350))
+		self.titlefield_rect = pygame.Rect(0, 0, 1200, 350)
+		self.titlefield.fill((50, 50, 50))
+		self.sidebar = pygame.Surface((200, 370))
+		self.sidebar_rect = pygame.Rect(0, 350, 200, 370)
 		self.sidebar.fill((159, 182, 205))
-		self.mapfield = pygame.Surface((480, 720))
-		self.mapfield_rect = pygame.Rect(202, 0, 480, 720)
+		self.mapfield = pygame.Surface((480, 370))
+		self.mapfield_rect = pygame.Rect(202, 350, 480, 370)
 		self.mapfield.fill((100, 100, 100))
-		self.playerfield = pygame.Surface((514, 720))
-		self.playerfield_rect = pygame.Rect(684, 0, 514, 720)
+		self.playerfield = pygame.Surface((514, 370))
+		self.playerfield_rect = pygame.Rect(684, 350, 514, 370)
 		self.playerfield.fill((150, 150, 150))
 		self.buttonfont = pygame.font.Font(FONT, int(40*FONTSCALE))
 		self.mapname = "nomap"
@@ -36,9 +39,6 @@ class Menu:
 
 	def list_maps(self):
 		maps = os.listdir(MAPDIR)
-		print "from list_maps"
-		print maps
-		print
 		return maps
 
 	def add_map(self, mapname, x, y, w, h):
@@ -61,19 +61,15 @@ class Menu:
 					maps.pop(i)
 					i = i - 1
 			i = i + 1
-		#print "from update_maplist"
-		#print maps
-		#print
 		x = 10
-		y = 10
+		y = 360
 		w = 300
 		h = 20
 		margin = 2
 		self.maplist = []
 		for m in maps:
 			self.maplist.append(self.add_map(m, x, y, h, w))
-			self.add_map(m, x, y, w, h)
-			#print self.maplinks			
+			self.add_map(m, x, y, w, h)		
 			y = (y + h) + margin
 
 	def write_button(self, surface, text, x, y):
@@ -118,9 +114,13 @@ class Menu:
 		self.buttons.append(Button(20, 600, 80, 40, "Load", 40, self.screen, self.load_map))
 		self.buttons.append(Button(120, 600, 80, 40, "Edit", 40, self.screen, self.edit_map))
 		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
+		
+		title_image = load_image("title.png", -1)
+		self.titlefield.blit(title_image, title_image.get_rect())
 
 		area = None
-		self.screen.fill((0, 0, 0))
+		self.screen.fill((40, 40, 40))
+		self.screen.blit(self.titlefield, self.titlefield_rect)
 		self.screen.blit(self.sidebar, self.sidebar_rect)
 		self.screen.blit(self.mapfield, self.mapfield_rect)
 		self.screen.blit(self.playerfield, self.playerfield_rect)
@@ -216,7 +216,7 @@ class preview_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(202+x*ORIG_TILE_SIZE[0], y*ORIG_TILE_SIZE[1], *ORIG_TILE_SIZE), layer = y))
+				self.sprites.add(Tile(tile, pygame.Rect(202+x*ORIG_TILE_SIZE[0], 350+y*ORIG_TILE_SIZE[1], *ORIG_TILE_SIZE), layer = y))
 	def get_sprites(self):
 		return self.sprites
 
