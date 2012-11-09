@@ -20,9 +20,12 @@ class Menu:
 		self.sidebar = pygame.Surface((200, 720))
 		self.sidebar_rect = pygame.Rect(0, 0, 200, 720)
 		self.sidebar.fill((159, 182, 205))
-		self.mapfield = pygame.Surface((1000, 720))
-		self.mapfield_rect = pygame.Rect(200, 0, 1000, 720)
-		self.mapfield.fill((10, 10, 10))
+		self.mapfield = pygame.Surface((480, 720))
+		self.mapfield_rect = pygame.Rect(202, 0, 480, 720)
+		self.mapfield.fill((100, 100, 100))
+		self.playerfield = pygame.Surface((514, 720))
+		self.playerfield_rect = pygame.Rect(684, 0, 514, 720)
+		self.playerfield.fill((150, 150, 150))
 		self.buttonfont = pygame.font.Font(FONT, int(40*FONTSCALE))
 		self.mapname = "nomap"
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', ORIG_TILE_SIZE, (255, 0, 255), 1)
@@ -88,7 +91,7 @@ class Menu:
 		map, mapsize, spawns = load_map(self.mapname)
 		self.map = preview_map(map, *mapsize, tiletypes = self.tiletypes)
 		self.map_sprites = self.map.get_sprites()
-		self.mapfield.fill((10, 10, 10))
+		self.mapfield.fill((100, 100, 100))
 		self.screen.blit(self.mapfield, self.mapfield_rect)
 		self.map_sprites.draw(self.screen)
 
@@ -113,6 +116,7 @@ class Menu:
 		self.screen.fill((0, 0, 0))
 		self.screen.blit(self.sidebar, self.sidebar_rect)
 		self.screen.blit(self.mapfield, self.mapfield_rect)
+		self.screen.blit(self.playerfield, self.playerfield_rect)
 		while 1:			
 			for b in self.buttons:
 				b.draw()
@@ -205,7 +209,7 @@ class preview_map:
 				tiletype = self.map[y][x]
 				tile = tiletypes[tiletype]
 				#print x, y
-				self.sprites.add(Tile(tile, pygame.Rect(200+x*ORIG_TILE_SIZE[0], y*ORIG_TILE_SIZE[1], *ORIG_TILE_SIZE), layer = y))
+				self.sprites.add(Tile(tile, pygame.Rect(202+x*ORIG_TILE_SIZE[0], y*ORIG_TILE_SIZE[1], *ORIG_TILE_SIZE), layer = y))
 	def get_sprites(self):
 		return self.sprites
 
