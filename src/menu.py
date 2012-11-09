@@ -48,15 +48,22 @@ class Menu:
 		maps = self.list_maps()
 		i = 0
 		while i < len(maps):
-			try:
-				map, mapsize, spawns = load_map(maps[i])
-			except:
+			if maps[i] == "tools.txt":
 				maps.pop(i)
 				i = i - 1
+			else:
+				try:
+					map, mapsize, spawns = load_map(maps[i])
+					if mapsize != (20,15):
+						maps.pop(i)
+						i = i - 1
+				except:
+					maps.pop(i)
+					i = i - 1
 			i = i + 1
-		print "from update_maplist"
-		print maps
-		print
+		#print "from update_maplist"
+		#print maps
+		#print
 		x = 10
 		y = 10
 		w = 300
@@ -66,7 +73,7 @@ class Menu:
 		for m in maps:
 			self.maplist.append(self.add_map(m, x, y, h, w))
 			self.add_map(m, x, y, w, h)
-			print self.maplinks			
+			#print self.maplinks			
 			y = (y + h) + margin
 
 	def write_button(self, surface, text, x, y):
