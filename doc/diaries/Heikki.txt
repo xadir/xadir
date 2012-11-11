@@ -79,3 +79,7 @@ Total: 85t
 	- Dokumentin kirjoitus
 	- Ideointia
 	- Karttatiilien suunnittelua
+
+- 9.10 (6h)
+	- Exen generointi
+	- Päävalikon layoutin fiksailua
