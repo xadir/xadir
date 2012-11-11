@@ -30,8 +30,12 @@ class CharTest:
 		"""
 
 		self.sprites = pygame.sprite.LayeredUpdates()
-		self.sprites.add(race_sprite('longear').get_sprite(0, 0, '270'))
-		self.sprites.add(race_sprite('longear').get_sprites(0, 60))
+		self.sprites.add(race_sprite('Longear').get_sprite(0, 0, '270'))
+		self.sprites.add(race_sprite('Ghost').get_sprite(0, 60, '270'))
+		self.sprites.add(race_sprite('Croco').get_sprite(0, 120, '270'))
+		self.sprites.add(race_sprite('Longear').get_sprites(0, 200))
+		self.sprites.add(race_sprite('Ghost').get_sprites(0, 260))
+		self.sprites.add(race_sprite('Croco').get_sprites(0, 320))
 
 
 	def loop(self):
@@ -48,6 +52,19 @@ class CharTest:
 			time.sleep(0.05)
 
 class race_sprite:
+	def load_races(self, conf_file):
+		path = os.path.join(GFXDIR, 'race_sprites.txt')
+		f = open(path, 'r')
+		
+		self.races = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			self.races[columns[0]] = [columns[1], columns[2]]
+
 	def load_characters(self, filename):
 		#chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		#chars2 = load_tiles('sprite_collection_2.png', CHAR_SIZE, (255, 0, 255), SCALE)
@@ -67,11 +84,13 @@ class race_sprite:
 	def __init__(self, race):
 		self.race = race
 		self.sprites = pygame.sprite.LayeredUpdates()
-		races = {'longear': ['sprite_collection.png', 'char1']}
+		
+		self.load_races('race_sprites.txt')
+		#races = {'longear': ['sprite_collection.png', '1']}
 
-		temp = races[race]
+		temp = self.races[race]
 		self.path = temp[0]
-		self.place = temp[1]
+		self.place = 'char' + temp[1]
 
 		self.load_characters(self.path)
 
