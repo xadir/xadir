@@ -36,6 +36,14 @@ class CharTest:
 		self.sprites.add(race_sprite('Longear').get_sprites(0, 200))
 		self.sprites.add(race_sprite('Ghost').get_sprites(0, 260))
 		self.sprites.add(race_sprite('Croco').get_sprites(0, 320))
+		
+		self.preview_sprite = race_sprite('Longear').get_sprite(0, 400, '270')
+		self.preview_sprite2 = race_sprite('Ghost').get_sprite(100, 400, '270')
+		self.preview_info = [('Health', 100), ('Attack', 100), ('Defence', 50)]
+		self.preview_info2 = [('Health', 100), ('Attack', 100), ('Defence', 50), ('Dexterity', 20)]
+		
+		self.preview = race_preview(self.preview_sprite, self.preview_info, 0, 400, (0, 0, 0), (150, 150, 150))
+		self.preview2 = race_preview(self.preview_sprite2, self.preview_info2, 100, 400, (0, 0, 0), (150, 150, 150))
 
 
 	def loop(self):
@@ -43,6 +51,8 @@ class CharTest:
 		while 1:
 			self.screen.fill((127, 127, 127))
 			self.sprites.draw(self.screen)
+			self.preview.draw_preview(self.screen)
+			self.preview2.draw_preview(self.screen)
 			pygame.display.flip()
 
 			for event in pygame.event.get():
@@ -50,6 +60,54 @@ class CharTest:
 					sys.exit()
 
 			time.sleep(0.05)
+			
+class race_preview:
+	def __init__(self, sprite, text, x=0, y=0, font_color=(0,0,0), font_bg=(159, 182, 205)):
+		self.sprite = sprite
+		self.text = text
+		self.x = x
+		self.y = y
+		self.font_color = font_color
+		self.font_bg = font_bg
+		
+		self.sprites = pygame.sprite.LayeredUpdates()
+		self.sprites.add(self.sprite)
+		
+		self.infofont = pygame.font.Font(FONT, int(20*FONTSCALE))
+		self.infotext = []
+		self.inforect = []
+		self.max_width = 0
+		
+		for i in range(len(self.text)):
+			text = self.text[i]
+			self.temptext = self.infofont.render(text[0] + ': ' + str(text[1]), True, self.font_color, self.font_bg)
+			self.temprect = self.temptext.get_rect()
+			self.temprect.centerx = self.x + 70
+			self.temprect.top = self.y + 110 + (i*15)
+			if self.temprect.width > self.max_width:
+				self.max_width = self.temprect.width
+			
+			self.infotext.append(self.temptext)
+			self.inforect.append(self.temprect)
+
+		self.border = pygame.Surface((self.max_width + 8, (len(self.text))*15 + 69))
+		self.border.fill((50,50,50))
+		self.borderrect = self.border.get_rect()
+		self.borderrect.centerx = self.x + 70
+		self.borderrect.top = self.y + 48
+		
+		self.background = pygame.Surface((self.max_width + 4, (len(self.text))*15 + 65))
+		self.background.fill(self.font_bg)
+		self.bgrect = self.background.get_rect()
+		self.bgrect.centerx = self.x + 70
+		self.bgrect.top = self.y + 50
+		
+	def draw_preview(self, screen):
+		screen.blit(self.border, self.borderrect)
+		screen.blit(self.background, self.bgrect)
+		self.sprites.draw(screen)
+		for i in range(len(self.infotext)):
+			screen.blit(self.infotext[i], self.inforect[i])
 
 class race_sprite:
 	def load_races(self, conf_file):
