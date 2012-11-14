@@ -5,6 +5,7 @@ from pygame.locals import *
 from resources import *
 from config import *
 import game
+import eztext
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -20,18 +21,20 @@ class Menu:
 		self.titlefield = pygame.Surface((1200, 350))
 		self.titlefield_rect = pygame.Rect(0, 0, 1200, 350)
 		self.titlefield.fill((50, 50, 50))
-		self.sidebar = pygame.Surface((200, 370))
-		self.sidebar_rect = pygame.Rect(0, 350, 200, 370)
+		self.sidebar = pygame.Surface((200, 360))
+		self.sidebar_rect = pygame.Rect(0, 350, 200, 360)
 		self.sidebar.fill((159, 182, 205))
-		self.mapfield = pygame.Surface((480, 370))
-		self.mapfield_rect = pygame.Rect(202, 350, 480, 370)
+		self.mapfield = pygame.Surface((480, 360))
+		self.mapfield_rect = pygame.Rect(202, 350, 480, 360)
 		self.mapfield.fill((100, 100, 100))
-		self.playerfield = pygame.Surface((514, 370))
-		self.playerfield_rect = pygame.Rect(684, 350, 514, 370)
+		self.playerfield = pygame.Surface((514, 360))
+		self.playerfield_rect = pygame.Rect(684, 350, 514, 360)
 		self.playerfield.fill((150, 150, 150))
 		self.buttonfont = pygame.font.Font(FONT, int(40*FONTSCALE))
 		self.mapname = "nomap"
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', ORIG_TILE_SIZE, (255, 0, 255), 1)
+		
+		self.txtbx = eztext.Input(x=690, y=360, maxlength=45, color=(0,0,0), prompt='Team name: ')
 
 		self.buttons = []
 		self.maplist = []
@@ -124,13 +127,21 @@ class Menu:
 		self.screen.blit(self.sidebar, self.sidebar_rect)
 		self.screen.blit(self.mapfield, self.mapfield_rect)
 		self.screen.blit(self.playerfield, self.playerfield_rect)
-		while 1:			
+		
+		self.select_map(self.maplinks[0].get_name())
+		
+		while 1:
+			events = pygame.event.get()
+			# update txtbx
+			self.txtbx.update(events)
+			# blit txtbx on the sceen
+			self.txtbx.draw(self.screen)
 			for b in self.buttons:
 				b.draw()
 			for m in self.maplinks:
 				m.draw()
 			pygame.display.flip()
-			for event in pygame.event.get():
+			for event in events:
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						for m in self.maplinks:
