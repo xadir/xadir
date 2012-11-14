@@ -80,6 +80,19 @@ Total: 85t
 	- Ideointia
 	- Karttatiilien suunnittelua
 
-- 9.10 (6h)
+- 9.11 (6h)
 	- Exen generointi
 	- Päävalikon layoutin fiksailua
+
+- 11.11 (4h)
+	- Hahmon valintatyökalun kehitystä
+
+- 12.11 (6h)
+	- Hahmon valintatyökalun kehitystä
+
+- 13.11 (6h)
+	- Hahmon valintatyökalun kehitystä
+
+- 14.11 (6h)
+	- Hahmon valintatyökalun kehitystä
+	- Valintatyökalun implementointi päävalikkoon
