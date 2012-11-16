@@ -123,10 +123,22 @@ class Menu:
 		self.buttons.append(Button(120, 600, 80, 40, "Edit", 40, self.screen, self.edit_map))
 		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
 		
-		self.add_char_button('Longear', 690, 400)
-		self.add_char_button('Croco', 790, 400)
-		self.add_char_button('Human', 890, 400)
-		
+		self.add_char_button('Human', 690, 390)
+		self.add_char_button('Human2', 790, 390)
+		self.add_char_button('Human3', 890, 390)
+		self.add_char_button('Devil', 990, 390)
+		self.add_char_button('Elf', 1090, 390)
+		self.add_char_button('Alien', 690, 530)
+		self.add_char_button('WhiteGuy', 790, 530)
+		self.add_char_button('Medusa', 890, 530)
+		self.add_char_button('Dragon', 990, 530)
+		self.add_char_button('Taurus', 1090, 530)
+		"""
+		self.add_char_button('Squid', 690, 600)
+		self.add_char_button('GreyGuy', 790, 600)
+		self.add_char_button('Imhotep', 890, 700)
+		self.add_char_button('Wolf', 990, 700)
+		"""
 		title_image = load_image("title.png", -1)
 		self.titlefield.blit(title_image, title_image.get_rect())
 
