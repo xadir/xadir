@@ -4,6 +4,7 @@ import pygame._view # Because py2exe, that's why (should really probably do this
 from pygame.locals import *
 from resources import *
 from config import *
+from chartest import *
 import game
 import eztext
 
@@ -39,6 +40,7 @@ class Menu:
 		self.buttons = []
 		self.maplist = []
 		self.maplinks = []
+		self.race_buttons = []
 
 	def list_maps(self):
 		maps = os.listdir(MAPDIR)
@@ -106,6 +108,9 @@ class Menu:
 
 	def get_map(self):
 		return self.map
+		
+	def add_char_button(self, race_name, x, y):
+		self.race_buttons.append(race_preview(race_name=race_name, x=x, y=y))
 
 	def quit(self):
 		sys.exit()
@@ -117,6 +122,8 @@ class Menu:
 		self.buttons.append(Button(20, 600, 80, 40, "Load", 40, self.screen, self.load_map))
 		self.buttons.append(Button(120, 600, 80, 40, "Edit", 40, self.screen, self.edit_map))
 		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
+		
+		self.add_char_button('Longear', 690, 400)
 		
 		title_image = load_image("title.png", -1)
 		self.titlefield.blit(title_image, title_image.get_rect())
@@ -136,6 +143,8 @@ class Menu:
 			self.txtbx.update(events)
 			# blit txtbx on the sceen
 			self.txtbx.draw(self.screen)
+			for i in self.race_buttons:
+				r.draw(self.screen)
 			for b in self.buttons:
 				b.draw()
 			for m in self.maplinks:
