@@ -24,8 +24,10 @@ class CharTest:
 		
 		self.preview = []
 		self.preview.append(race_preview(race_name = 'Longear', x = 0, y = 0))
-		self.preview.append(race_preview(race_name = 'Longear', x = 100, y = 0))
-		self.preview.append(race_preview(race_name = 'Croco', x = 200, y = 0))
+		#self.preview.append(race_preview(race_name = 'Longear', x = 100, y = 0))
+		self.preview.append(race_preview(race_name = 'Croco', x = 100, y = 0))
+		self.preview.append(race_preview(race_name = 'Human', x = 200, y = 0))
+		self.preview.append(race_preview(race_name = 'Dragon', x = 300, y = 0))
 
 
 	def loop(self):
@@ -41,14 +43,14 @@ class CharTest:
 					if event.button == 1:
 						for p in self.preview:
 							if p.contains(*event.pos):
-								p.select()
+								p.toggle()
 				elif event.type == pygame.QUIT:
 					sys.exit()
 
 			time.sleep(0.05)
 			
 class race_preview:
-	def __init__(self, race_name, sprite_file='race_sprites.txt', stat_file='race_stats.txt', x=0, y=0, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(50,50,0)):
+	def __init__(self, race_name, sprite_file='race_sprites.txt', stat_file='race_stats.txt', x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(255,255,0)):
 		self.race_name = race_name
 		self.sprite_file = sprite_file
 		self.stat_file = stat_file
@@ -58,7 +60,8 @@ class race_preview:
 		self.font_bg = font_bg
 		self.border_color = border_color
 		self.border_selected = border_selected
-		self.load_sprite()
+		self.selected = selected
+		self.load_tile()
 		self.load_text()
 		self.load_box()
 	
@@ -74,10 +77,12 @@ class race_preview:
 	def toggle(self):
 		self.box.toggle()
 		
-	def load_sprite(self):
-		self.race_sprite = race_sprite(self.race_name).get_sprite(self.x, self.y, '270')
+	def load_tile(self):
+		self.race_tile = race_tile(self.race_name).get_tile(self.x, self.y, '270')
 	
 	def load_text(self):
+		print GFXDIR
+		print self.stat_file
 		path = os.path.join(GFXDIR, self.stat_file)
 		f = open(path, 'r')
 		
@@ -98,14 +103,14 @@ class race_preview:
 		f.close()
 		
 	def load_box(self):
-		self.box = info_box(self.race_sprite, self.race_stats[self.race_name], self.x, self.y, self.font_color, self.font_bg, self.border_color, self.border_selected)
+		self.box = info_box(self.race_tile, self.race_stats[self.race_name], self.x, self.y, self.selected, self.font_color, self.font_bg, self.border_color, self.border_selected)
 	
 	def draw(self, surface):
 		self.box.draw_box(surface)
 		
 class info_box:
-	def __init__(self, sprite, text, x=0, y=0, font_color=(0,0,0), font_bg=(159, 182, 205), border_color_unselected=(50,50,50), border_color_selected=(255,255,255)):
-		self.sprite = sprite
+	def __init__(self, tile, text, x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color_unselected=(50,50,50), border_color_selected=(255,255,255)):
+		self.tile = tile
 		self.text = text
 		self.x = x
 		self.y = y
@@ -113,10 +118,11 @@ class info_box:
 		self.font_bg = font_bg
 		self.border_color_unselected = border_color_unselected
 		self.border_color_selected = border_color_selected
-		self.border_color = border_color_selected
+		self.border_color = border_color_unselected
+		self.selected = selected
 		
-		self.sprites = pygame.sprite.LayeredUpdates()
-		self.sprites.add(self.sprite)
+		#self.sprites = pygame.sprite.LayeredUpdates()
+		#self.sprites.add(self.sprite)
 		
 		self.infofont = pygame.font.Font(FONT, int(20*FONTSCALE))
 		self.infotext = []
@@ -127,8 +133,8 @@ class info_box:
 			text = self.text[i]
 			self.temptext = self.infofont.render(text[0] + ': ' + str(text[1]), True, self.font_color, self.font_bg)
 			self.temprect = self.temptext.get_rect()
-			self.temprect.centerx = self.x + 70
-			self.temprect.top = self.y + 110 + (i*15)
+			self.temprect.x = self.x
+			self.temprect.y = self.y + self.tile.rect.height + (i*15)
 			if self.temprect.width > self.max_width:
 				self.max_width = self.temprect.width
 			
@@ -138,40 +144,46 @@ class info_box:
 		self.border = pygame.Surface((self.max_width + 8, (len(self.text))*15 + 69))
 		self.border.fill(self.border_color)
 		self.borderrect = self.border.get_rect()
-		self.borderrect.centerx = self.x + 70
-		self.borderrect.top = self.y + 48
+		self.borderrect.x = self.x
+		self.borderrect.y = self.y
 		
 		self.background = pygame.Surface((self.max_width + 4, (len(self.text))*15 + 65))
 		self.background.fill(self.font_bg)
 		self.bgrect = self.background.get_rect()
-		self.bgrect.centerx = self.x + 70
-		self.bgrect.top = self.y + 50
+		self.bgrect.x = self.x + 2
+		self.bgrect.y = self.y + 2
+		
+		self.tile.rect.centerx = self.bgrect.centerx
+		
+		for r in self.inforect:
+			r.centerx = self.bgrect.centerx
 		
 	def contains(self, x, y):
 		return x >= self.x and y >= self.y and x < self.x + self.borderrect.width and y < self.y + self.borderrect.height
 		
 	def select(self):
-		print "selected"
+		self.selected = True
 		self.border.fill(self.border_color_selected)
 		
 	def unselect(self):
-		print "unselected"
+		self.selected = False
 		self.border.fill(self.border_color_unselected)
 		
 	def toggle(self):
-		if self.border_color == self.border_color_selected:
-			self.border.fill(self.border_color_unselected)
+		if self.selected:
+			self.unselect()
 		else: 
-			self.border.fill(self.border_color_selected)
+			self.select()
 		
 	def draw_box(self, screen):
 		screen.blit(self.border, self.borderrect)
 		screen.blit(self.background, self.bgrect)
-		self.sprites.draw(screen)
+		screen.blit(self.tile.image, self.tile.rect)
+		#self.sprites.draw(screen)
 		for i in range(len(self.infotext)):
 			screen.blit(self.infotext[i], self.inforect[i])
 
-class race_sprite:
+class race_tile:
 	def load_races(self, race_sprite_file):
 		path = os.path.join(GFXDIR, race_sprite_file)
 		f = open(path, 'r')
@@ -226,8 +238,11 @@ class race_sprite:
 	def get_sprite(self, x=0, y=0, orientation=270):
 		self.sprites = pygame.sprite.LayeredUpdates()
 		print TILE_SIZE
-		self.sprites.add(Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x+TILE_SIZE[0], y+TILE_SIZE[1], *TILE_SIZE), layer = 0))
+		self.sprites.add(Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *TILE_SIZE), layer = 0))
 		return self.sprites
+		
+	def get_tile(self, x=0, y=0, orientation=270):
+		return Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *CHAR_SIZE), layer = 0)
 
 
 class Tile(pygame.sprite.Sprite):
