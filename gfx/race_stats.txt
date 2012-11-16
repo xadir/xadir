@@ -1,0 +1,4 @@
+Longear, Health = 100, Defence = 80, Attack = 20, Dexterity = 40
+Croco, Health = 80, Defence = 50, Attack = 40, Dexterity = 60
+Human, Health = 50, Defence = 20, Attack = 70, Dexterity = 100
+Dragon, Health = 120, Defence = 10, Attack = 80, Dexterity = 30
