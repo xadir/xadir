@@ -1,4 +1,4 @@
-Total: 85t
+﻿Total: 85t
 
 - 17.9 (3t) Pre-Alphan kehitys
 	- kartan renderöinti
@@ -93,6 +93,13 @@ Total: 85t
 - 13.11 (6h)
 	- Hahmon valintatyökalun kehitystä
 
-- 14.11 (6h)
+- 14.11 (8h)
 	- Hahmon valintatyökalun kehitystä
+
+- 15.11 (6h)
+	- Bugien korjailua hahmojen valintatyökalussa
+
+- 16.11 (5h)
+	- Uudet rotukuvat muunnettu tukemaan läpinäkyvyyttä
+	- Päivitetty hahmon valintatyökalu tukemaan uusia rotuja
 	- Valintatyökalun implementointi päävalikkoon
