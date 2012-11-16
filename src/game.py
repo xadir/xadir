@@ -62,6 +62,14 @@ def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
 	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
+	
+# XXX: Adding some UI controls to game window
+def write_button(self, surface, text, x, y):
+		buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
+		buttonrect = buttontext.get_rect()
+		buttonrect.centerx = x
+		buttonrect.centery = y
+		surface.blit(buttontext, buttonrect)
 
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
@@ -124,12 +132,15 @@ class xadir_main:
 		self.screen = pygame.display.set_mode((self.width, self.height))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
+		self.buttonfont = pygame.font.Font(FONT, int(50*FONTSCALE))
+		self.buttons = []
 		self.playerfont = pygame.font.Font(FONT, int(20*FONTSCALE))
 		self.healthbars = []
 		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 		self.showhealth = True
+		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -166,7 +177,13 @@ class xadir_main:
 				if event.type == pygame.QUIT:
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
-					self.click()
+					if event.button == 1:
+						for b in self.buttons:
+							if b.contains(*event.pos):
+								f = b.get_function()
+								f()
+					else:
+						self.click()
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
 			if self.players[self.turn].movement_points_left() < 1:
@@ -176,6 +193,7 @@ class xadir_main:
 
 	def draw(self):
 		self.update_sprites()
+		self.update_buttons()
 		self.screen.fill((159, 182, 205))
 		# XXX: less flashy way to indicate that we're running smoothly
 		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
@@ -186,6 +204,10 @@ class xadir_main:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 		self.draw_turntext()
 		self.draw_healthbars()
+	
+	def update_buttons(self):
+		for b in self.buttons:
+			b.draw()
 
 	def draw_fps(self, fps, color):
 		text = self.playerfont.render('fps: %d' % fps, True, color)
@@ -216,7 +238,7 @@ class xadir_main:
 		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
 			self.player_sprites.add(p.sprites)
-
+			
 	def click(self):
 		mouse_coords = pygame.mouse.get_pos()
 		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
@@ -652,6 +674,53 @@ class Tile(pygame.sprite.Sprite):
 		self._layer = layer
 		if rect is not None:
 			self.rect = rect
+
+class UIComponent:
+	def __init__(self, x, y, width, height):
+		self.x = x
+		self.y = y
+		self.width = width
+		self.height = height
+
+	def contains(self, x, y):
+		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
+
+	def translate(self, x, y):
+		return x - self.x, y - self.y
+
+class Button(UIComponent):
+	def __init__(self, x, y, width, height, name, fontsize, surface, function):
+		UIComponent.__init__(self, x, y, width, height)
+		self.name = name
+		self.function = function
+		self.surface = surface
+		self.fontsize = fontsize
+		self.create_text(self.name, self.fontsize)
+
+	def create_text(self, text, fontsize):
+		self.buttonfont = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
+		self.buttonrect = self.buttontext.get_rect()
+		self.buttonrect.left = self.x
+		self.buttonrect.top = self.y
+		self.buttonrect.width = self.width
+		self.buttonrect.height = self.height
+
+	def get_function(self):
+		return self.function
+
+	def get_text(self):
+		return self.buttontext
+
+	def get_rect(self):
+		return self.buttonrect
+
+	def get_name(self):
+		return self.name
+
+	def draw(self):
+		self.surface.blit(self.buttontext, self.buttonrect)
+
 
 def start_game(mapname):
 	game = xadir_main(mapname = mapname)
