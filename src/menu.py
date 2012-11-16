@@ -124,6 +124,8 @@ class Menu:
 		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
 		
 		self.add_char_button('Longear', 690, 400)
+		self.add_char_button('Croco', 790, 400)
+		self.add_char_button('Human', 890, 400)
 		
 		title_image = load_image("title.png", -1)
 		self.titlefield.blit(title_image, title_image.get_rect())
@@ -139,11 +141,13 @@ class Menu:
 		
 		while 1:
 			events = pygame.event.get()
+			self.playerfield.fill((150, 150, 150))
+			self.screen.blit(self.playerfield, self.playerfield_rect)
 			# update txtbx
 			self.txtbx.update(events)
 			# blit txtbx on the sceen
 			self.txtbx.draw(self.screen)
-			for i in self.race_buttons:
+			for r in self.race_buttons:
 				r.draw(self.screen)
 			for b in self.buttons:
 				b.draw()
@@ -159,6 +163,9 @@ class Menu:
 						for b in self.buttons:
 							if b.contains(*event.pos):
 								area = b.get_name()
+						for p in self.race_buttons:
+							if p.contains(*event.pos):
+								p.toggle()
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
 						for m in self.maplinks:
