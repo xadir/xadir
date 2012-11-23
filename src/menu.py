@@ -5,6 +5,7 @@ from pygame.locals import *
 from resources import *
 from config import *
 from chartest import *
+from UI import *
 import game
 import eztext
 
@@ -123,6 +124,7 @@ class Menu:
 		self.buttons.append(Button(120, 600, 80, 40, "Edit", 40, self.screen, self.edit_map))
 		self.buttons.append(Button(57, 650, 160, 60, "Quit", 60, self.screen, self.quit))
 		
+		"""
 		self.add_char_button('Human', 690, 390)
 		self.add_char_button('Human2', 790, 390)
 		self.add_char_button('Human3', 890, 390)
@@ -133,6 +135,7 @@ class Menu:
 		self.add_char_button('Medusa', 890, 530)
 		self.add_char_button('Dragon', 990, 530)
 		self.add_char_button('Taurus', 1090, 530)
+		"""
 		"""
 		self.add_char_button('Squid', 690, 600)
 		self.add_char_button('GreyGuy', 790, 600)

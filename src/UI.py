@@ -34,24 +34,26 @@ class Tile(pygame.sprite.Sprite):
 			self.rect = rect
 
 class Func_Button(UIComponent):
-	def __init__(self, x, y, width, height, border, bg_color, border_color, text, image, fontsize, surface, function, enabled=True):
+	def __init__(self, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, enabled=True, selected=False):
 		UIComponent.__init__(self, x, y, width, height)
 		self.x = x
 		self.y = y
 		self.width = width
 		self.height = height
-		self.border = border
+		self.radius = 0.4
+		self.border_width = border
 		self.enabled = enabled
 		self.function = function
 		self.surface = surface
 		self.fontsize = fontsize
 		self.bg_color = bg_color
 		self.border_color = border_color
+		self.selected_color = selected_color
 		self.images = image
-		self.rects = []
+		self.selected = selected
 		
-		self.rects.append(self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border * 2), self.height + (self.border * 2)), border_color))
-		self.rects.append(self.add_round_rect(pygame.Rect(self.x + self.border, self.y + self.border, self.width, self.height), bg_color))
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), border_color, self.radius)
+		self.background = self.add_round_rect(pygame.Rect(self.x + self.border_width, self.y + self.border_width, self.width, self.height), bg_color, self.radius)
 		
 		self.texts = []
 		if text != None:
@@ -78,6 +80,20 @@ class Func_Button(UIComponent):
 	
 	def disable(self):
 		self.enabled = False
+		
+	def select(self):
+		self.selected = True
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), self.selected_color, self.radius)
+		
+	def unselect(self):
+		self.selected = False
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), self.border_color, self.radius)
+		
+	def toggle(self):
+		if self.selected:
+			self.select()
+		else:
+			self.unselect()
 		
 	def add_round_rect(self, rect, color, radius=0.4):
 
@@ -123,13 +139,19 @@ class Func_Button(UIComponent):
 		else: self.enabled = True
 
 	def draw(self):
-		for r in self.rects:
-			self.surface.blit(r[0], r[1])
+		self.surface.blit(self.border[0], self.border[1])
+		self.surface.blit(self.background[0], self.background[1])
 		if self.images != None:
 			for i in self.images:
-				rect = i[0].get_rect()
-				rect.x = self.x + i[1][0]
-				rect.y = self.y + i[1][1]
-				self.surface.blit(i[0], rect)
+				try:
+					rect = i[0].get_rect()
+					rect.x = self.x + i[1][0]
+					rect.y = self.y + i[1][1]
+					self.surface.blit(i[0], rect)
+				except AttributeError:
+					rect = i[0].rect
+					rect.x = self.x + i[1][0]
+					rect.y = self.y + i[1][1]
+					self.surface.blit(i[0].image, rect)
 		for t in self.texts:
 			self.surface.blit(t[0], t[1])
