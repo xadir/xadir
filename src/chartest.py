@@ -23,15 +23,14 @@ class CharTest:
 		self.charfield.fill((150,150,150))
 		
 		self.preview = []
-		self.preview.append(race_preview(race_name = 'Longear', x = 0, y = 0))
+		#self.preview.append(race_preview(race_name = 'Longear', x = 0, y = 0))
 		#self.preview.append(race_preview(race_name = 'Longear', x = 100, y = 0))
-		self.preview.append(race_preview(race_name = 'Croco', x = 100, y = 0))
-		self.preview.append(race_preview(race_name = 'Human', x = 200, y = 0))
-		self.preview.append(race_preview(race_name = 'Dragon', x = 300, y = 0))
+		#self.preview.append(race_preview(race_name = 'Croco', x = 100, y = 0))
+		self.preview.append(race_preview(race_name = 'Human', hair_name = 'a', x = 200, y = 0))
+		#self.preview.append(race_preview(race_name = 'Dragon', x = 300, y = 0))
 
 
 	def loop(self):
-
 		while 1:
 			self.screen.fill((127, 127, 127))
 			for i in range(len(self.preview)):
@@ -50,9 +49,11 @@ class CharTest:
 			time.sleep(0.05)
 			
 class race_preview:
-	def __init__(self, race_name, sprite_file='race_sprites.txt', stat_file='race_stats.txt', x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(255,255,0)):
+	def __init__(self, race_name, hair_name = None, race_sprite_file='race_sprites.txt', hair_sprite_file='hair_sprites.txt', stat_file='race_stats.txt', x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(255,255,0)):
 		self.race_name = race_name
-		self.sprite_file = sprite_file
+		self.hair_name = hair_name
+		self.race_sprite_file = race_sprite_file
+		self.hair_sprite_file = hair_sprite_file
 		self.stat_file = stat_file
 		self.x = x
 		self.y = y
@@ -61,7 +62,7 @@ class race_preview:
 		self.border_color = border_color
 		self.border_selected = border_selected
 		self.selected = selected
-		self.load_tile()
+		self.load_tiles()
 		self.load_text()
 		self.load_box()
 	
@@ -77,8 +78,9 @@ class race_preview:
 	def toggle(self):
 		self.box.toggle()
 		
-	def load_tile(self):
+	def load_tiles(self):
 		self.race_tile = race_tile(self.race_name).get_tile(self.x, self.y, '270')
+		self.hair_tile = hair_tile(self.race_name, self.hair_name).get_tile(self.x, self.y, '270')
 	
 	def load_text(self):
 		print GFXDIR
@@ -103,15 +105,15 @@ class race_preview:
 		f.close()
 		
 	def load_box(self):
-		self.box = info_box(self.race_tile, self.race_stats[self.race_name], self.x, self.y, self.selected, self.font_color, self.font_bg, self.border_color, self.border_selected)
+		self.box = info_box([self.race_tile, self.hair_tile], self.race_stats[self.race_name], self.x, self.y, self.selected, self.font_color, self.font_bg, self.border_color, self.border_selected)
 	
 	def draw(self, surface):
 		self.box.draw_box(surface)
 		
 class info_box:
-	def __init__(self, tile, text, x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color_unselected=(50,50,50), border_color_selected=(255,255,255)):
-		self.tile = tile
-		self.text = text
+	def __init__(self, tiles, texts, x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color_unselected=(50,50,50), border_color_selected=(255,255,255)):
+		self.tiles = tiles
+		self.texts = texts
 		self.x = x
 		self.y = y
 		self.font_color = font_color
@@ -128,32 +130,37 @@ class info_box:
 		self.infotext = []
 		self.inforect = []
 		self.max_width = 0
+		tiles_height = 0
+		for t in self.tiles:
+			if t.rect.height > tiles_height:
+				tiles_height = t.rect.height
 		
-		for i in range(len(self.text)):
-			text = self.text[i]
+		for i in range(len(self.texts)):
+			text = self.texts[i]
 			self.temptext = self.infofont.render(text[0] + ': ' + str(text[1]), True, self.font_color, self.font_bg)
 			self.temprect = self.temptext.get_rect()
 			self.temprect.x = self.x
-			self.temprect.y = self.y + self.tile.rect.height + (i*15)
+			self.temprect.y = self.y + tiles_height + (i*15)
 			if self.temprect.width > self.max_width:
 				self.max_width = self.temprect.width
 			
 			self.infotext.append(self.temptext)
 			self.inforect.append(self.temprect)
 
-		self.border = pygame.Surface((self.max_width + 8, (len(self.text))*15 + 69))
+		self.border = pygame.Surface((self.max_width + 8, (len(self.texts))*15 + 69))
 		self.border.fill(self.border_color)
 		self.borderrect = self.border.get_rect()
 		self.borderrect.x = self.x
 		self.borderrect.y = self.y
 		
-		self.background = pygame.Surface((self.max_width + 4, (len(self.text))*15 + 65))
+		self.background = pygame.Surface((self.max_width + 4, (len(self.texts))*15 + 65))
 		self.background.fill(self.font_bg)
 		self.bgrect = self.background.get_rect()
 		self.bgrect.x = self.x + 2
 		self.bgrect.y = self.y + 2
 		
-		self.tile.rect.centerx = self.bgrect.centerx
+		for t in self.tiles:
+			t.rect.centerx = self.bgrect.centerx
 		
 		for r in self.inforect:
 			r.centerx = self.bgrect.centerx
@@ -178,7 +185,8 @@ class info_box:
 	def draw_box(self, screen):
 		screen.blit(self.border, self.borderrect)
 		screen.blit(self.background, self.bgrect)
-		screen.blit(self.tile.image, self.tile.rect)
+		for t in self.tiles:
+			screen.blit(t.image, t.rect)
 		#self.sprites.draw(screen)
 		for i in range(len(self.infotext)):
 			screen.blit(self.infotext[i], self.inforect[i])
@@ -244,6 +252,82 @@ class race_tile:
 	def get_tile(self, x=0, y=0, orientation=270):
 		return Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *CHAR_SIZE), layer = 0)
 
+class hair_tile:
+	def load_hairs(self, hair_sprite_file):
+		path = os.path.join(GFXDIR, hair_sprite_file)
+		f = open(path, 'r')
+		
+		self.hairs = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			self.hairs[columns[0]] = [columns[1], columns[2]]
+		f.close()
+
+	def load_hair_sprites(self, filename):
+		#chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
+		#chars2 = load_tiles('sprite_collection_2.png', CHAR_SIZE, (255, 0, 255), SCALE)
+		
+		hairs = load_tiles(filename, HAIR_SIZE, (255, 0, 255), SCALE)
+
+		self.hairnames = []
+		self.hairtypes = {}
+		for i, hair in enumerate(hairs):
+			name = 'hair' + str(i+1)
+			self.hairnames.append(name)
+			self.hairtypes[name + '_270'] = hair[0]
+			self.hairtypes[name + '_180'] = hair[1]
+			self.hairtypes[name + '_0'] = hair[2]
+			self.hairtypes[name + '_90'] = pygame.transform.flip(hair[1], True, False)
+
+	def load_compatible_hairs(self, race, race_hair_file):
+		path = os.path.join(GFXDIR, race_hair_file)
+		f = open(path, 'r')
+		
+		self.race_hairs = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			races = []
+			for r in range(1, len(columns)):
+				temp = columns[r].split(';')
+				temp = [col.strip() for col in temp]
+				races.append(temp)
+			self.race_hairs[columns[0]] = races
+		f.close()
+	
+	def set_hair_height(self):
+		for r in self.race_hairs[self.hairtype]:
+			if r[0] == self.race:
+				self.hair_height = int(r[1])
+				print self.hair_height
+	
+	def __init__(self, race, hairtype):
+		self.race = race
+		self.hairtype = hairtype
+		self.sprites = pygame.sprite.LayeredUpdates()
+		
+		self.load_hairs('hair_sprites.txt')
+		self.load_compatible_hairs(self.race, 'race_hairs.txt')
+		#races = {'longear': ['sprite_collection.png', '1']}
+
+		temp = self.hairs[hairtype]
+		self.path = temp[0]
+		self.place = 'hair' + temp[1]
+
+		self.load_hair_sprites(self.path)
+		
+	def get_tile(self, x=0, y=0, orientation=270, layer=0):
+		self.set_hair_height()
+		y = y + self.hair_height
+		print y
+		return Tile(self.hairtypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *HAIR_SIZE), layer)
 
 class Tile(pygame.sprite.Sprite):
 	def __init__(self, image, rect=None, layer=0):

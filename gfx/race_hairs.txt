@@ -1,0 +1,10 @@
+a, Human; 1, Human2; 0, Human3; 0
+b, Human; 0, Human2; 0, Human3; 0
+c, Human; 0, Human2; 0, Human3; 0
+d, Human; 0, Human2; 0, Human3; 0
+e, Human; 0, Human2; 0, Human3; 0
+f, Human; 0, Human2; 0, Human3; 0
+g, Human; 0, Human2; 0, Human3; 0
+h, Human; 0, Human2; 0, Human3; 0
+i, Human; 0, Human2; 0, Human3; 0
+j, Human; 0, Human2; 0, Human3; 0

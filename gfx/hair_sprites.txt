@@ -1,0 +1,10 @@
+a, hair_collection_colorkey_fixed.png, 1
+b, hair_collection_colorkey_fixed.png, 2
+c, hair_collection_colorkey_fixed.png, 3
+d, hair_collection_colorkey_fixed.png, 4
+e, hair_collection_colorkey_fixed.png, 5
+f, hair_collection_colorkey_fixed.png, 6
+g, hair_collection_colorkey_fixed.png, 7
+h, hair_collection_colorkey_fixed.png, 8
+i, hair_collection_colorkey_fixed.png, 9
+j, hair_collection_colorkey_fixed.png, 10
