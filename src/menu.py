@@ -1,6 +1,9 @@
 import os, sys, time
 import pygame
-import pygame._view # Because py2exe, that's why (should really probably do this in setup.py...)
+try:
+	import pygame._view # Because py2exe, that's why (should really probably do this in setup.py...)
+except ImportError:
+	pass
 from pygame.locals import *
 from resources import *
 from config import *
