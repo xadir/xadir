@@ -193,8 +193,8 @@ class xadir_main:
 
 	def draw(self):
 		self.update_sprites()
-		self.update_buttons()
 		self.screen.fill((159, 182, 205))
+		self.update_buttons()
 		# XXX: less flashy way to indicate that we're running smoothly
 		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
