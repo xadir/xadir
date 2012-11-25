@@ -3,6 +3,7 @@ import pygame
 from resources import *
 from grid import *
 from algo import *
+from UI import *
 
 SIZE = 15
 COUNT = 10
@@ -21,32 +22,111 @@ class CharTest:
 		self.charfield = pygame.Surface((600, 600))
 		self.charfield_rect = pygame.Rect(0, 0, 600, 600)
 		self.charfield.fill((150,150,150))
-		
+		"""
 		self.preview = []
 		#self.preview.append(race_preview(race_name = 'Longear', x = 0, y = 0))
 		#self.preview.append(race_preview(race_name = 'Longear', x = 100, y = 0))
 		#self.preview.append(race_preview(race_name = 'Croco', x = 100, y = 0))
 		self.preview.append(race_preview(race_name = 'Human', hair_name = 'a', x = 200, y = 0))
 		#self.preview.append(race_preview(race_name = 'Dragon', x = 300, y = 0))
-
+		self.preview.append(race_preview(race_name = 'Croco', x = 100, y = 0))
+		self.preview.append(race_preview(race_name = 'Human', x = 200, y = 0))
+		self.preview.append(race_preview(race_name = 'Dragon', x = 300, y = 0))
+		"""
+		self.parent_buttons = []
+		char1 = better_race_preview(race_name = 'Dragon', x = 300, y = 0, surface=self.screen)
+		self.parent_buttons.append(char1.get_button())
+		
+>>>>>>> 0f308bc44184a2008afe1ee2a6bdb0e2f77548b7
 
 	def loop(self):
 		while 1:
 			self.screen.fill((127, 127, 127))
+			"""
 			for i in range(len(self.preview)):
 				self.preview[i].draw(self.screen)
+			"""
+			for p in self.parent_buttons:
+				p[0].draw()
+				for c in p[1]:
+					if c.enabled: c.draw()
 			pygame.display.flip()
 
+			"""
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						for p in self.preview:
 							if p.contains(*event.pos):
 								p.toggle()
+			"""
+			for event in pygame.event.get():
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if event.button == 1:
+						for p in range(0, len(self.parent_buttons)):
+							for c in range(0, len(self.parent_buttons[p])):
+								if self.parent_buttons[p][c].enabled:
+									if self.parent_buttons[p][c].contains(*event.pos):
+										self.parent_buttons[p][c].toggle()
+										f = self.parent_buttons[p][c].get_function()
+										if c == 0: #First on list is parent button
+											f(p)
+										else:
+											f()
 				elif event.type == pygame.QUIT:
 					sys.exit()
 
 			time.sleep(0.05)
+			
+class better_race_preview:
+	def __init__(self, race_name, surface, sprite_file='race_sprites.txt', stat_file='race_stats.txt', x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(255,255,0)):
+		#icon = pygame.image.load(os.path.join(GFXDIR, "test_icon.png"))
+		self.race_name = race_name
+		self.sprite_file = sprite_file
+		self.stat_file = stat_file
+		self.surface = surface
+		self.x = x
+		self.y = y
+		self.load_tile()
+		self.child_buttons = []
+		self.parent_button = Func_Button(x, y, 52, 52, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), None, [[self.race_tile, (4, 4)]], 20, self.surface, self.enable_buttons, True)
+		self.child_buttons.append(Func_Button(x, y-20, 50, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Equip", None]], None, 20, self.surface, self.button_click, False))
+		self.child_buttons.append(Func_Button(x, y+20, 50, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Sell", None]], None, 20, self.surface, self.button_click, False))
+
+	def load_tile(self):
+		self.race_tile = race_tile(self.race_name).get_tile(self.x, self.y, '270')
+	
+	def load_text(self):
+		print GFXDIR
+		print self.stat_file
+		path = os.path.join(GFXDIR, self.stat_file)
+		f = open(path, 'r')
+		
+		self.race_stats = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			stats = []
+			for i in range(1,len(columns)):
+				temp = columns[i].split('=')
+				temp = [col.strip() for col in temp]
+				stats.append(temp)
+			self.race_stats[columns[0]] = stats
+			
+		f.close()
+		
+	def button_click(self):
+		print "Clicked button"
+		
+	def enable_buttons(self, i):
+		for b in self.child_buttons:
+			b.toggle_visibility()
+			
+	def get_button(self):
+		return [self.parent_button, self.child_buttons]
 			
 class race_preview:
 	def __init__(self, race_name, hair_name = None, race_sprite_file='race_sprites.txt', hair_sprite_file='hair_sprites.txt', stat_file='race_stats.txt', x=0, y=0, selected=False, font_color=(0,0,0), font_bg=(159, 182, 205), border_color=(50,50,50), border_selected=(255,255,0)):
@@ -337,6 +417,52 @@ class Tile(pygame.sprite.Sprite):
 		self._layer = layer
 		if rect is not None:
 			self.rect = rect
+
+class UIComponent:
+	def __init__(self, x, y, width, height):
+		self.x = x
+		self.y = y
+		self.width = width
+		self.height = height
+
+	def contains(self, x, y):
+		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
+
+	def translate(self, x, y):
+		return x - self.x, y - self.y
+
+class Button(UIComponent):
+	def __init__(self, x, y, width, height, name, fontsize, surface, function):
+		UIComponent.__init__(self, x, y, width, height)
+		self.name = name
+		self.function = function
+		self.surface = surface
+		self.fontsize = fontsize
+		self.create_text(self.name, self.fontsize)
+
+	def create_text(self, text, fontsize):
+		self.buttonfont = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
+		self.buttonrect = self.buttontext.get_rect()
+		self.buttonrect.left = self.x
+		self.buttonrect.top = self.y
+		self.buttonrect.width = self.width
+		self.buttonrect.height = self.height
+
+	def get_function(self):
+		return self.function
+
+	def get_text(self):
+		return self.buttontext
+
+	def get_rect(self):
+		return self.buttonrect
+
+	def get_name(self):
+		return self.name
+
+	def draw(self):
+		self.surface.blit(self.buttontext, self.buttonrect)
 
 if __name__ == "__main__":
 	win = CharTest()
