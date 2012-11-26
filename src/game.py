@@ -674,18 +674,82 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class UIComponent:
-	def __init__(self, x, y, width, height):
-		self.x = x
-		self.y = y
-		self.width = width
-		self.height = height
+class UIRoot:
+	def __init__(self):
+		self.x = self.y = 0
+
+class UIObject(object):
+	"""Base class of everything with coordinates.
+
+	Instances have the following attributes:
+	- pos     = x, y          = position on screen
+	- rel_pos = rel_x, rel_y  = position relative to parent
+	- size    = width, height = size
+	"""
+	def __init__(self, parent, rel_pos, size = None):
+		if not parent:
+			parent = UIRoot()
+		self.parent = parent
+		self.rel_pos = rel_pos
+		if size:
+			self.size = size
+
+	def _get_pos(self): return (self.x, self.y)
+	def _set_pos(self, pos): (self.x, self.y) = pos
+	pos = property(_get_pos, _set_pos)
+
+	def _get_rel_x(self): return self.x - self.parent.x
+	def _set_rel_x(self, x): self.x = self.parent.x + x
+	rel_x = property(_get_rel_x, _set_rel_x)
+
+	def _get_rel_y(self): return self.y - self.parent.y
+	def _set_rel_y(self, y): self.y = self.parent.y + y
+	rel_y = property(_get_rel_y, _set_rel_y)
+
+	def _get_rel_pos(self): return (self.rel_x, self.rel_y)
+	def _set_rel_pos(self, pos): (self.rel_x, self.rel_y) = pos
+	rel_pos = property(_get_rel_pos, _set_rel_pos)
+
+	def _get_size(self): return (self.width, self.height)
+	def _set_size(self, size): (self.width, self.height) = size
+	size = property(_get_size, _set_size)
 
 	def contains(self, x, y):
 		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
 
 	def translate(self, x, y):
 		return x - self.x, y - self.y
+
+class UIGridObject(UIObject):
+	"""Base class of everything that's on a grid.
+
+	Instances have the following attributes:
+	- pos      = x, y           = position on screen
+	- rel_pos  = rel_x, rel_y   = position relative to parent
+	- grid_pos = grid_x, grid_y = position on grid
+	- size     = width, height  = size
+	"""
+	def __init__(self, grid, grid_pos):
+		Item.__init__(self, grid, (0, 0), self.grid.cell_size)
+		self.grid = grid
+		self.grid_pos = grid_pos
+
+	def _get_grid_x(self): return self.rel_x / self.width
+	def _set_grid_x(self, x): self.rel_x = x * self.width
+	grid_x = property(_get_grid_x, _set_grid_x)
+
+	def _get_grid_y(self): return self.rel_y / self.height
+	def _set_grid_y(self, y): self.rel_y = y * self.height
+	grid_y = property(_get_grid_y, _set_grid_y)
+
+	def _get_grid_pos(self): return (self.grid_x, self.grid_y)
+	def _set_grid_pos(self, pos): (self.grid_x, self.grid_y) = pos
+	grid_pos = property(_get_grid_pos, _set_grid_pos)
+
+# XXX: Deprecated
+class UIComponent(UIObject):
+	def __init__(self, x, y, width, height):
+		UIObject.__init__(self, None, (x, y), (width, height))
 
 class Button(UIComponent):
 	def __init__(self, x, y, width, height, name, fontsize, surface, function):
