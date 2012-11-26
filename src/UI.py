@@ -70,7 +70,7 @@ class UIGridObject(UIObject):
 	- size     = width, height  = size
 	"""
 	def __init__(self, grid, grid_pos):
-		Item.__init__(self, grid, (0, 0), self.grid.cell_size)
+		UIObject.__init__(self, grid, (0, 0), grid.cell_size)
 		self.grid = grid
 		self.grid_pos = grid_pos
 
