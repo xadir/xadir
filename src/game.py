@@ -121,7 +121,7 @@ def get_animation_frames(path):
 	except EOFError:
 		pass # end of sequence
 
-class xadir_main:
+class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720, mapname='map2.txt'):
 		pygame.init()
@@ -218,7 +218,7 @@ class xadir_main:
 		"""Load the sprites that we need"""
 		self.walkable = [name for name in self.tiletypes.keys() if name.count('W') <= 1]
 		map, mapsize, spawns = load_map(self.mapname)
-		self.map = background_map(map, *mapsize, tiletypes = self.tiletypes)
+		self.map = BackgroundMap(map, *mapsize, tiletypes = self.tiletypes)
 		self.spawns = spawns
 		self.players = []
 
@@ -251,10 +251,10 @@ class xadir_main:
 				else:
 					character.select()
 					if character.mp <= 0:
-						self.movement_grid = sprite_grid([character.get_coords()], character.get_coords(), self.imgs['red'])
+						self.movement_grid = SpriteGrid([character.get_coords()], character.get_coords(), self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = sprite_grid(self.get_action_area_for(character), character.get_coords(), self.imgs['green'])
+						self.movement_grid = SpriteGrid(self.get_action_area_for(character), character.get_coords(), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
 			elif character.is_selected():
 				self.grid_sprites = pygame.sprite.Group()
@@ -417,7 +417,7 @@ class xadir_main:
 		return [self.players[self.turn], self.get_other_players()]
 
 	def add_player(self, name, characters):
-		self.players.append(player(name, characters, self))
+		self.players.append(Player(name, characters, self))
 
 	def attack(self, attacker, target):
 		attacker_position = attacker.get_coords()
@@ -499,13 +499,13 @@ class xadir_main:
 		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 		return (tile, (rect.left, rect.top))
 
-class sprite_grid:
+class SpriteGrid:
 	def __init__(self, grid, coords, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
-class background_map:
+class BackgroundMap:
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
 		self.width = width
@@ -520,7 +520,7 @@ class background_map:
 	def get_map(self):
 		return self.map
 
-class player:
+class Player:
 	"""Class to create player or team in the game. One player may have many characters."""
 	def __init__(self, name, coords, main):
 		self.name = name
@@ -535,7 +535,7 @@ class player:
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
 			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.all_characters.append(character(self, character_type, 5, (x, y), heading, self.main))
+			self.all_characters.append(Character(self, character_type, 5, (x, y), heading, self.main))
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -565,7 +565,7 @@ class player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-class character:
+class Character:
 	"""Universal class for any character in the game"""
 	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
 		self.player = player
@@ -722,7 +722,7 @@ class Button(UIComponent):
 
 
 def start_game(mapname):
-	game = xadir_main(mapname = mapname)
+	game = XadirMain(mapname = mapname)
 	game.load_resources()
 	game.main_loop()
 
