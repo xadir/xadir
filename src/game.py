@@ -182,7 +182,6 @@ class xadir_main:
 							if b.contains(*event.pos):
 								f = b.get_function()
 								f()
-					else:
 						self.click()
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
