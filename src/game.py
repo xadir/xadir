@@ -714,6 +714,9 @@ class UIObject(object):
 	def _set_size(self, size): (self.width, self.height) = size
 	size = property(_get_size, _set_size)
 
+	def _get_rect(self): return pygame.Rect(self.x, self.y, self.width, self.height)
+	rect = property(_get_rect)
+
 	def contains(self, x, y):
 		return x >= self.x and y >= self.y and x < self.x + self.width and y < self.y + self.height
 
