@@ -506,12 +506,13 @@ class SpriteGrid:
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
-class BackgroundMap:
+class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
-		self.width = width
-		self.height = height
-		self.map = Grid(width, height, map)
+		Grid.__init__(self, width, height, map)
+		self.cell_size = TILE_SIZE
+		self.x = self.y = 0
+		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for (x, y), tiletype in self.map.items():
 			tile = tiletypes[tiletype]
@@ -554,7 +555,7 @@ class Player:
 			heading = character.get_heading()
 			character_type = character.type
 			tile = self.main.chartypes[character_type + '_' + str(heading)]
-			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
+			self.sprites.add(Tile(tile, character.rect, layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
@@ -566,9 +567,10 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-class Character:
+class Character(UIGridObject):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		UIGridObject.__init__(self, main.map, coords)
 		self.player = player
 		self.type = type
 		# Movement points
@@ -581,7 +583,6 @@ class Character:
 		self.attack_stat = attack_stat     # Attack multiplier
 		# Status
 		assert isinstance(coords, tuple)
-		self.coords = coords     # Tuple of x and y
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
@@ -590,6 +591,11 @@ class Character:
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
+
+	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
+	rect = property(_get_rect)
+
+	coords = UIGridObject.grid_pos
 
 	def get_coords(self):
 		"""Returns coordinates of the character, return is tuple (x, y)"""
