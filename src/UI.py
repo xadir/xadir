@@ -86,6 +86,25 @@ class UIGridObject(UIObject):
 	def _set_grid_pos(self, pos): (self.grid_x, self.grid_y) = pos
 	grid_pos = property(_get_grid_pos, _set_grid_pos)
 
+class UIContainer(UIObject):
+	def __init__(self, parent, rel_pos, size, children):
+		UIObject.__init__(self, parent, rel_pos, size)
+		self.children = children
+
+	def click(self, x, y):
+		for child in self.children:
+			propagate = child.click(x, y)
+			if not propagate:
+				return True
+
+	def update(self):
+		for child in self.children:
+			child.update()
+
+	def draw(self):
+		for child in self.children:
+			child.draw()
+
 # XXX: Deprecated
 class UIComponent(UIObject):
 	def __init__(self, x, y, width, height):
