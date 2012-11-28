@@ -143,6 +143,8 @@ class XadirMain:
 		self.showhealth = True
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
+		self.sprites = pygame.sprite.LayeredDirty()
+
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 		chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
@@ -192,19 +194,21 @@ class XadirMain:
 			self.hue += 10
 
 	def draw(self):
-		self.update_sprites()
+		self.sprites.update()
 		self.screen.fill((159, 182, 205))
 		self.update_buttons()
 		# XXX: less flashy way to indicate that we're running smoothly
 		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
-		self.player_sprites.draw(self.screen)
+		# Update layers
+		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer, reverse = True)
+		self.sprites.draw(self.screen)
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 		self.draw_turntext()
 		self.draw_healthbars()
-	
+
 	def update_buttons(self):
 		for b in self.buttons:
 			b.draw()
@@ -235,9 +239,8 @@ class XadirMain:
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites
 		self.masking_sprites = pygame.sprite.Group()
-		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
-			self.player_sprites.add(p.sprites)
+			self.sprites.add(p.all_characters)
 			
 	def click(self):
 		mouse_coords = pygame.mouse.get_pos()
@@ -335,12 +338,6 @@ class XadirMain:
 		angle = int(round(angle / 45)) * 45
 		# Prefer horizontal directions when the direction is not a multiple of 90
 		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
-
-	def update_sprites(self):
-		self.player_sprites = pygame.sprite.LayeredUpdates()
-		for p in self.players:
-			p.update_sprites()
-			self.player_sprites.add(p.sprites)
 
 	def next_turn(self):
 		if len(self.players) < 1:
@@ -528,7 +525,6 @@ class Player:
 		self.name = name
 		self.main = main
 		self.coords = coords
-		self.sprites = pygame.sprite.LayeredUpdates()
 		self.all_characters = []
 		for i in range(len(coords)):
 			character_type = coords[i][0]
@@ -536,7 +532,6 @@ class Player:
 			y = coords[i][2]
 			heading = coords[i][3]
 			tile = main.chartypes[character_type + '_' + str(heading)]
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
 			self.all_characters.append(Character(self, character_type, 5, (x, y), heading, self.main))
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
@@ -548,15 +543,6 @@ class Player:
 			coords.append(i.get_coords())
 		return coords
 
-	def update_sprites(self):
-		self.sprites = pygame.sprite.LayeredUpdates()
-		for character in self.characters:
-			coords = character.get_coords()
-			heading = character.get_heading()
-			character_type = character.type
-			tile = self.main.chartypes[character_type + '_' + str(heading)]
-			self.sprites.add(Tile(tile, character.rect, layer = coords[1]))
-
 	def movement_points_left(self):
 		points_left = 0
 		for c in self.characters:
@@ -567,10 +553,12 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-class Character(UIGridObject):
+class Character(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
 		UIGridObject.__init__(self, main.map, coords)
+		pygame.sprite.DirtySprite.__init__(self)
+
 		self.player = player
 		self.type = type
 		# Movement points
@@ -594,6 +582,10 @@ class Character(UIGridObject):
 
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
 	rect = property(_get_rect)
+
+	def update(self):
+		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
+		self.dirty = 1
 
 	coords = UIGridObject.grid_pos
 
@@ -636,9 +628,11 @@ class Character(UIGridObject):
 
 	def revive(self):
 		self.alive = True
+		self.visible = True
 
 	def kill(self):
 		self.alive = False
+		self.visible = False
 
 	def turn(self, angle):
 		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
@@ -680,6 +674,7 @@ class Tile(pygame.sprite.Sprite):
 		self._layer = layer
 		if rect is not None:
 			self.rect = rect
+
 class Button(UIComponent):
 	def __init__(self, x, y, width, height, name, fontsize, surface, function):
 		UIComponent.__init__(self, x, y, width, height)
