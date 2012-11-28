@@ -100,13 +100,9 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class Func_Button(UIComponent):
-	def __init__(self, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, visible, selected, hideable):
-		UIComponent.__init__(self, x, y, width, height)
-		self.x = x
-		self.y = y
-		self.width = width
-		self.height = height
+class Func_Button(UIObject):
+	def __init__(self, parent, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, visible, selected, hideable):
+		UIObject.__init__(self, parent, (x, y), (width, height))
 		self.radius = 9
 		self.border_width = border
 		self.visible = visible
