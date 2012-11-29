@@ -520,18 +520,10 @@ class BackgroundMap(Grid):
 
 class Player:
 	"""Class to create player or team in the game. One player may have many characters."""
-	def __init__(self, name, coords, main):
+	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.coords = coords
-		self.all_characters = []
-		for i in range(len(coords)):
-			character_type = coords[i][0]
-			x = coords[i][1]
-			y = coords[i][2]
-			heading = coords[i][3]
-			tile = main.chartypes[character_type + '_' + str(heading)]
-			self.all_characters.append(Character(self, character_type, 5, (x, y), heading, self.main))
+		self.all_characters = [Character(self, type, 5, (x, y), heading, main) for type, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
