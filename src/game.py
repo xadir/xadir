@@ -549,12 +549,21 @@ class Weapon:
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic'] # XXX Alexer: added magic
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
-	def __init__(self):
-		self.size = random.choice(self.sizes)
-		self.type = random.choice(self.types)
-		self.class_ = random.choice(self.classes)
-		self.damage = [(Dice(random.randrange(1, 4), random.randrange(4, 11, 2)), set([random.choice(self.damage_types)]))]
-		self.magic_enchantment = random.randrange(11)
+	def __init__(self, size, type, class_, damage, magic_enchantment):
+		self.size = size
+		self.type = type
+		self.class_ = class_
+		self.damage = damage
+		self.magic_enchantment = magic_enchantment
+
+	@classmethod
+	def random(cls):
+		size = random.choice(cls.sizes)
+		type = random.choice(cls.types)
+		class_ = random.choice(cls.classes)
+		damage = [(Dice(random.randrange(1, 4), random.randrange(4, 11, 2)), set([random.choice(cls.damage_types)]))]
+		magic_enchantment = random.randrange(11)
+		return cls(size, type, class_, damage, magic_enchantment)
 
 	def __repr__(self):
 		return 'Weapon(%r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.magic_enchantment)
@@ -568,9 +577,15 @@ class Weapon:
 		return result
 
 class Armor:
-	def __init__(self):
-		self.miss_chance = random.randrange(-5, 6)
-		self.damage_reduction = random.randrange(11)
+	def __init__(self, miss_chance, damage_reduction):
+		self.miss_chance = miss_chance
+		self.damage_reduction = damage_reduction
+
+	@classmethod
+	def random(cls):
+		miss_chance = random.randrange(-5, 6)
+		damage_reduction = random.randrange(11)
+		return cls(miss_chance, damage_reduction)
 
 def roll_attack_damage(attacker, defender):
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
@@ -629,8 +644,8 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 		self.per_wc_miss_chance = {}
 		self.class_damage_reduction = random.randrange(11)
-		self.armor = Armor()
-		self.weapon = Weapon()
+		self.armor = Armor.random()
+		self.weapon = Weapon.random()
 
 		self.main = main
 		self.background_map = self.main.map.get_map()
