@@ -423,7 +423,8 @@ class XadirMain:
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
-			target.take_hit((attacker.attack_stat * attacker.mp))
+			damage = roll_attack_damage(attacker, target)
+			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
@@ -553,6 +554,80 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
+class Dice:
+	def __init__(self, count, sides):
+		self.count = count
+		self.sides = sides
+
+	def __repr__(self):
+		return '%s(%d, %d)' % (self.__class__.__name__, self.count, self.sides)
+
+	def __str__(self):
+		return '%dd%d' % (self.count, self.sides)
+
+	def roll(self):
+		result = self.count + sum(random.randrange(self.sides) for i in range(self.count))
+		print self, 'rolled', result
+		return result
+
+class Weapon:
+	sizes = ['light', 'normal', 'heavy']
+	types = ['melee', 'ranged', 'magic']
+	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic'] # XXX Alexer: added magic
+	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
+	def __init__(self):
+		self.size = random.choice(self.sizes)
+		self.type = random.choice(self.types)
+		self.class_ = random.choice(self.classes)
+		self.damage = [(Dice(random.randrange(1, 4), random.randrange(4, 11, 2)), set([random.choice(self.damage_types)]))]
+		self.magic_enchantment = random.randrange(11)
+
+	def __repr__(self):
+		return 'Weapon(%r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.magic_enchantment)
+
+	def roll_damage(self):
+		result = []
+		for dice, damage_types in self.damage:
+			damage = dice.roll()
+			print self, 'rolled', damage, 'of', '/'.join(damage_types), 'damage'
+			result.append((damage, damage_types))
+		return result
+
+class Armor:
+	def __init__(self):
+		self.miss_chance = random.randrange(-5, 6)
+		self.damage_reduction = random.randrange(11)
+
+def roll_attack_damage(attacker, defender):
+	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
+	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dexterity / 5)
+	miss_chance = attacker_miss_chance + defender_evasion_chance
+	is_hit = random.randrange(100) < 100 - miss_chance
+	print 'Miss chance:', miss_chance
+	if not is_hit:
+		print 'Missed!'
+		return 0
+
+	critical_chance = {'light': 15, 'normal': 10, 'heavy': 5}[attacker.weapon.size]
+	critical_multiplier = {'light': 1.5, 'normal': 2.0, 'heavy': 3.0}[attacker.weapon.size]
+	is_critical_hit = random.randrange(100) < critical_chance
+
+	print 'Critical chance and multiplier:', critical_chance, critical_multiplier
+	if is_critical_hit: print 'Critical!'
+	damage_multiplier = critical_multiplier if is_critical_hit else 1
+
+	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
+	#for weapon_damage, weapon_damage_types in attacker.weapon.roll_damage():
+	weapon_damage = attacker.weapon.roll_damage()[0][0] # XXX Alexer: need to loop
+
+	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
+	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
+	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
+
+	print positive_damage, 'of damage and', negative_damage, 'of damage reduction: dealt', damage, 'of damage'
+
+	return int(math.floor(damage))
+
 class Character(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
@@ -568,12 +643,21 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.max_hp = max_hp
 		self.hp = random.randrange(max_hp) # Randomized for testing look&feel
 		# Stats
-		self.attack_stat = attack_stat     # Attack multiplier
+		self.dexterity = random.randrange(1, 20)
+		self.constitution = random.randrange(1, 20)
+		self.intelligence = random.randrange(1, 20)
+		self.strength = random.randrange(1, 20)
 		# Status
 		assert isinstance(coords, tuple)
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
+
+		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
+		self.per_wc_miss_chance = {}
+		self.class_damage_reduction = random.randrange(11)
+		self.armor = Armor()
+		self.weapon = Weapon()
 
 		self.main = main
 		self.background_map = self.main.map.get_map()
@@ -611,6 +695,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		return self.selected
 
 	def take_hit(self, attack_points):
+		print 'Took', attack_points, 'of damage'
 		self.main.animate_hp_change(self, -attack_points)
 		self.hp -= attack_points
 		if self.hp < 1:
