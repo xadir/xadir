@@ -254,10 +254,10 @@ class XadirMain:
 				else:
 					character.select()
 					if character.mp <= 0:
-						self.movement_grid = SpriteGrid([character.grid_pos], character.grid_pos, self.imgs['red'])
+						self.movement_grid = SpriteGrid([character.grid_pos], self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = SpriteGrid(self.get_action_area_for(character), character.grid_pos, self.imgs['green'])
+						self.movement_grid = SpriteGrid(self.get_action_area_for(character), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
 			elif character.is_selected():
 				self.grid_sprites = pygame.sprite.Group()
@@ -497,7 +497,7 @@ class XadirMain:
 		return (tile, (rect.left, rect.top))
 
 class SpriteGrid:
-	def __init__(self, grid, coords, tile):
+	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
