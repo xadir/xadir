@@ -383,14 +383,6 @@ class XadirMain:
 					draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
-	def update_character_numbers(self):
-		players = self.get_all_players()
-		for p, player in enumerate(players):
-			for character in player.characters:
-				coords = character.grid_pos
-				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
-				self.add_text(self.screen, str(p), 20, (0, 0))
-
 	def update_enemy_tiles(self):
 		self.enemy_tiles = []
 		players = self.get_other_players()
@@ -476,14 +468,6 @@ class XadirMain:
 		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
 		result.sort(key = lambda pos: get_distance_2(pos, coords))
 		return result
-
-	def add_text(self, surface, text, size, coords):
-		textfont = pygame.font.Font(FONT, int(size*FONTSCALE))
-		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
-		text_rect = text_surface.get_rect()
-		text_rect.centerx = coords[0]
-		text_rect.centery = coords[1]
-		self.screen.blit(text_surface, text_rect)
 
 	def opaque_rect(self, rect, color=(0, 0, 0), opaque=255):
 		box = pygame.Surface((rect.width, rect.height)).convert()
