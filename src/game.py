@@ -549,11 +549,12 @@ class Weapon:
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic'] # XXX Alexer: added magic
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
-	def __init__(self, size, type, class_, damage, magic_enchantment):
+	def __init__(self, size, type, class_, damage, damage_type, magic_enchantment):
 		self.size = size
 		self.type = type
 		self.class_ = class_
 		self.damage = damage
+		self.damage_type = damage_type
 		self.magic_enchantment = magic_enchantment
 
 	@classmethod
@@ -561,20 +562,13 @@ class Weapon:
 		size = random.choice(cls.sizes)
 		type = random.choice(cls.types)
 		class_ = random.choice(cls.classes)
-		damage = [(Dice(random.randrange(1, 4), random.randrange(4, 11, 2)), set([random.choice(cls.damage_types)]))]
+		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
+		damage_type = set([random.choice(cls.damage_types)])
 		magic_enchantment = random.randrange(11)
-		return cls(size, type, class_, damage, magic_enchantment)
+		return cls(size, type, class_, damage, damage_type, magic_enchantment)
 
 	def __repr__(self):
-		return 'Weapon(%r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.magic_enchantment)
-
-	def roll_damage(self):
-		result = []
-		for dice, damage_types in self.damage:
-			damage = dice.roll()
-			print self, 'rolled', damage, 'of', '/'.join(damage_types), 'damage'
-			result.append((damage, damage_types))
-		return result
+		return 'Weapon(%r, %r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
 
 class Armor:
 	def __init__(self, miss_chance, damage_reduction):
@@ -607,7 +601,8 @@ def roll_attack_damage(attacker, defender):
 
 	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
 	#for weapon_damage, weapon_damage_types in attacker.weapon.roll_damage():
-	weapon_damage = attacker.weapon.roll_damage()[0][0] # XXX Alexer: need to loop
+	weapon_damage = attacker.weapon.damage.roll() # XXX Alexer: damage type
+	print attacker.weapon, 'rolled', weapon_damage, 'of', '/'.join(attacker.weapon.damage_type), 'damage'
 
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
