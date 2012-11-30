@@ -615,7 +615,7 @@ def roll_attack_damage(attacker, defender):
 
 	print positive_damage, 'of damage and', negative_damage, 'of damage reduction: dealt', damage, 'of damage'
 
-	return int(math.floor(damage))
+	return int(math.floor(max(damage, 0)))
 
 class Character(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
