@@ -278,7 +278,7 @@ class XadirMain:
 		self.animate_move(path, character)
 		character.grid_pos = end
 		character.mp -= distance
-		character.set_heading(self.get_heading(end, mouse_grid_pos))
+		character.heading = self.get_heading(end, mouse_grid_pos)
 		target = None
 		for p in self.get_other_players():
 			for c in p.characters:
@@ -295,11 +295,11 @@ class XadirMain:
 		character.grid_pos = end
 		character.mp -= distance
 		new_heading = self.get_heading(path[-2], mouse_grid_pos)
-		character.set_heading(new_heading)
+		character.heading = new_heading
 
 	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
-			character.set_heading(self.get_heading(path[i], path[i+1]))
+			character.heading = self.get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
 			self.draw()
 			pygame.display.flip()
@@ -476,7 +476,7 @@ class XadirMain:
 		return [box, (rect.left, rect.top)]
 
 	def character_mask(self, rect, character):
-		tile = self.chartypes[character.type + '_' + str(character.get_heading())].convert_alpha()
+		tile = self.chartypes[character.type + '_' + str(character.heading)].convert_alpha()
 		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 		return (tile, (rect.left, rect.top))
 
@@ -658,14 +658,6 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 	def update(self):
 		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
 		self.dirty = 1
-
-	def get_heading(self):
-		"""Returns heading of character in degrees"""
-		return self.heading
-
-	def set_heading(self, angle):
-		"""Sets the absolute heading of character"""
-		self.heading = angle
 
 	def is_selected(self):
 		return self.selected
