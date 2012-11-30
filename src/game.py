@@ -630,7 +630,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.mp = max_mp
 		# Health points
 		self.max_hp = max_hp
-		self.hp = random.randrange(max_hp) # Randomized for testing look&feel
+		self.hp = max_hp
 		# Stats
 		self.dexterity = random.randrange(1, 20)
 		self.constitution = random.randrange(1, 20)
