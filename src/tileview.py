@@ -20,8 +20,10 @@ class TileView:
 
 	def loop(self):
 		while 1:
+			self.screen.fill((0, 0, 0))
 			for y in range(tile_rows):
 				for x in range(tile_cols):
+					self.screen.fill((255, 0, 255), (x * framed_x, y * framed_y, size_x, size_y))
 					self.screen.blit(tiles[y][x], (x * framed_x, y * framed_y))
 			pygame.display.flip()
 			for event in pygame.event.get():

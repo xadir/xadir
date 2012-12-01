@@ -70,7 +70,7 @@ class UIGridObject(UIObject):
 	- size     = width, height  = size
 	"""
 	def __init__(self, grid, grid_pos):
-		Item.__init__(self, grid, (0, 0), self.grid.cell_size)
+		UIObject.__init__(self, grid, (0, 0), grid.cell_size)
 		self.grid = grid
 		self.grid_pos = grid_pos
 
@@ -86,6 +86,25 @@ class UIGridObject(UIObject):
 	def _set_grid_pos(self, pos): (self.grid_x, self.grid_y) = pos
 	grid_pos = property(_get_grid_pos, _set_grid_pos)
 
+class UIContainer(UIObject):
+	def __init__(self, parent, rel_pos, size, children):
+		UIObject.__init__(self, parent, rel_pos, size)
+		self.children = children
+
+	def click(self, x, y):
+		for child in self.children:
+			propagate = child.click(x, y)
+			if not propagate:
+				return True
+
+	def update(self):
+		for child in self.children:
+			child.update()
+
+	def draw(self):
+		for child in self.children:
+			child.draw()
+
 # XXX: Deprecated
 class UIComponent(UIObject):
 	def __init__(self, x, y, width, height):
@@ -100,16 +119,12 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class FuncButton(UIComponent):
-	def __init__(self, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, enabled=True, selected=False):
-		UIComponent.__init__(self, x, y, width, height)
-		self.x = x
-		self.y = y
-		self.width = width
-		self.height = height
-		self.radius = 0.4
+class Func_Button(UIObject):
+	def __init__(self, parent, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, visible, selected, hideable):
+		UIObject.__init__(self, parent, (x, y), (width, height))
+		self.radius = 9
 		self.border_width = border
-		self.enabled = enabled
+		self.visible = visible
 		self.function = function
 		self.surface = surface
 		self.fontsize = fontsize
@@ -118,6 +133,7 @@ class FuncButton(UIComponent):
 		self.selected_color = selected_color
 		self.images = image
 		self.selected = selected
+		self.hideable = hideable
 		
 		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), border_color, self.radius)
 		self.background = self.add_round_rect(pygame.Rect(self.x + self.border_width, self.y + self.border_width, self.width, self.height), bg_color, self.radius)
@@ -142,11 +158,11 @@ class FuncButton(UIComponent):
 	def get_function(self):
 		return self.function
 		
-	def enable(self):
-		self.enabled = True
+	def show(self):
+		self.visible = True
 	
-	def disable(self):
-		self.enabled = False
+	def hide(self):
+		self.visible = False
 		
 	def select(self):
 		self.selected = True
@@ -162,7 +178,7 @@ class FuncButton(UIComponent):
 		else:
 			self.unselect()
 		
-	def add_round_rect(self, rect, color, radius=0.4):
+	def add_round_rect(self, rect, color, radius=10):
 
 		"""
 		AAfilledRoundedRect(surface,rect,color,radius=0.4)
@@ -183,7 +199,7 @@ class FuncButton(UIComponent):
 
 		circle       = pygame.Surface([min(rect.size)*3]*2,SRCALPHA)
 		pygame.draw.ellipse(circle,(0,0,0),circle.get_rect(),0)
-		circle       = pygame.transform.smoothscale(circle,[int(min(rect.size)*radius)]*2)
+		circle       = pygame.transform.smoothscale(circle,[int(radius)]*2)
 
 		radius              = rectangle.blit(circle,(0,0))
 		radius.bottomright  = rect.bottomright
@@ -202,8 +218,9 @@ class FuncButton(UIComponent):
 		return [rectangle, pos]
 	
 	def toggle_visibility(self):
-		if self.enabled: self.enabled = False
-		else: self.enabled = True
+		if self.hideable:
+			if self.visible: self.visible = False
+			else: self.visible = True
 
 	def draw(self):
 		self.surface.blit(self.border[0], self.border[1])

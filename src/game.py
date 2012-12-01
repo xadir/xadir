@@ -143,6 +143,9 @@ class XadirMain:
 		self.showhealth = True
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
+		self.sprites = pygame.sprite.LayeredDirty()
+		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
+
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 		chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
@@ -170,7 +173,6 @@ class XadirMain:
 		self.load_sprites()
 		self.update_enemy_tiles()
 
-		self.hue = 0
 		while 1:
 			self.draw()
 			pygame.display.flip()
@@ -189,31 +191,25 @@ class XadirMain:
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
 			self.clock.tick(self.fps)
-			self.hue += 10
 
 	def draw(self):
-		self.update_sprites()
+		self.sprites.update()
 		self.screen.fill((159, 182, 205))
 		self.update_buttons()
 		# XXX: less flashy way to indicate that we're running smoothly
-		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
-		self.player_sprites.draw(self.screen)
+		# Update layers
+		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer, reverse = True)
+		self.sprites.draw(self.screen)
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 		self.draw_turntext()
 		self.draw_healthbars()
-	
+
 	def update_buttons(self):
 		for b in self.buttons:
 			b.draw()
-
-	def draw_fps(self, fps, color):
-		text = self.playerfont.render('fps: %d' % fps, True, color)
-		rect = text.get_rect()
-		rect.centerx = self.sidebar.centerx
-		self.screen.blit(text, rect)
 
 	def load_sprites(self):
 		"""Load the sprites that we need"""
@@ -235,70 +231,68 @@ class XadirMain:
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites
 		self.masking_sprites = pygame.sprite.Group()
-		self.player_sprites = pygame.sprite.LayeredUpdates()
 		for p in self.players:
-			self.player_sprites.add(p.sprites)
+			self.sprites.add(p.all_characters)
 			
 	def click(self):
-		mouse_coords = pygame.mouse.get_pos()
-		mouse_coords = (mouse_coords[0]/TILE_SIZE[0], mouse_coords[1]/TILE_SIZE[1])
+		mouse_pos = pygame.mouse.get_pos()
+		mouse_grid_pos = (mouse_pos[0]/TILE_SIZE[0], mouse_pos[1]/TILE_SIZE[1])
 		player = self.players[self.turn]
 		for character in player.characters:
-			char_coords = character.get_coords()
-			if char_coords == mouse_coords:
+			if character.grid_pos == mouse_grid_pos:
 				if character.is_selected():
 					character.unselect()
 					self.grid_sprites = pygame.sprite.Group()
 				else:
 					character.select()
 					if character.mp <= 0:
-						self.movement_grid = SpriteGrid([character.get_coords()], character.get_coords(), self.imgs['red'])
+						self.movement_grid = SpriteGrid([character.grid_pos], self.imgs['red'])
 						self.grid_sprites = self.movement_grid.sprites
 					else:
-						self.movement_grid = SpriteGrid(self.get_action_area_for(character), character.get_coords(), self.imgs['green'])
+						self.movement_grid = SpriteGrid(self.get_action_area_for(character), self.imgs['green'])
 						self.grid_sprites = self.movement_grid.sprites
 			elif character.is_selected():
 				self.grid_sprites = pygame.sprite.Group()
 				character.unselect()
-				if mouse_coords in self.get_action_area_for(character):
-					if character.is_attack_move(mouse_coords):
-						self.do_attack(character, mouse_coords)
+				if mouse_grid_pos in self.get_action_area_for(character):
+					if character.is_attack_move(mouse_grid_pos):
+						self.do_attack(character, mouse_grid_pos)
 					else:
-						self.do_move(character, mouse_coords)
-			if char_coords != mouse_coords:
+						self.do_move(character, mouse_grid_pos)
+			if character.grid_pos != mouse_grid_pos:
 				character.unselect()
 
-	def do_attack(self, character, mouse_coords):
-		start = character.get_coords()
-		path = self.get_attack_path_for(character, start, mouse_coords)
+	def do_attack(self, character, mouse_grid_pos):
+		start = character.grid_pos
+		path = self.get_attack_path_for(character, start, mouse_grid_pos)
 		end = path[-2]
 		distance = len(path) - 2
 		self.animate_move(path, character)
-		character.set_coords(end)
+		character.grid_pos = end
 		character.mp -= distance
-		character.set_heading(self.get_heading(end, mouse_coords))
+		character.heading = self.get_heading(end, mouse_grid_pos)
 		target = None
 		for p in self.get_other_players():
 			for c in p.characters:
-				if c.get_coords() == mouse_coords:
+				if c.grid_pos == mouse_grid_pos:
 					target = c
 		self.attack(character, target)
 
-	def do_move(self, character, mouse_coords):
-		start = character.get_coords()
-		end = mouse_coords
+	def do_move(self, character, mouse_grid_pos):
+		start = character.grid_pos
+		end = mouse_grid_pos
 		path = self.get_move_path_for(character, start, end)
 		distance = len(path) - 1
 		self.animate_move(path, character)
-		character.set_coords(end)
+		character.grid_pos = end
 		character.mp -= distance
-		new_heading = self.get_heading(path[-2], mouse_coords)
-		character.set_heading(new_heading)
+		new_heading = self.get_heading(path[-2], mouse_grid_pos)
+		character.heading = new_heading
 
 	def animate_move(self, path, character):
 		for i in range(1, len(path) - 1):
-			character.set_heading(self.get_heading(path[i], path[i+1]))
-			character.set_coords(path[i])
+			character.heading = self.get_heading(path[i], path[i+1])
+			character.grid_pos = path[i]
 			self.draw()
 			pygame.display.flip()
 			self.clock.tick(5)
@@ -335,12 +329,6 @@ class XadirMain:
 		angle = int(round(angle / 45)) * 45
 		# Prefer horizontal directions when the direction is not a multiple of 90
 		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
-
-	def update_sprites(self):
-		self.player_sprites = pygame.sprite.LayeredUpdates()
-		for p in self.players:
-			p.update_sprites()
-			self.player_sprites.add(p.sprites)
 
 	def next_turn(self):
 		if len(self.players) < 1:
@@ -384,25 +372,17 @@ class XadirMain:
 				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
 				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
 				if self.showhealth:
-					draw_char_hp_bar(self.screen, pygame.Rect((character.coords[0] * TILE_SIZE[0]+2, character.coords[1] * TILE_SIZE[1] - (CHAR_SIZE[1]-TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
+					draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
-
-	def update_character_numbers(self):
-		players = self.get_all_players()
-		for p, player in enumerate(players):
-			for character in player.characters:
-				coords = character.get_coords()
-				print "%s at (%d,%d)" % (player.name, coords[0], coords[1])
-				self.add_text(self.screen, str(p), 20, (0, 0))
 
 	def update_enemy_tiles(self):
 		self.enemy_tiles = []
 		players = self.get_other_players()
 		for player in players:
 			for character in player.characters:
-				coords = character.get_coords()
+				coords = character.grid_pos
 				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-				tile = self.character_mask(pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *CHAR_SIZE), character)
+				tile = self.character_mask(character.rect, character)
 				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
@@ -421,12 +401,13 @@ class XadirMain:
 		self.players.append(Player(name, characters, self))
 
 	def attack(self, attacker, target):
-		attacker_position = attacker.get_coords()
-		target_position = target.get_coords()
+		attacker_position = attacker.grid_pos
+		target_position = target.grid_pos
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
-			target.take_hit((attacker.attack_stat * attacker.mp))
+			damage = roll_attack_damage(attacker, target)
+			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
 		self.update_enemy_tiles()
 
@@ -437,11 +418,11 @@ class XadirMain:
 
 	def is_passable_for(self, character, coords):
 		"""Is it okay for <character> to pass through this point without stopping?"""
-		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if p != character.player]
+		return self.is_walkable(coords) and coords not in [c.grid_pos for p in self.players for c in p.characters if p != character.player]
 
 	def is_haltable_for(self, character, coords):
 		"""Is it okay for <character> to stop at this point?"""
-		return self.is_walkable(coords) and coords not in [c.get_coords() for p in self.players for c in p.characters if c != character]
+		return self.is_walkable(coords) and coords not in [c.grid_pos for p in self.players for c in p.characters if c != character]
 
 	def get_move_path_for(self, character, start, end):
 		"""Get path from start to end; all the intermediate points will be passable and the last one haltable"""
@@ -454,7 +435,7 @@ class XadirMain:
 		"""Get path suitable for attacking from start to end; ie. a path where you can stop on the point just *before* the last one"""
 		assert isinstance(start, tuple)
 		assert isinstance(end, tuple)
-		assert end in [c.get_coords() for p in self.players for c in p.characters if p != character.player], 'Target square must contain enemy character'
+		assert end in [c.grid_pos for p in self.players for c in p.characters if p != character.player], 'Target square must contain enemy character'
 		# Get possible stopping points, one square away from the enemy
 		ends = self.get_neighbours(end, lambda pos: self.is_haltable_for(character, pos))
 		path = shortest_path_any(self, start, set(ends), lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
@@ -464,11 +445,11 @@ class XadirMain:
 
 	def get_action_area_for(self, character):
 		"""Get points where the character can either move or attack"""
-		result = bfs_area(self, character.coords, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
+		result = bfs_area(self, character.grid_pos, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
 		# Remove own characters
-		result = set(result) - set(c.get_coords() for c in character.player.characters)
+		result = set(result) - set(c.grid_pos for c in character.player.characters)
 		# Remove enemies that can't be reached
-		result = result - set(c.get_coords() for p in self.players for c in p.characters if p != character.player and not self.get_neighbours(c.get_coords(), lambda pos: pos == character.coords or pos in result))
+		result = result - set(c.grid_pos for p in self.players for c in p.characters if p != character.player and not self.get_neighbours(c.grid_pos, lambda pos: pos == character.grid_pos or pos in result))
 		return list(result)
 
 	def get_neighbours(self, coords, filter = None, size = 1):
@@ -480,15 +461,6 @@ class XadirMain:
 		result.sort(key = lambda pos: get_distance_2(pos, coords))
 		return result
 
-	def add_text(self, surface, text, size, coords):
-		assert isinstance(coords, tuple)
-		textfont = pygame.font.Font(FONT, int(size*FONTSCALE))
-		text_surface = textfont.render(text, True, (255,255, 255), (159, 182, 205))
-		text_rect = text_surface.get_rect()
-		text_rect.centerx = coords[0]
-		text_rect.centery = coords[1]
-		self.screen.blit(text_surface, text_rect)
-
 	def opaque_rect(self, rect, color=(0, 0, 0), opaque=255):
 		box = pygame.Surface((rect.width, rect.height)).convert()
 		box.fill(color)
@@ -496,22 +468,42 @@ class XadirMain:
 		return [box, (rect.left, rect.top)]
 
 	def character_mask(self, rect, character):
-		tile = self.chartypes[character.type + '_' + str(character.get_heading())].convert_alpha()
+		tile = self.chartypes[character.type + '_' + str(character.heading)].convert_alpha()
 		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 		return (tile, (rect.left, rect.top))
 
+class Fps(pygame.sprite.DirtySprite):
+	def __init__(self, clock, centerx):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.centerx = centerx
+		self.clock = clock
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+		self.hue = 0
+
+	def update(self):
+		self.dirty = 1
+		self.hue += 10
+
+		color = get_hue_color(self.hue)
+		fps = self.clock.get_fps()
+
+		self.image = self.font.render('fps: %d' % fps, True, color)
+		self.rect = self.image.get_rect()
+		self.rect.centerx = self.centerx
+
 class SpriteGrid:
-	def __init__(self, grid, coords, tile):
+	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
 
-class BackgroundMap:
+class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
-		self.width = width
-		self.height = height
-		self.map = Grid(width, height, map)
+		Grid.__init__(self, width, height, map)
+		self.cell_size = TILE_SIZE
+		self.x = self.y = 0
+		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for (x, y), tiletype in self.map.items():
 			tile = tiletypes[tiletype]
@@ -523,20 +515,10 @@ class BackgroundMap:
 
 class Player:
 	"""Class to create player or team in the game. One player may have many characters."""
-	def __init__(self, name, coords, main):
+	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.coords = coords
-		self.sprites = pygame.sprite.LayeredUpdates()
-		self.all_characters = []
-		for i in range(len(coords)):
-			character_type = coords[i][0]
-			x = coords[i][1]
-			y = coords[i][2]
-			heading = coords[i][3]
-			tile = main.chartypes[character_type + '_' + str(heading)]
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
-			self.all_characters.append(Character(self, character_type, 5, (x, y), heading, self.main))
+		self.all_characters = [Character(self, type, 5, (x, y), heading, main) for type, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -544,17 +526,8 @@ class Player:
 	def get_characters_coords(self):
 		coords = []
 		for i in self.characters:
-			coords.append(i.get_coords())
+			coords.append(i.grid_pos)
 		return coords
-
-	def update_sprites(self):
-		self.sprites = pygame.sprite.LayeredUpdates()
-		for character in self.characters:
-			coords = character.get_coords()
-			heading = character.get_heading()
-			character_type = character.type
-			tile = self.main.chartypes[character_type + '_' + str(heading)]
-			self.sprites.add(Tile(tile, pygame.Rect(coords[0]*TILE_SIZE[0], coords[1]*TILE_SIZE[1]-(CHAR_SIZE[1]-TILE_SIZE[1]), *TILE_SIZE), layer = coords[1]))
 
 	def movement_points_left(self):
 		points_left = 0
@@ -566,9 +539,96 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-class Character:
+class Dice:
+	def __init__(self, count, sides):
+		self.count = count
+		self.sides = sides
+
+	def __repr__(self):
+		return '%s(%d, %d)' % (self.__class__.__name__, self.count, self.sides)
+
+	def __str__(self):
+		return '%dd%d' % (self.count, self.sides)
+
+	def roll(self):
+		result = self.count + sum(random.randrange(self.sides) for i in range(self.count))
+		print self, 'rolled', result
+		return result
+
+class Weapon:
+	sizes = ['light', 'normal', 'heavy']
+	types = ['melee', 'ranged', 'magic']
+	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic'] # XXX Alexer: added magic
+	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
+	def __init__(self, size, type, class_, damage, damage_type, magic_enchantment):
+		self.size = size
+		self.type = type
+		self.class_ = class_
+		self.damage = damage
+		self.damage_type = damage_type
+		self.magic_enchantment = magic_enchantment
+
+	@classmethod
+	def random(cls):
+		size = random.choice(cls.sizes)
+		type = random.choice(cls.types)
+		class_ = random.choice(cls.classes)
+		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
+		damage_type = set([random.choice(cls.damage_types)])
+		magic_enchantment = random.randrange(11)
+		return cls(size, type, class_, damage, damage_type, magic_enchantment)
+
+	def __repr__(self):
+		return 'Weapon(%r, %r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
+
+class Armor:
+	def __init__(self, miss_chance, damage_reduction):
+		self.miss_chance = miss_chance
+		self.damage_reduction = damage_reduction
+
+	@classmethod
+	def random(cls):
+		miss_chance = random.randrange(-5, 6)
+		damage_reduction = random.randrange(11)
+		return cls(miss_chance, damage_reduction)
+
+def roll_attack_damage(attacker, defender):
+	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
+	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dexterity / 5)
+	miss_chance = attacker_miss_chance + defender_evasion_chance
+	is_hit = random.randrange(100) < 100 - miss_chance
+	print 'Miss chance:', miss_chance
+	if not is_hit:
+		print 'Missed!'
+		return 0
+
+	critical_chance = {'light': 15, 'normal': 10, 'heavy': 5}[attacker.weapon.size]
+	critical_multiplier = {'light': 1.5, 'normal': 2.0, 'heavy': 3.0}[attacker.weapon.size]
+	is_critical_hit = random.randrange(100) < critical_chance
+
+	print 'Critical chance and multiplier:', critical_chance, critical_multiplier
+	if is_critical_hit: print 'Critical!'
+	damage_multiplier = critical_multiplier if is_critical_hit else 1
+
+	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
+	#for weapon_damage, weapon_damage_types in attacker.weapon.roll_damage():
+	weapon_damage = attacker.weapon.damage.roll() # XXX Alexer: damage type
+	print attacker.weapon, 'rolled', weapon_damage, 'of', '/'.join(attacker.weapon.damage_type), 'damage'
+
+	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
+	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
+	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
+
+	print positive_damage, 'of damage and', negative_damage, 'of damage reduction: dealt', damage, 'of damage'
+
+	return int(math.floor(max(damage, 0)))
+
+class Character(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+		UIGridObject.__init__(self, main.map, coords)
+		pygame.sprite.DirtySprite.__init__(self)
+
 		self.player = player
 		self.type = type
 		# Movement points
@@ -576,43 +636,40 @@ class Character:
 		self.mp = max_mp
 		# Health points
 		self.max_hp = max_hp
-		self.hp = random.randrange(max_hp) # Randomized for testing look&feel
+		self.hp = max_hp
 		# Stats
-		self.attack_stat = attack_stat     # Attack multiplier
+		self.dexterity = random.randrange(1, 20)
+		self.constitution = random.randrange(1, 20)
+		self.intelligence = random.randrange(1, 20)
+		self.strength = random.randrange(1, 20)
 		# Status
-		assert isinstance(coords, tuple)
-		self.coords = coords     # Tuple of x and y
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
+
+		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
+		self.per_wc_miss_chance = {}
+		self.class_damage_reduction = random.randrange(11)
+		self.armor = Armor.random()
+		self.weapon = Weapon.random()
 
 		self.main = main
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
 
-	def get_coords(self):
-		"""Returns coordinates of the character, return is tuple (x, y)"""
-		assert isinstance(self.coords, tuple)
-		return self.coords
+	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
+	rect = property(_get_rect)
 
-	def set_coords(self, coords):
-		"""Sets coordinates of characte, input is tuple of (x, y)"""
-		assert isinstance(coords, tuple)
-		self.coords = coords
-
-	def get_heading(self):
-		"""Returns heading of character in degrees"""
-		return self.heading
-
-	def set_heading(self, angle):
-		"""Sets the absolute heading of character"""
-		self.heading = angle
+	def update(self):
+		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
+		self.dirty = 1
 
 	def is_selected(self):
 		return self.selected
 
 	def take_hit(self, attack_points):
+		print 'Took', attack_points, 'of damage'
 		self.main.animate_hp_change(self, -attack_points)
 		self.hp -= attack_points
 		if self.hp < 1:
@@ -630,9 +687,11 @@ class Character:
 
 	def revive(self):
 		self.alive = True
+		self.visible = True
 
 	def kill(self):
 		self.alive = False
+		self.visible = False
 
 	def turn(self, angle):
 		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
@@ -648,16 +707,15 @@ class Character:
 		"""Moves to headed direction given amount of steps"""
 		if self.movement <= steps:
 			if self.heading == 0:
-				self.coords[1] -= steps
+				self.grid_y -= steps
 			elif self.heading == 90:
-				self.coords[0] += steps
+				self.grid_x += steps
 			elif self.heading == 180:
-				self.coords[1] += steps
+				self.grid_y += steps
 			elif self.heading == 270:
-				self.coords[0] -= steps
+				self.grid_x -= steps
 
 	def is_attack_move(self, coords):
-		assert isinstance(coords, tuple)
 		for p in self.main.get_other_players():
 			for c in p.get_characters_coords():
 				if c == coords:
@@ -674,6 +732,7 @@ class Tile(pygame.sprite.Sprite):
 		self._layer = layer
 		if rect is not None:
 			self.rect = rect
+
 class Button(UIComponent):
 	def __init__(self, x, y, width, height, name, fontsize, surface, function):
 		UIComponent.__init__(self, x, y, width, height)
