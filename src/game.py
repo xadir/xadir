@@ -144,6 +144,7 @@ class XadirMain:
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
 		self.sprites = pygame.sprite.LayeredDirty()
+		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -172,7 +173,6 @@ class XadirMain:
 		self.load_sprites()
 		self.update_enemy_tiles()
 
-		self.hue = 0
 		while 1:
 			self.draw()
 			pygame.display.flip()
@@ -191,14 +191,12 @@ class XadirMain:
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
 			self.clock.tick(self.fps)
-			self.hue += 10
 
 	def draw(self):
 		self.sprites.update()
 		self.screen.fill((159, 182, 205))
 		self.update_buttons()
 		# XXX: less flashy way to indicate that we're running smoothly
-		self.draw_fps(self.clock.get_fps(), get_hue_color(self.hue))
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
 		# Update layers
@@ -212,12 +210,6 @@ class XadirMain:
 	def update_buttons(self):
 		for b in self.buttons:
 			b.draw()
-
-	def draw_fps(self, fps, color):
-		text = self.playerfont.render('fps: %d' % fps, True, color)
-		rect = text.get_rect()
-		rect.centerx = self.sidebar.centerx
-		self.screen.blit(text, rect)
 
 	def load_sprites(self):
 		"""Load the sprites that we need"""
@@ -479,6 +471,25 @@ class XadirMain:
 		tile = self.chartypes[character.type + '_' + str(character.heading)].convert_alpha()
 		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 		return (tile, (rect.left, rect.top))
+
+class Fps(pygame.sprite.DirtySprite):
+	def __init__(self, clock, centerx):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.centerx = centerx
+		self.clock = clock
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+		self.hue = 0
+
+	def update(self):
+		self.dirty = 1
+		self.hue += 10
+
+		color = get_hue_color(self.hue)
+		fps = self.clock.get_fps()
+
+		self.image = self.font.render('fps: %d' % fps, True, color)
+		self.rect = self.image.get_rect()
+		self.rect.centerx = self.centerx
 
 class SpriteGrid:
 	def __init__(self, grid, tile):
