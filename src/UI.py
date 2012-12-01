@@ -100,7 +100,7 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class Func_Button(UIComponent):
+class FuncButton(UIComponent):
 	def __init__(self, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, enabled=True, selected=False):
 		UIComponent.__init__(self, x, y, width, height)
 		self.x = x
@@ -222,3 +222,51 @@ class Func_Button(UIComponent):
 					self.surface.blit(i[0].image, rect)
 		for t in self.texts:
 			self.surface.blit(t[0], t[1])
+			
+class CascadeButton(UIComponent):
+	def __init__(self, parent, x=0, y=0):
+		#icon = pygame.image.load(os.path.join(GFXDIR, "test_icon.png"))
+		UIComponent.__init__(self, x, y, width, height)
+		self.race_name = race_name
+		self.sprite_file = sprite_file
+		self.stat_file = stat_file
+		self.surface = surface
+		self.x = x
+		self.y = y
+		self.load_tile()
+		self.child_buttons = []
+		self.parent_button = FuncButton(x, y, self.race_tile.rect.width + 10, self.race_tile.rect.height + 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), None, [[self.race_tile, (7, 0)]], 20, self.surface, self.enable_buttons, True)
+		self.child_buttons.append(FuncButton(x, y-25, self.race_tile.rect.width + 10, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Equip", None]], None, 20, self.surface, self.button_click, False))
+		self.child_buttons.append(FuncButton(x, y+self.race_tile.rect.height+25, self.race_tile.rect.width + 10, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Sell", None]], None, 20, self.surface, self.button_click, False))
+
+	def load_tile(self):
+		self.race_tile = race_tile(self.race_name).get_tile(self.x, self.y, '270')
+	
+	def load_text(self):
+		print GFXDIR
+		print self.stat_file
+		path = os.path.join(GFXDIR, self.stat_file)
+		f = open(path, 'r')
+		
+		self.race_stats = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			stats = []
+			for i in range(1,len(columns)):
+				temp = columns[i].split('=')
+				temp = [col.strip() for col in temp]
+				stats.append(temp)
+			self.race_stats[columns[0]] = stats
+			
+		f.close()
+		
+	def button_click(self):
+		print "Clicked button"
+		
+	def enable_buttons(self):
+		for b in self.child_buttons:
+			b.toggle_visibility()
