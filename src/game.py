@@ -229,7 +229,6 @@ class XadirMain:
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites
-		self.masking_sprites = pygame.sprite.Group()
 		for p in self.players:
 			self.sprites.add(p.all_characters)
 			
