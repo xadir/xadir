@@ -183,6 +183,7 @@ class XadirMain:
 
 	def main_loop(self):
 		self.load_sprites()
+		self.init_sidebar()
 
 		while 1:
 			self.draw()
@@ -210,7 +211,6 @@ class XadirMain:
 		# Update layers
 		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
-		self.draw_healthbars()
 
 	def update_buttons(self):
 		for b in self.buttons:
@@ -354,30 +354,6 @@ class XadirMain:
 			print self.turn
 		self.players[self.turn].reset_movement_points()
 
-	def draw_healthbars(self):
-		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
-		width = self.sidebar.width - 20
-		height = self.sidebar.height - 110
-		bar_height = 20
-		margin = 5
-		bar_size = [width, bar_height]
-		players = self.get_all_players()
-		for player in players:
-			text = player.name
-			playertext = self.playerfont.render(text, True, (255,255, 255), (159, 182, 205))
-			rect = playertext.get_rect()
-			rect.left = coords[0]
-			rect.top = coords[1]
-			self.screen.blit(playertext, rect)
-			# XXX: take this from text rect size?
-			coords[1] += 12 + margin
-			for character in player.all_characters:
-				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
-				if self.showhealth:
-					draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
-				coords[1] += (bar_height + margin)
-
 	def get_all_players(self):
 		return self.players
 
@@ -458,6 +434,51 @@ class XadirMain:
 		box.fill(color)
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
+
+	def init_sidebar(self):
+		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
+		width = self.sidebar.width - 20
+		height = self.sidebar.height - 110
+		bar_height = 20
+		margin = 5
+		bar_size = [width, bar_height]
+		players = self.get_all_players()
+		for player in players:
+			label = PlayerName(player, pygame.Rect(coords, (1, 1)))
+			self.sprites.add(label)
+			coords[1] += label.font.get_linesize()
+			for character in player.all_characters:
+				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
+				bar = MainHealthBar(character, character_healthbar_rect)
+				self.sprites.add(bar)
+				# XXX: fix character healthbars
+				#if self.showhealth:
+				#	draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
+				coords[1] += (bar_height + margin)
+
+class MainHealthBar(pygame.sprite.DirtySprite):
+	def __init__(self, character, rect):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.character = character
+
+		self.image = pygame.Surface(rect.size)
+		self.rect = rect
+
+		self.dirty = 2
+
+	def update(self):
+		draw_main_hp_bar(self.image, self.image.get_rect(), self.character.max_hp, self.character.hp)
+
+class PlayerName(pygame.sprite.DirtySprite):
+	def __init__(self, player, rect):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.player = player
+
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+
+		self.image = self.font.render(self.player.name, True, (255,255, 255))
+		self.rect = self.image.get_rect()
+		self.rect.topleft = rect.topleft
 
 class CurrentPlayerName(pygame.sprite.DirtySprite):
 	def __init__(self, main, centerx):
