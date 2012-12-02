@@ -196,7 +196,6 @@ class XadirMain:
 		self.sprites.update()
 		self.screen.fill((159, 182, 205))
 		self.update_buttons()
-		# XXX: less flashy way to indicate that we're running smoothly
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
 		# Update layers
@@ -484,6 +483,7 @@ class Fps(pygame.sprite.DirtySprite):
 		self.dirty = 1
 		self.hue += 10
 
+		# XXX: less flashy way to indicate that we're running smoothly
 		color = get_hue_color(self.hue)
 		fps = self.clock.get_fps()
 
