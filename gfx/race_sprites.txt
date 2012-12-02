@@ -1,6 +1,6 @@
-Longear, sprite_collection.png, 1
-Ghost, sprite_collection.png, 2
-Croco, sprite_collection.png, 3
+Longear, races.png, 1
+Ghost, races.png, 2
+Croco, races.png, 3
 Human, chibi_races_V2_colorkey_fixed.png, 1
 Human2, chibi_races_V2_colorkey_fixed.png, 2
 Devil, chibi_races_V2_colorkey_fixed.png, 3
