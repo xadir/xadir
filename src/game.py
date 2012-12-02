@@ -19,6 +19,8 @@ L_MAP = 0
 L_SEL = 1
 L_CHAR = 2
 
+L_CHAR_OVERLAY = 0
+
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
 	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
@@ -147,8 +149,12 @@ class XadirMain:
 		self.showhealth = False
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
+		self.disabled_chartypes = {}
+
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
+
+	current_player = property(lambda self: self.players[self.turn])
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -174,7 +180,6 @@ class XadirMain:
 
 	def main_loop(self):
 		self.load_sprites()
-		self.update_enemy_tiles()
 
 		while 1:
 			self.draw()
@@ -202,8 +207,6 @@ class XadirMain:
 		# Update layers
 		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
-		for enemy_tiles in self.enemy_tiles:
-			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
 		self.draw_turntext()
 		self.draw_healthbars()
 
@@ -233,6 +236,8 @@ class XadirMain:
 		self.sprites.add(self.map_sprites)
 		for p in self.players:
 			self.sprites.add(p.all_characters)
+			for c in p.all_characters:
+				self.sprites.add(DisabledCharacter(self, c))
 
 	def set_grid_sprites(self, sprites):
 		self.sprites.remove(self.grid_sprites)
@@ -346,7 +351,6 @@ class XadirMain:
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
 		self.players[self.turn].reset_movement_points()
-		self.update_enemy_tiles()
 
 	def draw_turntext(self):
 		turnstring = self.players[self.turn].name
@@ -380,16 +384,6 @@ class XadirMain:
 					draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
-	def update_enemy_tiles(self):
-		self.enemy_tiles = []
-		players = self.get_other_players()
-		for player in players:
-			for character in player.characters:
-				coords = character.grid_pos
-				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-				tile = self.character_mask(character.rect, character)
-				self.enemy_tiles.append(tile)
-
 	def get_all_players(self):
 		return self.players
 
@@ -414,7 +408,6 @@ class XadirMain:
 			damage = roll_attack_damage(attacker, target)
 			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
-		self.update_enemy_tiles()
 
 	def is_walkable(self, coords):
 		"""Is the terrain at this point walkable?"""
@@ -472,10 +465,32 @@ class XadirMain:
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
 
-	def character_mask(self, rect, character):
-		tile = self.chartypes[character.type + '_' + str(character.heading)].convert_alpha()
-		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
-		return (tile, (rect.left, rect.top))
+class DisabledCharacter(pygame.sprite.DirtySprite):
+	def __init__(self, main, character):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.character = character
+		self.main = main
+
+		self.image = self.rect = None
+		self.update()
+
+	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
+
+	def update(self):
+		name = self.character.type + '_' + str(self.character.heading)
+		try:
+			image = self.main.disabled_chartypes[name]
+		except:
+			image = self.main.chartypes[name].convert_alpha()
+			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
+			self.main.disabled_chartypes[name] = image
+
+		self.visible = self.character.player != self.main.current_player
+		if image != self.image or self.character.rect != self.rect:
+			self.dirty = 1
+
+		self.image = image
+		self.rect = self.character.rect
 
 class Fps(pygame.sprite.DirtySprite):
 	def __init__(self, clock, centerx):
