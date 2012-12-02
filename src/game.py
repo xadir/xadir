@@ -69,7 +69,7 @@ def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
 	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
-	
+
 # XXX: Adding some UI controls to game window
 def write_button(self, surface, text, x, y):
 		buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
@@ -137,6 +137,8 @@ class XadirMain:
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
+		self.background = pygame.Surface((self.width, self.height))
+		self.background.fill((159, 182, 205))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
 		self.buttonfont = pygame.font.Font(FONT, int(50*FONTSCALE))
@@ -153,6 +155,7 @@ class XadirMain:
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
+		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
 
 	current_player = property(lambda self: self.players[self.turn])
 
@@ -202,12 +205,11 @@ class XadirMain:
 
 	def draw(self):
 		self.sprites.update()
-		self.screen.fill((159, 182, 205), self.sidebar)
+		self.sprites.clear(self.screen, self.background)
 		self.update_buttons()
 		# Update layers
 		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
-		self.draw_turntext()
 		self.draw_healthbars()
 
 	def update_buttons(self):
@@ -352,14 +354,6 @@ class XadirMain:
 			print self.turn
 		self.players[self.turn].reset_movement_points()
 
-	def draw_turntext(self):
-		turnstring = self.players[self.turn].name
-		turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
-		rect = turntext.get_rect()
-		rect.centerx = self.sidebar.centerx
-		rect.centery = 50
-		self.screen.blit(turntext, rect)
-
 	def draw_healthbars(self):
 		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
 		width = self.sidebar.width - 20
@@ -464,6 +458,28 @@ class XadirMain:
 		box.fill(color)
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
+
+class CurrentPlayerName(pygame.sprite.DirtySprite):
+	def __init__(self, main, centerx):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.centerx = centerx
+		self.main = main
+		self.text = None
+
+		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
+
+	def update(self):
+		text = self.main.current_player.name
+		if text == self.text:
+			return
+
+		self.dirty = 1
+		self.text = text
+
+		self.image = self.font.render(self.text, True, (255,255, 255))
+		self.rect = self.image.get_rect()
+		self.rect.centerx = self.centerx
+		self.rect.centery = 50
 
 class DisabledCharacter(pygame.sprite.DirtySprite):
 	def __init__(self, main, character):
