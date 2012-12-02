@@ -140,7 +140,7 @@ class XadirMain:
 		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
-		self.showhealth = True
+		self.showhealth = False
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
 		self.sprites = pygame.sprite.LayeredDirty()
@@ -198,7 +198,7 @@ class XadirMain:
 		self.map_sprites.draw(self.screen)
 		self.grid_sprites.draw(self.screen)
 		# Update layers
-		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer, reverse = True)
+		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
 		for enemy_tiles in self.enemy_tiles:
 			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
@@ -658,6 +658,8 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
 	rect = property(_get_rect)
+
+	_layer = property(lambda self: self.grid_y, lambda self, value: None)
 
 	def update(self):
 		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
