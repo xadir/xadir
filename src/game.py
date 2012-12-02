@@ -477,8 +477,9 @@ class Fps(pygame.sprite.DirtySprite):
 		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
 		self.hue = 0
 
+		self.dirty = 2
+
 	def update(self):
-		self.dirty = 1
 		self.hue += 10
 
 		# XXX: less flashy way to indicate that we're running smoothly
