@@ -15,6 +15,10 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+L_MAP = 0
+L_SEL = 1
+L_CHAR = 2
+
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
 	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
@@ -143,7 +147,7 @@ class XadirMain:
 		self.showhealth = False
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
-		self.sprites = pygame.sprite.LayeredDirty()
+		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 
 	def load_resources(self):
@@ -193,10 +197,8 @@ class XadirMain:
 
 	def draw(self):
 		self.sprites.update()
-		self.screen.fill((159, 182, 205))
+		self.screen.fill((159, 182, 205), self.sidebar)
 		self.update_buttons()
-		self.map_sprites.draw(self.screen)
-		self.grid_sprites.draw(self.screen)
 		# Update layers
 		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
@@ -228,9 +230,15 @@ class XadirMain:
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites
+		self.sprites.add(self.map_sprites)
 		for p in self.players:
 			self.sprites.add(p.all_characters)
-			
+
+	def set_grid_sprites(self, sprites):
+		self.sprites.remove(self.grid_sprites)
+		self.grid_sprites = sprites
+		self.sprites.add(self.grid_sprites)
+
 	def click(self):
 		mouse_pos = pygame.mouse.get_pos()
 		mouse_grid_pos = (mouse_pos[0]/TILE_SIZE[0], mouse_pos[1]/TILE_SIZE[1])
@@ -239,17 +247,17 @@ class XadirMain:
 			if character.grid_pos == mouse_grid_pos:
 				if character.is_selected():
 					character.unselect()
-					self.grid_sprites = pygame.sprite.Group()
+					self.set_grid_sprites(pygame.sprite.Group())
 				else:
 					character.select()
 					if character.mp <= 0:
 						self.movement_grid = SpriteGrid([character.grid_pos], self.imgs['red'])
-						self.grid_sprites = self.movement_grid.sprites
+						self.set_grid_sprites(self.movement_grid.sprites)
 					else:
 						self.movement_grid = SpriteGrid(self.get_action_area_for(character), self.imgs['green'])
-						self.grid_sprites = self.movement_grid.sprites
+						self.set_grid_sprites(self.movement_grid.sprites)
 			elif character.is_selected():
-				self.grid_sprites = pygame.sprite.Group()
+				self.set_grid_sprites(pygame.sprite.Group())
 				character.unselect()
 				if mouse_grid_pos in self.get_action_area_for(character):
 					if character.is_attack_move(mouse_grid_pos):
@@ -494,7 +502,7 @@ class SpriteGrid:
 	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
-			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = (L_SEL, )))
 
 class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
@@ -507,7 +515,7 @@ class BackgroundMap(Grid):
 		for (x, y), tiletype in self.map.items():
 			tile = tiletypes[tiletype]
 			#print x, y
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y)))
 
 	def get_map(self):
 		return self.map
@@ -660,7 +668,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
 	rect = property(_get_rect)
 
-	_layer = property(lambda self: self.grid_y, lambda self, value: None)
+	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
 
 	def update(self):
 		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
@@ -725,9 +733,9 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 
 # Following classes define the graphical elements, or Sprites.
 
-class Tile(pygame.sprite.Sprite):
+class Tile(pygame.sprite.DirtySprite):
 	def __init__(self, image, rect=None, layer=0):
-		pygame.sprite.Sprite.__init__(self)
+		pygame.sprite.DirtySprite.__init__(self)
 		self.image = image
 		self.rect = image.get_rect()
 		self._layer = layer
