@@ -148,15 +148,14 @@ class XadirMain:
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
-		chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
-		chars2 = load_tiles('sprite_collection_2.png', CHAR_SIZE, (255, 0, 255), SCALE)
+		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
+		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
 
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
 		self.charnames = []
 		self.chartypes = {}
-		for i, char in enumerate(chars1[:-1] + chars2):
-			name = 'char' + str(i+1)
+		for i, (name, char) in enumerate(zip(racenames, raceimages)):
 			self.charnames.append(name)
 			self.chartypes[name + '_270'] = char[0]
 			self.chartypes[name + '_180'] = char[1]
