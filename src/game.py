@@ -15,6 +15,12 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+L_MAP = 0
+L_SEL = 1
+L_CHAR = 2
+
+L_CHAR_OVERLAY = 0
+
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
 	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
@@ -63,7 +69,7 @@ def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
 	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
-	
+
 # XXX: Adding some UI controls to game window
 def write_button(self, surface, text, x, y):
 		buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
@@ -131,6 +137,8 @@ class XadirMain:
 		self.width = width
 		self.height = height
 		self.screen = pygame.display.set_mode((self.width, self.height))
+		self.background = pygame.Surface((self.width, self.height))
+		self.background.fill((159, 182, 205))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
 		self.buttonfont = pygame.font.Font(FONT, int(50*FONTSCALE))
@@ -140,11 +148,16 @@ class XadirMain:
 		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
-		self.showhealth = True
+		self.showhealth = False
 		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
 
-		self.sprites = pygame.sprite.LayeredDirty()
+		self.disabled_chartypes = {}
+
+		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
+		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
+
+	current_player = property(lambda self: self.players[self.turn])
 
 	def load_resources(self):
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
@@ -170,7 +183,7 @@ class XadirMain:
 
 	def main_loop(self):
 		self.load_sprites()
-		self.update_enemy_tiles()
+		self.init_sidebar()
 
 		while 1:
 			self.draw()
@@ -193,17 +206,11 @@ class XadirMain:
 
 	def draw(self):
 		self.sprites.update()
-		self.screen.fill((159, 182, 205))
+		self.sprites.clear(self.screen, self.background)
 		self.update_buttons()
-		self.map_sprites.draw(self.screen)
-		self.grid_sprites.draw(self.screen)
 		# Update layers
-		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer, reverse = True)
+		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 		self.sprites.draw(self.screen)
-		for enemy_tiles in self.enemy_tiles:
-			self.screen.blit(enemy_tiles[0], enemy_tiles[1])
-		self.draw_turntext()
-		self.draw_healthbars()
 
 	def update_buttons(self):
 		for b in self.buttons:
@@ -228,9 +235,17 @@ class XadirMain:
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites
+		self.sprites.add(self.map_sprites)
 		for p in self.players:
 			self.sprites.add(p.all_characters)
-			
+			for c in p.all_characters:
+				self.sprites.add(DisabledCharacter(self, c))
+
+	def set_grid_sprites(self, sprites):
+		self.sprites.remove(self.grid_sprites)
+		self.grid_sprites = sprites
+		self.sprites.add(self.grid_sprites)
+
 	def click(self):
 		mouse_pos = pygame.mouse.get_pos()
 		mouse_grid_pos = (mouse_pos[0]/TILE_SIZE[0], mouse_pos[1]/TILE_SIZE[1])
@@ -239,17 +254,17 @@ class XadirMain:
 			if character.grid_pos == mouse_grid_pos:
 				if character.is_selected():
 					character.unselect()
-					self.grid_sprites = pygame.sprite.Group()
+					self.set_grid_sprites(pygame.sprite.Group())
 				else:
 					character.select()
 					if character.mp <= 0:
 						self.movement_grid = SpriteGrid([character.grid_pos], self.imgs['red'])
-						self.grid_sprites = self.movement_grid.sprites
+						self.set_grid_sprites(self.movement_grid.sprites)
 					else:
 						self.movement_grid = SpriteGrid(self.get_action_area_for(character), self.imgs['green'])
-						self.grid_sprites = self.movement_grid.sprites
+						self.set_grid_sprites(self.movement_grid.sprites)
 			elif character.is_selected():
-				self.grid_sprites = pygame.sprite.Group()
+				self.set_grid_sprites(pygame.sprite.Group())
 				character.unselect()
 				if mouse_grid_pos in self.get_action_area_for(character):
 					if character.is_attack_move(mouse_grid_pos):
@@ -338,49 +353,6 @@ class XadirMain:
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
 		self.players[self.turn].reset_movement_points()
-		self.update_enemy_tiles()
-
-	def draw_turntext(self):
-		turnstring = self.players[self.turn].name
-		turntext = self.font.render(turnstring, True, (255,255, 255), (159, 182, 205))
-		rect = turntext.get_rect()
-		rect.centerx = self.sidebar.centerx
-		rect.centery = 50
-		self.screen.blit(turntext, rect)
-
-	def draw_healthbars(self):
-		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
-		width = self.sidebar.width - 20
-		height = self.sidebar.height - 110
-		bar_height = 20
-		margin = 5
-		bar_size = [width, bar_height]
-		players = self.get_all_players()
-		for player in players:
-			text = player.name
-			playertext = self.playerfont.render(text, True, (255,255, 255), (159, 182, 205))
-			rect = playertext.get_rect()
-			rect.left = coords[0]
-			rect.top = coords[1]
-			self.screen.blit(playertext, rect)
-			# XXX: take this from text rect size?
-			coords[1] += 12 + margin
-			for character in player.all_characters:
-				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
-				draw_main_hp_bar(self.screen, character_healthbar_rect, character.max_hp, character.hp)
-				if self.showhealth:
-					draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
-				coords[1] += (bar_height + margin)
-
-	def update_enemy_tiles(self):
-		self.enemy_tiles = []
-		players = self.get_other_players()
-		for player in players:
-			for character in player.characters:
-				coords = character.grid_pos
-				print "enemy alive at (%d,%d)" % (coords[0], coords[1])
-				tile = self.character_mask(character.rect, character)
-				self.enemy_tiles.append(tile)
 
 	def get_all_players(self):
 		return self.players
@@ -406,7 +378,6 @@ class XadirMain:
 			damage = roll_attack_damage(attacker, target)
 			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
-		self.update_enemy_tiles()
 
 	def is_walkable(self, coords):
 		"""Is the terrain at this point walkable?"""
@@ -464,10 +435,119 @@ class XadirMain:
 		box.set_alpha(opaque)
 		return [box, (rect.left, rect.top)]
 
-	def character_mask(self, rect, character):
-		tile = self.chartypes[character.type + '_' + str(character.heading)].convert_alpha()
-		tile.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
-		return (tile, (rect.left, rect.top))
+	def init_sidebar(self):
+		coords = [(self.sidebar.left + 10), (self.sidebar.top + 100)]
+		width = self.sidebar.width - 20
+		height = self.sidebar.height - 110
+		bar_height = 20
+		margin = 5
+		bar_size = [width, bar_height]
+		players = self.get_all_players()
+		for player in players:
+			label = PlayerName(player, pygame.Rect(coords, (1, 1)))
+			self.sprites.add(label)
+			coords[1] += label.font.get_linesize()
+			for character in player.all_characters:
+				character_healthbar_rect = pygame.Rect(tuple(coords), tuple(bar_size))
+				bar = MainHealthBar(character, character_healthbar_rect)
+				self.sprites.add(bar)
+				# XXX: fix character healthbars
+				#if self.showhealth:
+				#	draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
+				coords[1] += (bar_height + margin)
+
+class StateTrackingSprite(pygame.sprite.DirtySprite):
+	def __init__(self):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.state = None
+
+	def get_state(self):
+		raise NotImplemented, 'This method must be implemented by base classes'
+
+	def update(self):
+		if not self.visible:
+			return
+
+		state = self.get_state()
+		if state == self.state:
+			return
+
+		self.redraw()
+		self.dirty = 1
+
+class MainHealthBar(StateTrackingSprite):
+	def __init__(self, character, rect):
+		StateTrackingSprite.__init__(self)
+		self.character = character
+
+		self.image = pygame.Surface(rect.size)
+		self.rect = rect
+
+	def get_state(self):
+		return self.character.max_hp, self.character.hp
+
+	def redraw(self):
+		draw_main_hp_bar(self.image, self.image.get_rect(), self.character.max_hp, self.character.hp)
+
+class PlayerName(pygame.sprite.DirtySprite):
+	def __init__(self, player, rect):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.player = player
+
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+
+		self.image = self.font.render(self.player.name, True, (255,255, 255))
+		self.rect = self.image.get_rect()
+		self.rect.topleft = rect.topleft
+
+class CurrentPlayerName(pygame.sprite.DirtySprite):
+	def __init__(self, main, centerx):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.centerx = centerx
+		self.main = main
+		self.text = None
+
+		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
+
+	def update(self):
+		text = self.main.current_player.name
+		if text == self.text:
+			return
+
+		self.dirty = 1
+		self.text = text
+
+		self.image = self.font.render(self.text, True, (255,255, 255))
+		self.rect = self.image.get_rect()
+		self.rect.centerx = self.centerx
+		self.rect.centery = 50
+
+class DisabledCharacter(pygame.sprite.DirtySprite):
+	def __init__(self, main, character):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.character = character
+		self.main = main
+
+		self.image = self.rect = None
+		self.update()
+
+	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
+
+	def update(self):
+		name = self.character.type + '_' + str(self.character.heading)
+		try:
+			image = self.main.disabled_chartypes[name]
+		except:
+			image = self.main.chartypes[name].convert_alpha()
+			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
+			self.main.disabled_chartypes[name] = image
+
+		self.visible = self.character.player != self.main.current_player
+		if image != self.image or self.character.rect != self.rect:
+			self.dirty = 1
+
+		self.image = image
+		self.rect = self.character.rect
 
 class Fps(pygame.sprite.DirtySprite):
 	def __init__(self, clock, centerx):
@@ -477,8 +557,9 @@ class Fps(pygame.sprite.DirtySprite):
 		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
 		self.hue = 0
 
+		self.dirty = 2
+
 	def update(self):
-		self.dirty = 1
 		self.hue += 10
 
 		# XXX: less flashy way to indicate that we're running smoothly
@@ -493,7 +574,7 @@ class SpriteGrid:
 	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
-			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE)))
+			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = (L_SEL, )))
 
 class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
@@ -506,7 +587,7 @@ class BackgroundMap(Grid):
 		for (x, y), tiletype in self.map.items():
 			tile = tiletypes[tiletype]
 			#print x, y
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = y))
+			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y)))
 
 	def get_map(self):
 		return self.map
@@ -659,6 +740,8 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
 	rect = property(_get_rect)
 
+	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
+
 	def update(self):
 		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
 		self.dirty = 1
@@ -722,9 +805,9 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 
 # Following classes define the graphical elements, or Sprites.
 
-class Tile(pygame.sprite.Sprite):
+class Tile(pygame.sprite.DirtySprite):
 	def __init__(self, image, rect=None, layer=0):
-		pygame.sprite.Sprite.__init__(self)
+		pygame.sprite.DirtySprite.__init__(self)
 		self.image = image
 		self.rect = image.get_rect()
 		self._layer = layer
