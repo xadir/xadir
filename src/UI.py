@@ -87,9 +87,11 @@ class UIGridObject(UIObject):
 	grid_pos = property(_get_grid_pos, _set_grid_pos)
 
 class UIContainer(UIObject):
-	def __init__(self, parent, rel_pos, size, children):
+	def __init__(self, parent, rel_pos, size, surface):
 		UIObject.__init__(self, parent, rel_pos, size)
-		self.children = children
+		self.surface = surface
+		self.children = []
+		self.add_panel()
 
 	def click(self, x, y):
 		for child in self.children:
@@ -102,8 +104,53 @@ class UIContainer(UIObject):
 			child.update()
 
 	def draw(self):
+		self.surface.blit(self.border[0], self.border[1])
+		self.surface.blit(self.background[0], self.background[1])
 		for child in self.children:
 			child.draw()
+			
+	def add_panel(self):
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
+		self.background = self.add_round_rect(pygame.Rect(self.x + ICON_BORDER, self.y + ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
+		
+	def add_round_rect(self, rect, color, radius=10):
+
+		"""
+		AAfilledRoundedRect(surface,rect,color,radius=0.4)
+
+		surface : destination
+		rect    : rectangle
+		color   : rgb or rgba
+		radius  : 0 <= radius <= 1
+		"""
+
+		rect         = Rect(rect)
+		color        = Color(*color)
+		alpha        = color.a
+		color.a      = 0
+		pos          = rect.topleft
+		rect.topleft = 0,0
+		rectangle    = pygame.Surface(rect.size,SRCALPHA)
+
+		circle       = pygame.Surface([min(rect.size)*3]*2,SRCALPHA)
+		pygame.draw.ellipse(circle,(0,0,0),circle.get_rect(),0)
+		circle       = pygame.transform.smoothscale(circle,[int(radius)]*2)
+
+		radius              = rectangle.blit(circle,(0,0))
+		radius.bottomright  = rect.bottomright
+		rectangle.blit(circle,radius)
+		radius.topright     = rect.topright
+		rectangle.blit(circle,radius)
+		radius.bottomleft   = rect.bottomleft
+		rectangle.blit(circle,radius)
+
+		rectangle.fill((0,0,0),rect.inflate(-radius.w,0))
+		rectangle.fill((0,0,0),rect.inflate(0,-radius.h))
+
+		rectangle.fill(color,special_flags=BLEND_RGBA_MAX)
+		rectangle.fill((255,255,255,alpha),special_flags=BLEND_RGBA_MIN)
+
+		return [rectangle, pos]
 
 # XXX: Deprecated
 class UIComponent(UIObject):
@@ -119,33 +166,34 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class Func_Button(UIObject):
-	def __init__(self, parent, x, y, width, height, border, bg_color, border_color, selected_color, text, image, fontsize, surface, function, visible, selected, hideable):
+class FuncButton(UIObject):
+	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, function, visible, selected, static):
 		UIObject.__init__(self, parent, (x, y), (width, height))
-		self.radius = 9
-		self.border_width = border
 		self.visible = visible
 		self.function = function
 		self.surface = surface
 		self.fontsize = fontsize
-		self.bg_color = bg_color
-		self.border_color = border_color
-		self.selected_color = selected_color
+		self.bg_color = COLOR_BG
+		self.border_color = COLOR_BORDER
+		self.selected_color = COLOR_SELECTED
 		self.images = image
 		self.selected = selected
-		self.hideable = hideable
+		self.static = static
 		
-		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), border_color, self.radius)
-		self.background = self.add_round_rect(pygame.Rect(self.x + self.border_width, self.y + self.border_width, self.width, self.height), bg_color, self.radius)
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
+		self.background = self.add_round_rect(pygame.Rect(self.x + ICON_BORDER, self.y + ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
 		
 		self.texts = []
 		if text != None:
 			for t in text:
 				self.add_text(t[0], t[1], self.fontsize)
+				
+	def add_image(self, image, coords):
+		self.images.append([image, coords])
 
 	def add_text(self, string, coords, fontsize):
 		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		text = font.render(string, True, (0, 0, 0), self.bg_color)
+		text = font.render(string, True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		if coords != None:
 			rect.x = self.x + coords[0]
@@ -166,11 +214,11 @@ class Func_Button(UIObject):
 		
 	def select(self):
 		self.selected = True
-		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), self.selected_color, self.radius)
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_SELECTED, ICON_RADIUS)
 		
 	def unselect(self):
 		self.selected = False
-		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (self.border_width * 2), self.height + (self.border_width * 2)), self.border_color, self.radius)
+		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
 		
 	def toggle(self):
 		if self.selected:
@@ -218,7 +266,8 @@ class Func_Button(UIObject):
 		return [rectangle, pos]
 	
 	def toggle_visibility(self):
-		if self.hideable:
+		print "Visibility toggled", self, self.visible
+		if self.static == False:
 			if self.visible: self.visible = False
 			else: self.visible = True
 
@@ -239,3 +288,37 @@ class Func_Button(UIObject):
 					self.surface.blit(i[0].image, rect)
 		for t in self.texts:
 			self.surface.blit(t[0], t[1])
+			
+class CascadeButton(UIComponent):
+	def __init__(self, parent, surface, x, y, width, height, texts, images):
+		self.parent = parent
+		self.surface = surface
+		self.child_buttons = []
+		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, self.enable_buttons, True, False, False)
+		
+	def add_button(self, coords, size, text, image, function, visible=False, static=False, align=None):
+		if align == "centerx":
+			x = coords[0] + (self.parent_button.width / 2)
+			y = coords[1]
+		elif align == "centery":
+			x = coords[0]
+			y = coords[1] + (self.parent_button.height / 2)
+		else:
+			x = coords[0]
+			y = coords[1]
+		self.child_buttons.append(FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, function, visible, False, static))
+
+	def button_click(self):
+		print "Clicked button"
+		
+	def enable_buttons(self):
+		for b in self.child_buttons:
+			print "Enabling:", b, b.visible, b.static
+			if b.static == False:
+				b.toggle_visibility()
+			
+	def draw(self):
+		self.parent_button.draw()
+		for b in self.child_buttons:
+			if b.visible:
+				b.draw()

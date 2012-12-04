@@ -68,7 +68,7 @@ class CharTest:
 								if c.visible:
 									if c.contains(*event.pos):
 										c.select()
-										if c.hideable:
+										if c.static == False:
 											p.toggle_visibility_buttons()
 										c.unselect()
 										f = c.get_function()
@@ -106,19 +106,19 @@ class better_race_preview:
 		self.load_tiles()
 		self.texts = []
 		self.child_buttons = []
-		self.parent_button = Func_Button(self, 0, 0, self.race_tile.rect.width + 100, self.race_tile.rect.height + 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), self.texts, self.images, 20, self.surface, self.toggle_visibility_buttons, True, False, False)
+		self.parent_button = FuncButton(self, 0, 0, self.race_tile.rect.width + 100, self.race_tile.rect.height + 20, self.texts, self.images, 20, self.surface, self.toggle_visibility_buttons, True, False, False)
 		#Adding hideable buttons
-		self.child_buttons.append(Func_Button(self.parent_button, 0, -25, self.race_tile.rect.width + 80, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Equip", None]], None, 20, self.surface, self.button_click, False, False, True))
-		self.child_buttons.append(Func_Button(self.parent_button, 0, self.race_tile.rect.height+25, self.race_tile.rect.width + 80, 20, 2, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["Sell", None]], None, 20, self.surface, self.button_click, False, False, True))
+		self.child_buttons.append(FuncButton(self.parent_button, 0, -25, self.race_tile.rect.width + 80, 20, [["Equip", None]], None, 20, self.surface, self.button_click, False, False, True))
+		self.child_buttons.append(FuncButton(self.parent_button, 0, self.race_tile.rect.height+25, self.race_tile.rect.width + 80, 20, [["Sell", None]], None, 20, self.surface, self.button_click, False, False, True))
 		#Adding static buttons
-		self.child_buttons.append(Func_Button(self.parent_button, 8, 10, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["<", None]], None, 20, self.surface, self.prev_hair, True, False, False))
-		self.child_buttons.append(Func_Button(self.parent_button, self.race_tile.rect.width+72, 10, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [[">", None]], None, 20, self.surface, self.next_hair, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, 8, 10, 18, 18, [["<", None]], None, 20, self.surface, self.prev_hair, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 10, 18, 18, [[">", None]], None, 20, self.surface, self.next_hair, True, False, False))
 
-		self.child_buttons.append(Func_Button(self.parent_button, 8, 35, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["<", None]], None, 20, self.surface, self.prev_race, True, False, False))
-		self.child_buttons.append(Func_Button(self.parent_button, self.race_tile.rect.width+72, 35, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [[">", None]], None, 20, self.surface, self.next_race, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, 8, 35, 18, 18, [["<", None]], None, 20, self.surface, self.prev_race, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 35, 18, 18, [[">", None]], None, 20, self.surface, self.next_race, True, False, False))
 
-		self.child_buttons.append(Func_Button(self.parent_button, 8, 60, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [["<", None]], None, 20, self.surface, self.prev_class, True, False, False))
-		self.child_buttons.append(Func_Button(self.parent_button, self.race_tile.rect.width+72, 60, 18, 18, 1, (200, 200, 200), (50, 50, 50), (150, 150, 150), [[">", None]], None, 20, self.surface, self.next_class, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, 8, 60, 18, 18, [["<", None]], None, 20, self.surface, self.prev_class, True, False, False))
+		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 60, 18, 18, [[">", None]], None, 20, self.surface, self.next_class, True, False, False))
 
 	def load_tiles(self):
 		self.race_tile = race_tile(self.races[self.selected_race]).get_tile(self.x, self.y, '270')
@@ -141,7 +141,7 @@ class better_race_preview:
 			string = t[0]
 			coords = t[1]
 			font = pygame.font.Font(FONT, int(self.parent_button.fontsize*FONTSCALE))
-			text = font.render(string, True, (0, 0, 0), self.parent_button.bg_color)
+			text = font.render(string, True, COLOR_FONT, COLOR_BG)
 			rect = text.get_rect()
 			if coords != None:
 				rect.x = self.parent_button.x + coords[0]
@@ -178,8 +178,8 @@ class better_race_preview:
 		
 	def toggle_visibility_buttons(self):
 		for b in self.child_buttons:
-			print 'In enable_buttons:', b, b.hideable
-			if b.hideable:
+			print 'In enable_buttons:', b, b.static
+			if b.static == False:
 				b.toggle_visibility()
 
 	def load_compatible_hairs(self, race, race_hair_file):
