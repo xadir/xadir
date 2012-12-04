@@ -93,6 +93,7 @@ class better_race_preview:
 
 		self.selected_hair = 0
 		self.hairs = [None, 'a', 'b', 'c', 'd', 'e', 'f', 'i', 'j']
+		self.hairs = [None]
 		self.selected_race = 0
 		self.races = ['Longear', 'Ghost', 'Croco', 'Human', 'Human2', 'Devil', 'Human3', 'Elf', 'Alien', 'WhiteGuy', 'Medusa', 'Dragon', 'Taurus', 'Squid', 'GreyGuy', 'Imhotep', 'Wolf']
 		self.selected_class = 0
@@ -130,7 +131,7 @@ class better_race_preview:
 		self.race_tile = race_tile(self.races[self.selected_race]).get_tile(self.x, self.y, '270')
 		if self.hairs[self.selected_hair] != None:
 			self.hair_tile = hair_tile(self.races[self.selected_race], self.hairs[self.selected_hair]).get_tile(self.x, self.y, '270')
-			self.parent_button.images = [[self.race_tile, (50, 0)], [self.hair_tile, (50, 0)]]
+			self.images = [[self.race_tile, (50, 0)], [self.hair_tile, (50, 0)]]
 		else: self.parent_button.images = [[self.race_tile, (50, 0)]]
 
 	def update_texts(self):
@@ -181,6 +182,60 @@ class better_race_preview:
 			if b.hideable:
 				b.toggle_visibility()
 
+	def load_compatible_hairs(self, race, race_hair_file):
+		path = os.path.join(GFXDIR, race_hair_file)
+		f = open(path, 'r')
+		
+		race_hairs = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			races = []
+			for r in range(1, len(columns)):
+				temp = columns[r].split(';')
+				temp = [col.strip() for col in temp]
+				races.append(temp)
+			race_hairs[columns[0]] = races
+		hairs = [None]
+		for h in race_hairs:
+			for i in race_hairs[h]:
+				if i[0] == race:
+					hairs.append(h)
+		return hairs
+		f.close()
+
+	def load_hair_height(self, race, hairtype, race_hair_file):
+		path = os.path.join(GFXDIR, race_hair_file)
+		f = open(path, 'r')
+		
+		race_hairs = {}
+		# iterate over the lines in the file
+		for line in f:
+			# split the line into a list of column values
+			columns = line.split(',')
+			# clean any whitespace off the items
+			columns = [col.strip() for col in columns]
+			races = []
+			for r in range(1, len(columns)):
+				temp = columns[r].split(';')
+				temp = [col.strip() for col in temp]
+				races.append(temp)
+			race_hairs[columns[0]] = races
+		compatible_hairs = {}
+		compatible_hairs[None] = 0
+		hair_height = 0
+		for h in race_hairs:
+			for i in race_hairs[h]:
+				if h == hairtype:
+					print h
+					if i[0] == race:
+						hair_height = i[1]
+		f.close()
+		return hair_height
+
 	def next_hair(self):
 		print "Next hair selected"
 		self.selected_hair = (self.selected_hair + 1) % len(self.hairs)
@@ -191,11 +246,15 @@ class better_race_preview:
 
 	def next_race(self):
 		print "Next race selected"
+		self.selected_hair = 0
 		self.selected_race = (self.selected_race + 1) % len(self.races)
+		self.hairs = self.load_compatible_hairs(self.races[self.selected_race], 'race_hairs.txt')
 
 	def prev_race(self):
 		print "Previous race selected"
+		self.selected_hair = 0
 		self.selected_race = (self.selected_race - 1) % len(self.races)
+		self.hairs = self.load_compatible_hairs(self.races[self.selected_race], 'race_hairs.txt')
 
 	def next_class(self):
 		print "Next class selected"
@@ -414,25 +473,25 @@ class hair_tile:
 		path = os.path.join(GFXDIR, hair_sprite_file)
 		f = open(path, 'r')
 		
-		self.hairs = {}
+		self.hair_paths = {}
 		# iterate over the lines in the file
 		for line in f:
 			# split the line into a list of column values
 			columns = line.split(',')
 			# clean any whitespace off the items
 			columns = [col.strip() for col in columns]
-			self.hairs[columns[0]] = [columns[1], columns[2]]
+			self.hair_paths[columns[0]] = [columns[1], columns[2]]
 		f.close()
 
 	def load_hair_sprites(self, filename):
 		#chars1 = load_tiles('sprite_collection.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		#chars2 = load_tiles('sprite_collection_2.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		
-		hairs = load_tiles(filename, HAIR_SIZE, (255, 0, 255), SCALE)
+		hair_sprites = load_tiles(filename, HAIR_SIZE, (255, 0, 255), SCALE)
 
 		self.hairnames = []
 		self.hairtypes = {}
-		for i, hair in enumerate(hairs):
+		for i, hair in enumerate(hair_sprites):
 			name = 'hair' + str(i+1)
 			self.hairnames.append(name)
 			self.hairtypes[name + '_270'] = hair[0]
@@ -457,14 +516,13 @@ class hair_tile:
 				temp = [col.strip() for col in temp]
 				races.append(temp)
 			self.race_hairs[columns[0]] = races
+		self.compatible_hairs = {}
+		self.compatible_hairs[None] = 0
+		for h in self.race_hairs:
+			for i in self.race_hairs[h]:
+				if i[0] == race:
+					self.compatible_hairs[h] = i[1]
 		f.close()
-	
-	def set_hair_height(self):
-		self.hair_height = 0
-		for r in self.race_hairs[self.hairtype]:
-			if r[0] == self.race:
-				self.hair_height = int(r[1])
-				print self.hair_height
 	
 	def __init__(self, race, hairtype):
 		self.race = race
@@ -475,17 +533,14 @@ class hair_tile:
 		self.load_compatible_hairs(self.race, 'race_hairs.txt')
 		#races = {'longear': ['sprite_collection.png', '1']}
 		
-		temp = self.hairs[hairtype]
+		temp = self.hair_paths[self.hairtype]
 		self.path = temp[0]
 		self.place = 'hair' + temp[1]
 
 		self.load_hair_sprites(self.path)
 		
 	def get_tile(self, x=0, y=0, orientation=270, layer=0):
-		self.set_hair_height()
-		y = y + self.hair_height
-		print y
-		return Tile(self.hairtypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *HAIR_SIZE), layer)
+		return Tile(self.hairtypes[self.place + '_' + str(orientation)], pygame.Rect(x, y+ int(self.compatible_hairs[self.hairtype]), *HAIR_SIZE), layer)
 
 class Tile(pygame.sprite.Sprite):
 	def __init__(self, image, rect=None, layer=0):
