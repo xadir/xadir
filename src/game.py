@@ -661,15 +661,19 @@ class Weapon:
 		return 'Weapon(%r, %r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
 
 class Armor:
-	def __init__(self, miss_chance, damage_reduction):
+	def __init__(self, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
 		self.miss_chance = miss_chance
 		self.damage_reduction = damage_reduction
+		self.enchanted_damage_reduction = enchanted_damage_reduction
+		self.enchanted_damage_reduction_type = enchanted_damage_reduction_type
 
 	@classmethod
 	def random(cls):
 		miss_chance = random.randrange(-5, 6)
 		damage_reduction = random.randrange(11)
-		return cls(miss_chance, damage_reduction)
+		enchanted_damage_reduction = random.randrange(6)
+		enchanted_damage_reduction_type = set([random.choice(Weapon.damage_types)])
+		return cls(miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
 
 def roll_attack_damage(attacker, defender):
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
@@ -690,12 +694,14 @@ def roll_attack_damage(attacker, defender):
 	damage_multiplier = critical_multiplier if is_critical_hit else 1
 
 	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
-	#for weapon_damage, weapon_damage_types in attacker.weapon.roll_damage():
-	weapon_damage = attacker.weapon.damage.roll() # XXX Alexer: damage type
+	weapon_damage = attacker.weapon.damage.roll()
 	print attacker.weapon, 'rolled', weapon_damage, 'of', '/'.join(attacker.weapon.damage_type), 'damage'
 
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
+	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
+		print 'Armor negates', defender.armor.enchanted_damage_reduction, 'of the weapon\'s', '/'.join(defender.armor.enchanted_damage_reduction_type), 'damage'
+		negative_damage += defender.armor.enchanted_damage_reduction
 	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
 
 	print positive_damage, 'of damage and', negative_damage, 'of damage reduction: dealt', damage, 'of damage'
