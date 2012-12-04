@@ -542,7 +542,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 			self.main.disabled_chartypes[name] = image
 
-		self.visible = self.character.player != self.main.current_player
+		self.visible = self.character.visible and self.character.player != self.main.current_player
 		if image != self.image or self.character.rect != self.rect:
 			self.dirty = 1
 
