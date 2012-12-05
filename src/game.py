@@ -10,6 +10,8 @@ from grid import *
 from algo import *
 from UI import *
 
+from races import races
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -534,7 +536,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
 
 	def update(self):
-		name = self.character.type + '_' + str(self.character.heading)
+		name = self.character.race.name + '_' + str(self.character.heading)
 		try:
 			image = self.main.disabled_chartypes[name]
 		except:
@@ -597,7 +599,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [Character(self, type, 5, (x, y), heading, main) for type, x, y, heading in chardata]
+		self.all_characters = [Character(self, race_name, 5, (x, y), heading, main) for race_name, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -710,12 +712,12 @@ def roll_attack_damage(attacker, defender):
 
 class Character(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, type, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+	def __init__(self, player, race_name, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
 		UIGridObject.__init__(self, main.map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
-		self.type = type
+		self.race = races[race_name]
 		# Movement points
 		self.max_mp = max_mp
 		self.mp = max_mp
@@ -723,10 +725,11 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.max_hp = max_hp
 		self.hp = max_hp
 		# Stats
-		self.dexterity = random.randrange(1, 20)
-		self.constitution = random.randrange(1, 20)
-		self.intelligence = random.randrange(1, 20)
-		self.strength = random.randrange(1, 20)
+		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
+		self.dexterity = self.race.base_dex + rndstats.count('dex')
+		self.constitution = self.race.base_con + rndstats.count('con')
+		self.intelligence = self.race.base_int + rndstats.count('int')
+		self.strength = self.race.base_str + rndstats.count('str')
 		# Status
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
@@ -749,7 +752,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
 
 	def update(self):
-		self.image = self.main.chartypes[self.type + '_' + str(self.heading)]
+		self.image = self.main.chartypes[self.race.name + '_' + str(self.heading)]
 		self.dirty = 1
 
 	def is_selected(self):

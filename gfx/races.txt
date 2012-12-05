@@ -1,7 +1,7 @@
-longear
-ghost
-croco
-slime
-flame
-skeleton
-thing
+orc
+vampire
+minotaur
+imp
+djinn
+mummy
+mindflayer
