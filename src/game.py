@@ -722,16 +722,6 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.alive = False
 		self.visible = False
 
-	def turn(self, angle):
-		"""Turns character given amount, relative to previous heading. For now only turns 90-degrees at a time"""
-		angle = angle % 360
-		if angle <= 45:
-			self.heading = (self.heading + angle) % 360
-		elif angle <= 90:
-			self.heading = (self.heading + angle) % 360
-		elif angle <= 135:
-			self.heading = (self.heading + angle) % 360
-
 	def move_forward(self, steps):
 		"""Moves to headed direction given amount of steps"""
 		if self.movement <= steps:
