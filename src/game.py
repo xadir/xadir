@@ -171,14 +171,9 @@ class XadirMain:
 
 		self.tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
 
-		self.charnames = []
 		self.chartypes = {}
-		for i, (name, char) in enumerate(zip(racenames, raceimages)):
-			self.charnames.append(name)
-			self.chartypes[name + '_270'] = char[0]
-			self.chartypes[name + '_180'] = char[1]
-			self.chartypes[name + '_0'] = char[2]
-			self.chartypes[name + '_90'] = char[3]
+		for name, char in zip(racenames, raceimages):
+			self.chartypes[name] = {270: char[0], 180: char[1], 0: char[2], 90: char[3]}
 
 		self.imgs = {}
 		self.imgs['green'] = tiles[1][0]
@@ -235,7 +230,7 @@ class XadirMain:
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
 		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player(name, [(random.choice(self.charnames), x, y, 0) for x, y in spawn_points])
+			self.add_player(name, [(random.choice(self.chartypes.keys()), x, y, 0) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -539,13 +534,12 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
 
 	def update(self):
-		name = self.character.race.name + '_' + str(self.character.heading)
 		try:
-			image = self.main.disabled_chartypes[name]
+			image = self.main.disabled_chartypes[self.character.race.name][self.character.heading]
 		except:
-			image = self.main.chartypes[name].convert_alpha()
+			image = self.main.chartypes[self.character.race.name][self.character.heading].convert_alpha()
 			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
-			self.main.disabled_chartypes[name] = image
+			self.main.disabled_chartypes.setdefault(self.character.race.name, {})[self.character.heading] = image
 
 		self.visible = self.character.visible and self.character.player != self.main.current_player
 		if image != self.image or self.character.rect != self.rect:
@@ -697,7 +691,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
 
 	def update(self):
-		self.image = self.main.chartypes[self.race.name + '_' + str(self.heading)]
+		self.image = self.main.chartypes[self.race.name][self.heading]
 		self.dirty = 1
 
 	def is_selected(self):
