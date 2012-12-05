@@ -10,7 +10,9 @@ from grid import *
 from algo import *
 from UI import *
 
-from races import races
+from dice import Dice
+from races import races, Race
+from weapons import weapons, Weapon
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -620,48 +622,6 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-class Dice:
-	def __init__(self, count, sides):
-		self.count = count
-		self.sides = sides
-
-	def __repr__(self):
-		return '%s(%d, %d)' % (self.__class__.__name__, self.count, self.sides)
-
-	def __str__(self):
-		return '%dd%d' % (self.count, self.sides)
-
-	def roll(self):
-		result = self.count + sum(random.randrange(self.sides) for i in range(self.count))
-		print self, 'rolled', result
-		return result
-
-class Weapon:
-	sizes = ['light', 'normal', 'heavy']
-	types = ['melee', 'ranged', 'magic']
-	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic'] # XXX Alexer: added magic
-	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
-	def __init__(self, size, type, class_, damage, damage_type, magic_enchantment):
-		self.size = size
-		self.type = type
-		self.class_ = class_
-		self.damage = damage
-		self.damage_type = damage_type
-		self.magic_enchantment = magic_enchantment
-
-	@classmethod
-	def random(cls):
-		size = random.choice(cls.sizes)
-		type = random.choice(cls.types)
-		class_ = random.choice(cls.classes)
-		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
-		damage_type = set([random.choice(cls.damage_types)])
-		magic_enchantment = random.randrange(11)
-		return cls(size, type, class_, damage, damage_type, magic_enchantment)
-
-	def __repr__(self):
-		return 'Weapon(%r, %r, %r, %r, %r, %r)' % (self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
-
 class Armor:
 	def __init__(self, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
 		self.miss_chance = miss_chance
@@ -687,8 +647,8 @@ def roll_attack_damage(attacker, defender):
 		print 'Missed!'
 		return 0
 
-	critical_chance = {'light': 15, 'normal': 10, 'heavy': 5}[attacker.weapon.size]
-	critical_multiplier = {'light': 1.5, 'normal': 2.0, 'heavy': 3.0}[attacker.weapon.size]
+	critical_chance = {'light': 15, 'medium': 10, 'heavy': 5}[attacker.weapon.size]
+	critical_multiplier = {'light': 1.5, 'medium': 2.0, 'heavy': 3.0}[attacker.weapon.size]
 	is_critical_hit = random.randrange(100) < critical_chance
 
 	print 'Critical chance and multiplier:', critical_chance, critical_multiplier
@@ -697,8 +657,9 @@ def roll_attack_damage(attacker, defender):
 
 	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
 	weapon_damage = attacker.weapon.damage.roll()
-	print attacker.weapon, 'rolled', weapon_damage, 'of', '/'.join(attacker.weapon.damage_type), 'damage'
+	print attacker.weapon, 'rolled', weapon_damage, 'of', 'damage'
 
+	# XXX: Magic should bypass damage reduction
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
 	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
@@ -739,7 +700,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 		self.per_wc_miss_chance = {}
 		self.class_damage_reduction = random.randrange(11)
 		self.armor = Armor.random()
-		self.weapon = Weapon.random()
+		self.weapon = random.choice(weapons.values())#Weapon.random()
 
 		self.main = main
 		self.background_map = self.main.map.get_map()
