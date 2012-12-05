@@ -87,10 +87,10 @@ class UIGridObject(UIObject):
 	grid_pos = property(_get_grid_pos, _set_grid_pos)
 
 class UIContainer(UIObject):
-	def __init__(self, parent, rel_pos, size, surface, children=[]):
+	def __init__(self, parent, rel_pos, size, surface):
 		UIObject.__init__(self, parent, rel_pos, size)
 		self.surface = surface
-		self.children = children
+		self.children = []
 		self.add_panel()
 
 	def click(self, x, y):
