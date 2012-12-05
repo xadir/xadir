@@ -698,7 +698,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 		self.per_wc_miss_chance = {}
-		self.class_damage_reduction = random.randrange(6)
+		self.class_damage_reduction = random.randrange(3)
 		self.armor = Armor.random()
 		self.weapon = random.choice(weapons.values())#Weapon.random()
 
