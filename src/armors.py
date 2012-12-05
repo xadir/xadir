@@ -17,7 +17,7 @@ class Armor:
 	@classmethod
 	def random(cls):
 		miss_chance = random.randrange(-5, 6)
-		damage_reduction = random.randrange(11)
+		damage_reduction = random.randrange(6)
 		enchanted_damage_reduction = random.randrange(6)
 		enchanted_damage_reduction_type = set([random.choice(cls.damage_types)])
 		return cls(None, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
