@@ -647,13 +647,11 @@ def roll_attack_damage(attacker, defender):
 		print 'Missed!'
 		return 0
 
-	critical_chance = {'light': 15, 'medium': 10, 'heavy': 5}[attacker.weapon.size]
-	critical_multiplier = {'light': 1.5, 'medium': 2.0, 'heavy': 3.0}[attacker.weapon.size]
-	is_critical_hit = random.randrange(100) < critical_chance
+	is_critical_hit = random.randrange(100) < attacker.weapon.critical_chance
 
-	print 'Critical chance and multiplier:', critical_chance, critical_multiplier
+	print 'Critical chance and multiplier:', attacker.weapon.critical_chance, attacker.weapon.critical_multiplier
 	if is_critical_hit: print 'Critical!'
-	damage_multiplier = critical_multiplier if is_critical_hit else 1
+	damage_multiplier = attacker.weapon.critical_multiplier if is_critical_hit else 1
 
 	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
 	weapon_damage = attacker.weapon.damage.roll()

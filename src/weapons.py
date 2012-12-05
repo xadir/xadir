@@ -49,7 +49,7 @@ class Weapon:
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
-	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment):
+	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment, critical_multiplier = None, critical_chance = None):
 		self.name = name
 		self.size = size
 		self.type = type
@@ -57,6 +57,8 @@ class Weapon:
 		self.damage = damage
 		self.damage_type = damage_type
 		self.magic_enchantment = magic_enchantment
+		self.critical_multiplier = critical_multiplier or {'light': 1.5, 'medium': 2.0, 'heavy': 3.0}[size]
+		self.critical_chance = critical_chance or {'light': 15, 'medium': 10, 'heavy': 5}[size]
 
 	@classmethod
 	def random(cls):
@@ -77,5 +79,5 @@ class Weapon:
 weapons = {}
 for name, type, size, dmg_type, dmg_roll, crit_mult, crit_chance, min_range, max_range, price in weapon_data:
 	dmg_roll = Dice(*map(int, dmg_roll.split('d')))
-	weapons[name] = Weapon(name, size, type, None, dmg_roll, set(dmg_type), 0)
+	weapons[name] = Weapon(name, size, type, None, dmg_roll, set(dmg_type), 0, crit_mult, crit_chance)
 
