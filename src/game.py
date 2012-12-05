@@ -596,7 +596,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [Character(self, race_name, 5, (x, y), heading, main) for race_name, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, race_name, 5, (x, y), heading, main) for race_name, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -649,7 +649,29 @@ def roll_attack_damage(attacker, defender):
 
 	return int(math.floor(max(damage, 0)))
 
-class Character(UIGridObject, pygame.sprite.DirtySprite):
+class Character:
+	def __init__(self, name, race_name, class_name, str, dex, con, int):
+		self.race = races[race_name]
+		self.class_ = None
+		self.str = 1 + self.race.base_str + str
+		self.dex = 1 + self.race.base_dex + dex
+		self.con = 1 + self.race.base_con + con
+		self.int = 1 + self.race.base_int + int
+
+		self.max_hp = self.con * 10
+		self.max_sp = self.int
+		self.max_mp = self.dex
+
+	@classmethod
+	def random(cls):
+		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
+		str = rndstats.count('str')
+		dex = rndstats.count('dex')
+		con = rndstats.count('con')
+		int = rndstats.count('int')
+		return cls(None, random.choice(races.keys()), None, str, dex, con, int)
+
+class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, race_name, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
 		UIGridObject.__init__(self, main.map, coords)
@@ -676,7 +698,7 @@ class Character(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 		self.per_wc_miss_chance = {}
-		self.class_damage_reduction = random.randrange(11)
+		self.class_damage_reduction = random.randrange(6)
 		self.armor = Armor.random()
 		self.weapon = random.choice(weapons.values())#Weapon.random()
 
