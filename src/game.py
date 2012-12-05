@@ -12,6 +12,7 @@ from UI import *
 
 from dice import Dice
 from races import races, Race
+from armors import armors, Armor
 from weapons import weapons, Weapon
 
 if not pygame.font:
@@ -621,21 +622,6 @@ class Player:
 	def reset_movement_points(self):
 		for c in self.all_characters:
 			c.mp = c.max_mp
-
-class Armor:
-	def __init__(self, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
-		self.miss_chance = miss_chance
-		self.damage_reduction = damage_reduction
-		self.enchanted_damage_reduction = enchanted_damage_reduction
-		self.enchanted_damage_reduction_type = enchanted_damage_reduction_type
-
-	@classmethod
-	def random(cls):
-		miss_chance = random.randrange(-5, 6)
-		damage_reduction = random.randrange(11)
-		enchanted_damage_reduction = random.randrange(6)
-		enchanted_damage_reduction_type = set([random.choice(Weapon.damage_types)])
-		return cls(miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
 
 def roll_attack_damage(attacker, defender):
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
