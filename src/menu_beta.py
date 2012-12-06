@@ -27,8 +27,8 @@ class Menu:
 		self.fps = 30
 
 		self.menu = UIContainer(None, (20, 20), (300, 250), self.screen, True)
-		#new_game = CascadeButton(self.menu, self.screen, 0, 0, 500 + (ICON_PADDING * 2), 30 + (ICON_PADDING * 2), [["New Game", (4,4)]], None)
-		#self.menu.children.append(new_game)
+		new_game = CascadeButton(self.menu, self.screen, 0, 0, 500 + (ICON_PADDING * 2), 30 + (ICON_PADDING * 2), [["New Game", (4,4)]], None)
+		self.menu.children.append(new_game)
 
 	def loop(self):
 		title_alpha = 0
