@@ -87,11 +87,13 @@ class UIGridObject(UIObject):
 	grid_pos = property(_get_grid_pos, _set_grid_pos)
 
 class UIContainer(UIObject):
-	def __init__(self, parent, rel_pos, size, surface):
+	def __init__(self, parent, rel_pos, size, surface, transparent=False):
 		UIObject.__init__(self, parent, rel_pos, size)
 		self.surface = surface
 		self.children = []
-		self.add_panel()
+		self.transparent = transparent
+		if self.transparent != True:
+			self.add_panel()
 
 	def click(self, x, y):
 		for child in self.children:
@@ -104,8 +106,9 @@ class UIContainer(UIObject):
 			child.update()
 
 	def draw(self):
-		self.surface.blit(self.border[0], self.border[1])
-		self.surface.blit(self.background[0], self.background[1])
+		if self.transparent != True:
+			self.surface.blit(self.border[0], self.border[1])
+			self.surface.blit(self.background[0], self.background[1])
 		for child in self.children:
 			child.draw()
 			
@@ -166,8 +169,8 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
-class FuncButton(UIObject):
-	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, function, visible, selected, static):
+class FuncButton(UIObject, pygame.sprite.Sprite):
+	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, layer, function, visible, selected, static):
 		UIObject.__init__(self, parent, (x, y), (width, height))
 		self.visible = visible
 		self.function = function
@@ -183,10 +186,34 @@ class FuncButton(UIObject):
 		self.border = self.add_round_rect(pygame.Rect(self.x, self.y, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
 		self.background = self.add_round_rect(pygame.Rect(self.x + ICON_BORDER, self.y + ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
 		
+		self.image = pygame.Surface((self.width, self.height))
+		print self.image.get_rect()
+		self.rect = self.image.get_rect()
+		self.rect.x = self.x
+		self.rect.y = self.y
+
 		self.texts = []
 		if text != None:
 			for t in text:
 				self.add_text(t[0], t[1], self.fontsize)
+
+	def update(self):
+		self.image.blit(self.border[0], self.border[1])
+		self.image.blit(self.background[0], self.background[1])
+		if self.images != None:
+			for i in self.images:
+				try:
+					rect = i[0].get_rect()
+					rect.x = self.x + i[1][0]
+					rect.y = self.y + i[1][1]
+					self.image.blit(i[0], rect)
+				except AttributeError:
+					rect = i[0].rect
+					rect.x = self.x + i[1][0]
+					rect.y = self.y + i[1][1]
+					self.image.blit(i[0].image, rect)
+		for t in self.texts:
+			self.image.blit(t[0], t[1])
 				
 	def add_image(self, image, coords):
 		self.images.append([image, coords])
@@ -226,7 +253,7 @@ class FuncButton(UIObject):
 		else:
 			self.unselect()
 		
-	def add_round_rect(self, rect, color, radius=10):
+	def add_round_rect(self, rect, color, radius=9):
 
 		"""
 		AAfilledRoundedRect(surface,rect,color,radius=0.4)
@@ -270,31 +297,13 @@ class FuncButton(UIObject):
 		if self.static == False:
 			if self.visible: self.visible = False
 			else: self.visible = True
-
-	def draw(self):
-		self.surface.blit(self.border[0], self.border[1])
-		self.surface.blit(self.background[0], self.background[1])
-		if self.images != None:
-			for i in self.images:
-				try:
-					rect = i[0].get_rect()
-					rect.x = self.x + i[1][0]
-					rect.y = self.y + i[1][1]
-					self.surface.blit(i[0], rect)
-				except AttributeError:
-					rect = i[0].rect
-					rect.x = self.x + i[1][0]
-					rect.y = self.y + i[1][1]
-					self.surface.blit(i[0].image, rect)
-		for t in self.texts:
-			self.surface.blit(t[0], t[1])
 			
 class CascadeButton(UIComponent):
 	def __init__(self, parent, surface, x, y, width, height, texts, images):
 		self.parent = parent
 		self.surface = surface
 		self.child_buttons = []
-		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, self.enable_buttons, True, False, False)
+		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, 0, self.enable_buttons, True, False, False)
 		
 	def add_button(self, coords, size, text, image, function, visible=False, static=False, align=None):
 		if align == "centerx":
@@ -306,14 +315,13 @@ class CascadeButton(UIComponent):
 		else:
 			x = coords[0]
 			y = coords[1]
-		self.child_buttons.append(FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, function, visible, False, static))
+		self.child_buttons.append(FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, 1, function, visible, False, static))
 
 	def button_click(self):
 		print "Clicked button"
 		
 	def enable_buttons(self):
 		for b in self.child_buttons:
-			print "Enabling:", b, b.visible, b.static
 			if b.static == False:
 				b.toggle_visibility()
 			
