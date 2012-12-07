@@ -209,15 +209,16 @@ class XadirMain:
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
 
-	def draw(self):
-		self.clock.tick(self.fps)
-		self.sprites.update()
-		self.sprites.clear(self.screen, self.background)
-		self.update_buttons()
-		# Update layers
-		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
-		self.sprites.draw(self.screen)
-		pygame.display.flip()
+	def draw(self, frames = 1):
+		for i in range(frames):
+			self.clock.tick(self.fps)
+			self.sprites.update()
+			self.sprites.clear(self.screen, self.background)
+			self.update_buttons()
+			# Update layers
+			self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
+			self.sprites.draw(self.screen)
+			pygame.display.flip()
 
 	def update_buttons(self):
 		for b in self.buttons:
@@ -309,11 +310,12 @@ class XadirMain:
 		character.heading = new_heading
 
 	def animate_move(self, path, character):
+		# Five steps per second
+		frames = self.fps / 5
 		for i in range(1, len(path) - 1):
 			character.heading = self.get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
-			for i in range(6):
-				self.draw()
+			self.draw(frames)
 
 	def animate_hit(self, character, file_path):
 		anim = Animation(character, file_path, 3)
