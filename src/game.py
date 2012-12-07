@@ -737,7 +737,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
 
-	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
+	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
 	rect = property(_get_rect)
 
 	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
