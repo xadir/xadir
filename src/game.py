@@ -208,9 +208,9 @@ class XadirMain:
 					self.next_turn()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
-			self.clock.tick(self.fps)
 
 	def draw(self):
+		self.clock.tick(self.fps)
 		self.sprites.update()
 		self.sprites.clear(self.screen, self.background)
 		self.update_buttons()
@@ -312,17 +312,16 @@ class XadirMain:
 		for i in range(1, len(path) - 1):
 			character.heading = self.get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
-			self.draw()
-			self.clock.tick(5)
+			for i in range(6):
+				self.draw()
 
 	def animate_hit(self, character, file_path):
-		anim = Animation(character, file_path)
+		anim = Animation(character, file_path, 3)
 
 		self.sprites.add(anim)
 
 		while anim.visible:
 			self.draw()
-			self.clock.tick(10)
 
 		self.sprites.remove(anim)
 
@@ -335,7 +334,6 @@ class XadirMain:
 			if character.hp < 1:
 				break
 			self.draw()
-			self.clock.tick(30)
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
