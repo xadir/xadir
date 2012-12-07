@@ -187,10 +187,6 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 		self.background = self.add_round_rect(pygame.Rect(self.x + ICON_BORDER, self.y + ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
 		
 		self.image = pygame.Surface((self.width, self.height))
-		print self.image.get_rect()
-		self.rect = self.image.get_rect()
-		self.rect.x = self.x
-		self.rect.y = self.y
 
 		self.texts = []
 		if text != None:
@@ -302,8 +298,10 @@ class CascadeButton(UIComponent):
 	def __init__(self, parent, surface, x, y, width, height, texts, images):
 		self.parent = parent
 		self.surface = surface
+		self.buttons = pygame.sprite.LayeredUpdates()
 		self.child_buttons = []
 		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, 0, self.enable_buttons, True, False, False)
+		self.buttons.add(self.parent_button)
 		
 	def add_button(self, coords, size, text, image, function, visible=False, static=False, align=None):
 		if align == "centerx":
@@ -315,7 +313,9 @@ class CascadeButton(UIComponent):
 		else:
 			x = coords[0]
 			y = coords[1]
-		self.child_buttons.append(FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, 1, function, visible, False, static))
+		tmp = FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, 1, function, visible, False, static)
+		self.child_buttons.append(tmp)
+		self.buttons.add(tmp)
 
 	def button_click(self):
 		print "Clicked button"
@@ -326,7 +326,7 @@ class CascadeButton(UIComponent):
 				b.toggle_visibility()
 			
 	def draw(self):
-		self.parent_button.draw()
+		self.parent_button.update()
 		for b in self.child_buttons:
 			if b.visible:
-				b.draw()
+				b.update()
