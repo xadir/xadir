@@ -1,0 +1,5 @@
+br bl
+tr tl
+t_l t t_r
+l ? r
+b_l b b_r

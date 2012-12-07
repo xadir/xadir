@@ -142,7 +142,7 @@ def get_animation_surfaces(path):
 
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
-	def __init__(self, width=1200, height=720, mapname='map2.txt'):
+	def __init__(self, width=1200, height=720, mapname='map_new.txt'):
 		pygame.init()
 		pygame.display.set_caption('Xadir')
 		self.mapname = mapname
@@ -172,6 +172,9 @@ class XadirMain:
 	current_player = property(lambda self: self.players[self.turn])
 
 	def load_resources(self):
+		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
+		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['G']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
+		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
@@ -226,9 +229,9 @@ class XadirMain:
 
 	def load_sprites(self):
 		"""Load the sprites that we need"""
-		self.walkable = [name for name in self.tiletypes.keys() if name.count('W') <= 1]
+		self.walkable = [name for name in self.terrain.keys() if name != 'W']
 		map, mapsize, spawns = load_map(self.mapname)
-		self.map = BackgroundMap(map, *mapsize, tiletypes = self.tiletypes)
+		self.map = BackgroundMap(map, *mapsize, tiletypes = (self.terrain, self.borders))
 		self.spawns = spawns
 		self.players = []
 
@@ -318,7 +321,7 @@ class XadirMain:
 			self.draw(frames)
 
 	def animate_hit(self, character, file_path):
-		anim = Animation(character, file_path, 3)
+		anim = AnimatedEffect(character, file_path, 3)
 
 		self.sprites.add(anim)
 
@@ -480,7 +483,7 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 		self.redraw()
 		self.dirty = 1
 
-class Animation(pygame.sprite.DirtySprite):
+class AnimatedEffect(pygame.sprite.DirtySprite):
 	def __init__(self, character, file_path, interval = 1):
 		pygame.sprite.DirtySprite.__init__(self)
 		self._layer = (L_CHAR, character.grid_y, L_CHAR_EFFECT)
@@ -506,6 +509,34 @@ class Animation(pygame.sprite.DirtySprite):
 				self.visible = 0
 			else:
 				self.dirty = 1
+
+class AnimatedTile(pygame.sprite.DirtySprite):
+	def __init__(self, images, rect, layer, interval = 1):
+		pygame.sprite.DirtySprite.__init__(self)
+		self._layer = layer
+
+		self.images = images
+		self.pos = 0
+
+		self.image = self.images[self.pos]
+		self.rect = rect
+
+		self.interval = interval
+		self.count = 0
+
+	def update(self):
+		if not self.visible:
+			return
+
+		self.count += 1
+		if self.count >= self.interval:
+			self.count = 0
+			self.pos += 1
+			if self.pos >= len(self.images):
+				self.pos = 0
+
+			self.image = self.images[self.pos]
+			self.dirty = 1
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
@@ -607,18 +638,75 @@ class SpriteGrid:
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = (L_SEL, )))
 
+clamp = lambda v, minv, maxv: min(max(v, minv), maxv)
+clamp_r = lambda v, minv, maxv: min(max(v, minv), maxv - 1)
+
 class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
 		Grid.__init__(self, width, height, map)
+		self.terrain, self.borders = tiletypes
+		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
 		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for (x, y), tiletype in self.map.items():
-			tile = tiletypes[tiletype]
-			#print x, y
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y)))
+		for x, y in self.map.keys():
+			tile = self.get_real_tile((x, y))
+			if len(tile) == 1:
+				cls = Tile
+				tile = tile[0]
+				kwargs = {}
+			else:
+				cls = AnimatedTile
+				kwargs = dict(interval = 30/2)
+			self.sprites.add(cls(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y), **kwargs))
+
+	def get_repeated(self, (x, y)):
+		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
+
+	def get_border(self, (x, y), side):
+		dirs = {'t': -1, 'b': 1, 'l': -1, 'r': 1, 'm': 0}
+		hd, vd = dirs[side[1]], dirs[side[0]]
+		d = (hd, vd)
+		c = self.get_repeated((x + hd, y + vd)) != 'W'
+		if 'm' in side:
+			if c: return side.replace('m', ''), d
+			return None, d
+		h = self.get_repeated((x + hd, y)) != 'W'
+		v = self.get_repeated((x, y + vd)) != 'W'
+		if h and v: return '_'.join(side), d
+		if h: return side[1], d
+		if v: return side[0], d
+		if c: return side, d
+		return None, d
+
+	def get_real_tile(self, pos):
+		dmap = {-1: [0], 0: [1, 2], 1: [3]}
+		tile = self[pos]
+		if tile == 'W':
+			borders = tuple(self.get_border(pos, side) for side in 'tl tm tr ml mr bl bm br'.split())
+		else:
+			borders = ()
+		name = (tile, borders)
+		images = self.images.get(name)
+		if not images:
+			images = self.terrain[tile]
+			if any(b for b, d in borders):
+				orig_images = images
+				images = []
+				for image in orig_images:
+					image = image.copy()
+					for b, d in borders:
+						if not b:
+							continue
+						border = self.borders[b]
+						for x in dmap[d[0]]:
+							for y in dmap[d[1]]:
+								image.blit(border, ((x * BORDER_SIZE[0], y * BORDER_SIZE[1]), BORDER_SIZE))
+					images.append(image)
+				self.images[name] = images
+		return images
 
 	def get_map(self):
 		return self.map
@@ -846,4 +934,4 @@ def start_game(mapname):
 	game.main_loop()
 
 if __name__ == "__main__":
-	start_game('map3.txt')
+	start_game('map_new.txt')
