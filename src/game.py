@@ -25,6 +25,7 @@ L_SEL = 1
 L_CHAR = 2
 
 L_CHAR_OVERLAY = 0
+L_CHAR_EFFECT = 1
 
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
@@ -133,6 +134,12 @@ def get_animation_frames(path):
 	except EOFError:
 		pass # end of sequence
 
+def get_animation_surfaces(path):
+	for im in get_animation_frames(path):
+		surface = pygame_surface_from_pil_image(im)
+		rect = surface.get_rect()
+		yield pygame.transform.scale(surface, (rect.width * SCALE, rect.height * SCALE))
+
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, width=1200, height=720, mapname='map2.txt'):
@@ -187,7 +194,6 @@ class XadirMain:
 
 		while 1:
 			self.draw()
-			pygame.display.flip()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					sys.exit()
@@ -202,15 +208,17 @@ class XadirMain:
 					self.next_turn()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
-			self.clock.tick(self.fps)
 
-	def draw(self):
-		self.sprites.update()
-		self.sprites.clear(self.screen, self.background)
-		self.update_buttons()
-		# Update layers
-		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
-		self.sprites.draw(self.screen)
+	def draw(self, frames = 1):
+		for i in range(frames):
+			self.clock.tick(self.fps)
+			self.sprites.update()
+			self.sprites.clear(self.screen, self.background)
+			self.update_buttons()
+			# Update layers
+			self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
+			self.sprites.draw(self.screen)
+			pygame.display.flip()
 
 	def update_buttons(self):
 		for b in self.buttons:
@@ -302,23 +310,22 @@ class XadirMain:
 		character.heading = new_heading
 
 	def animate_move(self, path, character):
+		# Five steps per second
+		frames = self.fps / 5
 		for i in range(1, len(path) - 1):
 			character.heading = self.get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
-			self.draw()
-			pygame.display.flip()
-			self.clock.tick(5)
+			self.draw(frames)
 
-	def animate_hit(self, coords, file_path):
-		anim_rect = pygame.Rect(coords[0], coords[1] - 8*SCALE, 24, 32)
+	def animate_hit(self, character, file_path):
+		anim = Animation(character, file_path, 3)
 
-		for im in get_animation_frames(file_path):
-			surface = pygame_surface_from_pil_image(im)
-			surface = pygame.transform.scale(surface, (24*SCALE, 32*SCALE))
+		self.sprites.add(anim)
+
+		while anim.visible:
 			self.draw()
-			self.screen.blit(surface, anim_rect)
-			pygame.display.flip()
-			self.clock.tick(10)
+
+		self.sprites.remove(anim)
 
 	def animate_hp_change(self, character, change):
 		change_sign = sign(change)
@@ -329,8 +336,6 @@ class XadirMain:
 			if character.hp < 1:
 				break
 			self.draw()
-			pygame.display.flip()
-			self.clock.tick(30)
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
@@ -374,7 +379,7 @@ class XadirMain:
 		target_position = target.grid_pos
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
-			self.animate_hit((target_position[0]*TILE_SIZE[0], target_position[1]*TILE_SIZE[1]), os.path.join(GFXDIR, "sword_hit_small.gif"))
+			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			damage = roll_attack_damage(attacker, target)
 			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
@@ -474,6 +479,33 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 
 		self.redraw()
 		self.dirty = 1
+
+class Animation(pygame.sprite.DirtySprite):
+	def __init__(self, character, file_path, interval = 1):
+		pygame.sprite.DirtySprite.__init__(self)
+		self._layer = (L_CHAR, character.grid_y, L_CHAR_EFFECT)
+
+		self.images = iter(get_animation_surfaces(file_path))
+		self.image = self.images.next()
+		self.rect = character.rect
+
+		self.interval = interval
+		self.count = 0
+
+	def update(self):
+		if not self.visible:
+			return
+
+		self.count += 1
+		if self.count >= self.interval:
+			self.count = 0
+
+			try:
+				self.image = self.images.next()
+			except StopIteration:
+				self.visible = 0
+			else:
+				self.dirty = 1
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
@@ -707,7 +739,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
 
-	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *TILE_SIZE)
+	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
 	rect = property(_get_rect)
 
 	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
