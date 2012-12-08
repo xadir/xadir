@@ -32,7 +32,8 @@ class UItest:
 		self.add_icon(icon, self.party)
 		self.add_icon(icon, self.party)
 		self.add_icon(icon, self.party)
-		
+			
+
 	def add_icon(self, icon, container):
 		icon_rect = icon.get_rect()
 		img_width = icon_rect.width
@@ -46,7 +47,7 @@ class UItest:
 		x = (ICON_MARGIN * 2) + (icon_place[0] * (ICON_MARGIN + icon_width))
 		y = (ICON_MARGIN * 2) + (icon_place[1] * (ICON_MARGIN + icon_height))
 		
-		tmp = CascadeButton(container, self.screen, x, y, img_width + (ICON_PADDING * 2), img_height + (ICON_PADDING * 2), None, [[icon, (ICON_PADDING,ICON_PADDING)]])
+		tmp = CascadeButton(container, self.screen, x, y, img_width + (ICON_PADDING * 2), img_height + (ICON_PADDING * 2), None, [[icon, None]])
 		tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Sell", None]], None, self.sell, False, False, None)
 		tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Equip", None]], None, self.equip, False, False, None)
 		container.children.append(tmp)
