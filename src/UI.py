@@ -1,11 +1,10 @@
-"""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""
 @name: UI-Class
-@author: Heikki Juva
+@author: Heikki Juva, Aleksi Torhamo
 
 @description:
-Contains all the UI-components
-used in Xadir.
-"""""""""""""""""""""""""""""""""
+Contains all the UI-components used in Xadir.
+"""""""""""""""""""""""""""""""""""""""""""""
 
 import sys, time
 import pygame
