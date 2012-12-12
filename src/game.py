@@ -682,7 +682,6 @@ class BackgroundMap(Grid):
 		return None, d
 
 	def get_real_tile(self, pos):
-		dmap = {-1: [0], 0: [1, 2], 1: [3]}
 		tile = self[pos]
 		if tile == 'W':
 			borders = tuple(self.get_border(pos, side) for side in 'tl tm tr ml mr bl bm br'.split())
@@ -701,9 +700,7 @@ class BackgroundMap(Grid):
 						if not b:
 							continue
 						border = self.borders[b]
-						for x in dmap[d[0]]:
-							for y in dmap[d[1]]:
-								image.blit(border, ((x * BORDER_SIZE[0], y * BORDER_SIZE[1]), BORDER_SIZE))
+						image.blit(border, (((d[0] + 1) * BORDER_SIZE[0], (d[1] + 1) * BORDER_SIZE[1]), BORDER_SIZE))
 					images.append(image)
 				self.images[name] = images
 		return images

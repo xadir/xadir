@@ -1,5 +1,3 @@
-br bl
-tr tl
-t_l t t_r
-l ? r
+t_l t t_r   br bl
+ l  ?  r    tr tl
 b_l b b_r
