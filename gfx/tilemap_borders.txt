@@ -1,3 +1,6 @@
-t_l t t_r   br bl
- l  ?  r    tr tl
-b_l b b_r
+W-t_l W-t W-t_r   W-br W-bl
+W-l   ?   W-r     W-tr W-tl
+W-b_l W-b W-b_r
+D-t_l D-t D-t_r   D-br D-bl
+D-l   ?   D-r     D-tr D-tl
+D-b_l D-b D-b_r

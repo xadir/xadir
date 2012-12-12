@@ -665,16 +665,16 @@ class BackgroundMap(Grid):
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
 
-	def get_border(self, (x, y), side):
+	def get_border(self, (x, y), side, tile):
 		dirs = {'t': -1, 'b': 1, 'l': -1, 'r': 1, 'm': 0}
 		hd, vd = dirs[side[1]], dirs[side[0]]
 		d = (hd, vd)
-		c = self.get_repeated((x + hd, y + vd)) != 'W'
+		c = self.get_repeated((x + hd, y + vd)) != tile
 		if 'm' in side:
 			if c: return side.replace('m', ''), d
 			return None, d
-		h = self.get_repeated((x + hd, y)) != 'W'
-		v = self.get_repeated((x, y + vd)) != 'W'
+		h = self.get_repeated((x + hd, y)) != tile
+		v = self.get_repeated((x, y + vd)) != tile
 		if h and v: return '_'.join(side), d
 		if h: return side[1], d
 		if v: return side[0], d
@@ -683,8 +683,8 @@ class BackgroundMap(Grid):
 
 	def get_real_tile(self, pos):
 		tile = self[pos]
-		if tile == 'W':
-			borders = tuple(self.get_border(pos, side) for side in 'tl tm tr ml mr bl bm br'.split())
+		if tile in ('W', 'D'):
+			borders = tuple(self.get_border(pos, side, tile) for side in 'tl tm tr ml mr bl bm br'.split())
 		else:
 			borders = ()
 		name = (tile, borders)
@@ -699,7 +699,7 @@ class BackgroundMap(Grid):
 					for b, d in borders:
 						if not b:
 							continue
-						border = self.borders[b]
+						border = self.borders[tile + '-' + b]
 						image.blit(border, (((d[0] + 1) * BORDER_SIZE[0], (d[1] + 1) * BORDER_SIZE[1]), BORDER_SIZE))
 					images.append(image)
 				self.images[name] = images
