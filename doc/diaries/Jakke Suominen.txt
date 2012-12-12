@@ -76,8 +76,32 @@
 	- Musiikinteko 
 	* Antoisa p‰iv‰, musiikin tekemisess‰ p‰‰stiin vihdoin kunnolla alkuun 
 	* ja syntikankin sain liitetty‰ koneeseen onnistuneesti.
-	
 
+- 20.11 (4t)
+	- Musiikinteko
+
+- 28.11 (5t) Palaveri (Aleksi, Heikki, Jakke)
+	- taistelusysteemin implementointia
+	- hahmojenluontij‰rjestelm‰n suunnittelu
+	- Ui-design
+	- asesysteemin suunnittelu
+
+- 29.11 (4t) 
+	- Musiikinteko
+
+- 1.12 (3t)
+	- Musiikinteko
+
+- 4.12 (5t)
+	- Ase ja armori taulukko
+	
+- 5.12 (2t)
+	- Asetaulukko
+
+- 7.12 (4t)
+	- Musiikinteko
+	
+//103t
 	
 
 

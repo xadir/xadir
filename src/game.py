@@ -76,14 +76,6 @@ def draw_solid_hp_bar2(surface, rect, total, left):
 	surface.fill((0, 0, 0), rect)
 	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
 
-# XXX: Adding some UI controls to game window
-def write_button(self, surface, text, x, y):
-		buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
-		buttonrect = buttontext.get_rect()
-		buttonrect.centerx = x
-		buttonrect.centery = y
-		surface.blit(buttontext, buttonrect)
-
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
 	# 6*256-6 = 1530
@@ -152,12 +144,7 @@ class XadirMain:
 		self.background = pygame.Surface((self.width, self.height))
 		self.background.fill((159, 182, 205))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
-		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
-		self.buttonfont = pygame.font.Font(FONT, int(50*FONTSCALE))
 		self.buttons = []
-		self.playerfont = pygame.font.Font(FONT, int(20*FONTSCALE))
-		self.healthbars = []
-		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 		self.showhealth = False
@@ -751,7 +738,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [CharacterSprite(self, race_name, 5, (x, y), heading, main) for race_name, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, race_name, (x, y), heading, main) for race_name, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -828,18 +815,16 @@ class Character:
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, race_name, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+	def __init__(self, player, race_name, coords, heading, main):
 		UIGridObject.__init__(self, main.map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
 		self.race = races[race_name]
 		# Movement points
-		self.max_mp = max_mp
-		self.mp = max_mp
+		self.mp = self.max_mp = 5
 		# Health points
-		self.max_hp = max_hp
-		self.hp = max_hp
+		self.hp = self.max_hp = 100
 		# Stats
 		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
 		self.dexterity = self.race.base_dex + rndstats.count('dex')
