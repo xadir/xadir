@@ -175,6 +175,7 @@ class XadirMain:
 		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
 		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['D']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
 		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
+		self.overlay = load_named_tiles('tilemap_overlay', OVERLAY_SIZE, (255, 0, 255), SCALE)
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
@@ -231,7 +232,7 @@ class XadirMain:
 		"""Load the sprites that we need"""
 		self.walkable = [name for name in self.terrain.keys() if name != 'W']
 		map, mapsize, spawns = load_map(self.mapname)
-		self.map = BackgroundMap(map, *mapsize, tiletypes = (self.terrain, self.borders))
+		self.map = BackgroundMap(map, *mapsize, tiletypes = (self.terrain, self.borders, self.overlay))
 		self.spawns = spawns
 		self.players = []
 
@@ -645,7 +646,7 @@ class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
 		Grid.__init__(self, width, height, map)
-		self.terrain, self.borders = tiletypes
+		self.terrain, self.borders, self.overlay = tiletypes
 		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
@@ -653,6 +654,7 @@ class BackgroundMap(Grid):
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for x, y in self.map.keys():
 			tile = self.get_real_tile((x, y))
+			rect = tile[0].get_rect()
 			if len(tile) == 1:
 				cls = Tile
 				tile = tile[0]
@@ -660,29 +662,47 @@ class BackgroundMap(Grid):
 			else:
 				cls = AnimatedTile
 				kwargs = dict(interval = 30/2)
-			self.sprites.add(cls(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y), **kwargs))
+			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
+			rect.left = x*TILE_SIZE[0]
+			self.sprites.add(cls(tile, rect, layer = (L_MAP, y), **kwargs))
 
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
+
+	def get_repeated_base(self, pos):
+		tile = self.get_repeated(pos)
+		if tile == 'F':
+			return 'G'
+		return tile
 
 	def get_border(self, (x, y), side, tile):
 		dirs = {'t': -1, 'b': 1, 'l': -1, 'r': 1, 'm': 0}
 		hd, vd = dirs[side[1]], dirs[side[0]]
 		d = (hd, vd)
-		c = self.get_repeated((x + hd, y + vd)) != tile
+		c = self.get_repeated_base((x + hd, y + vd)) != tile
 		if 'm' in side:
 			if c: return side.replace('m', ''), d
 			return None, d
-		h = self.get_repeated((x + hd, y)) != tile
-		v = self.get_repeated((x, y + vd)) != tile
+		h = self.get_repeated_base((x + hd, y)) != tile
+		v = self.get_repeated_base((x, y + vd)) != tile
 		if h and v: return '_'.join(side), d
 		if h: return side[1], d
 		if v: return side[0], d
 		if c: return side, d
 		return None, d
 
+	def get_overlay(self, (x, y), tile):
+		l = self.get_repeated((x - 1, y)) == tile
+		r = self.get_repeated((x + 1, y)) == tile
+		if l and r: return 'h'
+		if l: return 'l'
+		if r: return 'r'
+		return 'm'
+
 	def get_real_tile(self, pos):
-		tile = self[pos]
+		real_tile = tile = self[pos]
+		if tile == 'F':
+			tile = 'G'
 		if tile in ('W', 'D'):
 			borders = tuple(self.get_border(pos, side, tile) for side in 'tl tm tr ml mr bl bm br'.split())
 		else:
@@ -703,6 +723,24 @@ class BackgroundMap(Grid):
 						image.blit(border, (((d[0] + 1) * BORDER_SIZE[0], (d[1] + 1) * BORDER_SIZE[1]), BORDER_SIZE))
 					images.append(image)
 				self.images[name] = images
+		if real_tile == 'F':
+			overlay_tile = real_tile + '-' + self.get_overlay(pos, real_tile)
+			name = (tile, borders, overlay_tile)
+			images2 = self.images.get(name)
+			if not images2:
+				orig_images = images
+				images = []
+				for orig_image in orig_images:
+					image = pygame.Surface(OVERLAY_SIZE)
+					image.fill((255, 0, 255))
+					image.set_colorkey((255, 0, 255))
+					image.blit(orig_image, ((0, OVERLAY_SIZE[1] - TILE_SIZE[1]), TILE_SIZE))
+					overlay = self.overlay[overlay_tile]
+					image.blit(overlay, ((0, 0), OVERLAY_SIZE))
+					images.append(image)
+				self.images[name] = images
+			else:
+				images = images2
 		return images
 
 	def get_map(self):

@@ -18,6 +18,6 @@ G G G W W W W W G G G G W W W W W G G G
 G G W W W W W W W D W W W W W W W G F G
 G G W W W G W W W D W W W W W W W G F F
 G G G G G G G G W D W W W W W W G G G F
-G G G G G G G G G G W W W W W G G G G F
-G G G G G G G G G G G G G G G G G G F F
+G G G G G G G G G G W W W W W G G G F F
 G G G G G G G G G G G G G G G G G F F F
+G G G G G G G G G G G G G G G G F F F F
