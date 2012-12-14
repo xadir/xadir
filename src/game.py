@@ -149,7 +149,7 @@ class XadirMain:
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 		self.showhealth = False
-		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.next_turn))
+		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.next_turn))
 
 		self.disabled_chartypes = {}
 
@@ -901,8 +901,14 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		UIComponent.__init__(self, x, y, width, height)
 		pygame.sprite.DirtySprite.__init__(self)
 
+		self.image = pygame.Surface(self.size)
+
 		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		self.image = font.render(text, True, (0, 0, 0), (159, 182, 205))
+		image = font.render(text, True, (0, 0, 0), (139, 162, 185))
+		rect = image.get_rect()
+
+		self.image.fill((139, 162, 185))
+		self.image.blit(image, (self.width/2 - rect.centerx, self.height/2 - rect.centery))
 
 		self.function = function
 
