@@ -472,34 +472,7 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 		self.redraw()
 		self.dirty = 1
 
-class AnimatedEffect(pygame.sprite.DirtySprite):
-	def __init__(self, character, file_path, interval = 1):
-		pygame.sprite.DirtySprite.__init__(self)
-		self._layer = L_CHAR_EFFECT(character.grid_y)
-
-		self.images = iter(get_animation_surfaces(file_path))
-		self.image = self.images.next()
-		self.rect = character.rect
-
-		self.interval = interval
-		self.count = 0
-
-	def update(self):
-		if not self.visible:
-			return
-
-		self.count += 1
-		if self.count >= self.interval:
-			self.count = 0
-
-			try:
-				self.image = self.images.next()
-			except StopIteration:
-				self.visible = 0
-			else:
-				self.dirty = 1
-
-class AnimatedTile(pygame.sprite.DirtySprite):
+class AnimatedSprite(pygame.sprite.DirtySprite):
 	def __init__(self, images, rect, layer, interval = 1):
 		pygame.sprite.DirtySprite.__init__(self)
 		self._layer = layer
@@ -526,6 +499,23 @@ class AnimatedTile(pygame.sprite.DirtySprite):
 
 			self.image = self.images[self.pos]
 			self.dirty = 1
+
+class AnimatedEffect(AnimatedSprite):
+	def __init__(self, character, file_path, interval = 1):
+		images = list(get_animation_surfaces(file_path))
+		rect = character.rect
+		layer = L_CHAR_EFFECT(character.grid_y)
+
+		AnimatedSprite.__init__(self, images, rect, layer, interval)
+
+	def update(self):
+		AnimatedSprite.update(self)
+
+		if self.pos == 0 and self.count == 0:
+			self.visible = 0
+
+class AnimatedTile(AnimatedSprite):
+	pass
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
