@@ -20,12 +20,13 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
-L_MAP = 0
-L_SEL = 1
-L_CHAR = 2
-
-L_CHAR_OVERLAY = 0
-L_CHAR_EFFECT = 1
+# XXX: Trees don't occlude characters below them since drawing selections would be a pain in the ass.
+#      If we do it, trees occlude selections too...
+L_MAP =          lambda y: (0, y)
+L_SEL =          lambda y: (1, )
+L_CHAR =         lambda y: (2, y)
+L_CHAR_OVERLAY = lambda y: (2, y, 0)
+L_CHAR_EFFECT =  lambda y: (2, y, 1)
 
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
@@ -474,7 +475,7 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 class AnimatedEffect(pygame.sprite.DirtySprite):
 	def __init__(self, character, file_path, interval = 1):
 		pygame.sprite.DirtySprite.__init__(self)
-		self._layer = (L_CHAR, character.grid_y, L_CHAR_EFFECT)
+		self._layer = L_CHAR_EFFECT(character.grid_y)
 
 		self.images = iter(get_animation_surfaces(file_path))
 		self.image = self.images.next()
@@ -582,7 +583,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 		self.image = self.rect = None
 		self.update()
 
-	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
+	_layer = property(lambda self: L_CHAR_OVERLAY(self.character.grid_y), lambda self, value: None)
 
 	def update(self):
 		try:
@@ -624,7 +625,7 @@ class SpriteGrid:
 	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
-			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = (L_SEL, )))
+			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = L_SEL(grid[i][1])))
 
 clamp = lambda v, minv, maxv: min(max(v, minv), maxv)
 clamp_r = lambda v, minv, maxv: min(max(v, minv), maxv - 1)
@@ -651,7 +652,7 @@ class BackgroundMap(Grid):
 				kwargs = dict(interval = 30/2)
 			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
 			rect.left = x*TILE_SIZE[0]
-			self.sprites.add(cls(tile, rect, layer = (L_MAP, y), **kwargs))
+			self.sprites.add(cls(tile, rect, layer = L_MAP(y), **kwargs))
 
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
@@ -850,7 +851,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
 	rect = property(_get_rect)
 
-	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
+	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
 
 	def update(self):
 		self.image = self.main.chartypes[self.race.name][self.heading]
