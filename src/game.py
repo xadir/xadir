@@ -461,6 +461,9 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 	def get_state(self):
 		raise NotImplemented, 'This method must be implemented by base classes'
 
+	def redraw(self):
+		raise NotImplemented, 'This method must be implemented by base classes'
+
 	def update(self):
 		if not self.visible:
 			return
@@ -468,6 +471,7 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 		state = self.get_state()
 		if state == self.state:
 			return
+		self.state = state
 
 		self.redraw()
 		self.dirty = 1
