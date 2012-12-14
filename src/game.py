@@ -149,13 +149,14 @@ class XadirMain:
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 		self.showhealth = False
-		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
+		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.next_turn))
 
 		self.disabled_chartypes = {}
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
+		self.sprites.add(self.buttons)
 
 	current_player = property(lambda self: self.players[self.turn])
 
@@ -193,8 +194,7 @@ class XadirMain:
 					if event.button == 1:
 						for b in self.buttons:
 							if b.contains(*event.pos):
-								f = b.get_function()
-								f()
+								b.function()
 						self.click()
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
@@ -206,15 +206,10 @@ class XadirMain:
 			self.clock.tick(self.fps)
 			self.sprites.update()
 			self.sprites.clear(self.screen, self.background)
-			self.update_buttons()
 			# Update layers
 			self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 			self.sprites.draw(self.screen)
 			pygame.display.flip()
-
-	def update_buttons(self):
-		for b in self.buttons:
-			b.draw()
 
 	def load_sprites(self):
 		"""Load the sprites that we need"""
@@ -904,39 +899,15 @@ class Tile(pygame.sprite.DirtySprite):
 		if rect is not None:
 			self.rect = rect
 
-class Button(UIComponent):
-	def __init__(self, x, y, width, height, name, fontsize, surface, function):
+class Button(UIComponent, pygame.sprite.DirtySprite):
+	def __init__(self, x, y, width, height, text, fontsize, function):
 		UIComponent.__init__(self, x, y, width, height)
-		self.name = name
+		pygame.sprite.DirtySprite.__init__(self)
+
+		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+		self.image = font.render(text, True, (0, 0, 0), (159, 182, 205))
+
 		self.function = function
-		self.surface = surface
-		self.fontsize = fontsize
-		self.create_text(self.name, self.fontsize)
-
-	def create_text(self, text, fontsize):
-		self.buttonfont = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
-		self.buttonrect = self.buttontext.get_rect()
-		self.buttonrect.left = self.x
-		self.buttonrect.top = self.y
-		self.buttonrect.width = self.width
-		self.buttonrect.height = self.height
-
-	def get_function(self):
-		return self.function
-
-	def get_text(self):
-		return self.buttontext
-
-	def get_rect(self):
-		return self.buttonrect
-
-	def get_name(self):
-		return self.name
-
-	def draw(self):
-		self.surface.blit(self.buttontext, self.buttonrect)
-
 
 def start_game(mapname):
 	game = XadirMain(mapname = mapname)
