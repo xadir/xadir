@@ -546,24 +546,19 @@ class PlayerName(pygame.sprite.DirtySprite):
 		self.rect = self.image.get_rect()
 		self.rect.topleft = rect.topleft
 
-class CurrentPlayerName(pygame.sprite.DirtySprite):
+class CurrentPlayerName(StateTrackingSprite):
 	def __init__(self, main, centerx):
-		pygame.sprite.DirtySprite.__init__(self)
+		StateTrackingSprite.__init__(self)
 		self.centerx = centerx
 		self.main = main
-		self.text = None
 
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
 
-	def update(self):
-		text = self.main.current_player.name
-		if text == self.text:
-			return
+	def get_state(self):
+		return self.main.current_player.name
 
-		self.dirty = 1
-		self.text = text
-
-		self.image = self.font.render(self.text, True, (255,255, 255))
+	def redraw(self):
+		self.image = self.font.render(self.state, True, (255,255, 255))
 		self.rect = self.image.get_rect()
 		self.rect.centerx = self.centerx
 		self.rect.centery = 50
