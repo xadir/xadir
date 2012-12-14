@@ -489,6 +489,10 @@ class AnimatedSprite(pygame.sprite.DirtySprite):
 		if not self.visible:
 			return
 
+		# Do not bother to do anything if there's no animation
+		if len(self.images) <= 1:
+			return
+
 		self.count += 1
 		if self.count >= self.interval:
 			self.count = 0
@@ -625,18 +629,11 @@ class BackgroundMap(Grid):
 		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
 		for x, y in self.map.keys():
-			tile = self.get_real_tile((x, y))
-			rect = tile[0].get_rect()
-			if len(tile) == 1:
-				cls = Tile
-				tile = tile[0]
-				kwargs = {}
-			else:
-				cls = AnimatedTile
-				kwargs = dict(interval = 30/2)
+			tiles = self.get_real_tile((x, y))
+			rect = tiles[0].get_rect()
 			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
 			rect.left = x*TILE_SIZE[0]
-			self.sprites.add(cls(tile, rect, layer = L_MAP(y), **kwargs))
+			self.sprites.add(AnimatedTile(tiles, rect, layer = L_MAP(y), interval = 30/2))
 
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
