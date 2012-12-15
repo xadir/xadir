@@ -14,6 +14,7 @@ from dice import Dice
 from race import races, Race
 from armor import armors, Armor
 from weapon import weapons, Weapon
+from charclass import classes, CharacterClass
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -763,7 +764,7 @@ def roll_attack_damage(attacker, defender):
 
 	# XXX: Magic should bypass damage reduction
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
-	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
+	negative_damage = defender.class_.damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
 	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
 		print 'Armor negates', defender.armor.enchanted_damage_reduction, 'of the weapon\'s', '/'.join(defender.armor.enchanted_damage_reduction_type), 'damage'
 		negative_damage += defender.armor.enchanted_damage_reduction
@@ -781,6 +782,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.player = player
 		self.race = races[race_name]
+		self.class_ = random.choice(classes.values())
 		# Movement points
 		self.mp = self.max_mp = 5
 		# Health points
@@ -798,7 +800,6 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 		self.per_wc_miss_chance = {}
-		self.class_damage_reduction = random.randrange(3)
 		self.armor = Armor.random()
 		self.weapon = random.choice(weapons.values())#Weapon.random()
 
