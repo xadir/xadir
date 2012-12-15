@@ -105,6 +105,10 @@ class UIContainer(UIObject):
 		for child in self.children:
 			child.update()
 
+	def clear(self):
+		self.children = []
+		self.spritegroup = pygame.sprite.LayeredUpdates()
+
 	def draw(self):
 		if self.transparent != True:
 			self.surface.blit(self.border[0], self.border[1])

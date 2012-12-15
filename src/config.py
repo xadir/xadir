@@ -37,7 +37,7 @@ BORDER_SIZE = (SCALE * ORIG_BORDER_SIZE[0], SCALE * ORIG_BORDER_SIZE[1])
 ORIG_OVERLAY_SIZE = (24, 32)
 OVERLAY_SIZE = (SCALE * ORIG_OVERLAY_SIZE[0], SCALE * ORIG_OVERLAY_SIZE[1])
 
-
+"""
 RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"Human2": ("chibi_races_V2_colorkey_fixed.png", 2)
 	,"Devil": ("chibi_races_V2_colorkey_fixed.png", 3)
@@ -52,6 +52,22 @@ RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"GreyGuy": ("chibi_races_V2_colorkey_fixed.png", 12)
 	,"Imhotep": ("chibi_races_V2_colorkey_fixed.png", 13)
 	,"Wolf": ("chibi_races_V2_colorkey_fixed.png", 14)}
+"""
+
+RACE_SPRITES = {"human": ("chibi_races_V2_colorkey_fixed.png", 1)
+	,"minotaur": ("chibi_races_V2_colorkey_fixed.png", 2)
+	,"imp": ("chibi_races_V2_colorkey_fixed.png", 3)
+	,"treant": ("chibi_races_V2_colorkey_fixed.png", 4)
+	,"mindflayer": ("chibi_races_V2_colorkey_fixed.png", 5)
+	,"orc": ("chibi_races_V2_colorkey_fixed.png", 6)
+	,"ogre": ("chibi_races_V2_colorkey_fixed.png", 7)
+	,"djinn": ("chibi_races_V2_colorkey_fixed.png", 8)
+	,"thiefling": ("chibi_races_V2_colorkey_fixed.png", 9)
+	,"elf": ("chibi_races_V2_colorkey_fixed.png", 10)
+	,"goblin": ("chibi_races_V2_colorkey_fixed.png", 11)
+	,"mummy": ("chibi_races_V2_colorkey_fixed.png", 12)
+	,"dwarf": ("chibi_races_V2_colorkey_fixed.png", 13)
+	,"werewolf": ("chibi_races_V2_colorkey_fixed.png", 14)}
 
 HAIR_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
 	,"b": ("hair_collection_colorkey_fixed.png", 2)
@@ -89,5 +105,3 @@ RACE_HAIRS = {"a": [("Human", 1), ("Human2", 0), ("Human3", 0)]
 	,"h": [("Human", 0), ("Human2", 0), ("Human3", 0)]
 	,"i": [("Human", 0), ("Human2", 0), ("Human3", 0)]
 	,"j": [("Human", 0), ("Human2", 0), ("Human3", 0)]}
-
-ARMOR_SPRITES = {}

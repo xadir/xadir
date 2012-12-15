@@ -775,6 +775,7 @@ def roll_attack_damage(attacker, defender):
 
 class Character:
 	def __init__(self, name, race_name, class_name, str, dex, con, int):
+		self.name = name
 		self.race = races[race_name]
 		self.class_ = None
 		self.str = 1 + self.race.base_str + str
