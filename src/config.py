@@ -33,10 +33,7 @@ TILEGROUP_SIZE = (3 * TILE_SIZE[0], 3 * TILE_SIZE[1])
 ORIG_HAIR_SIZE = (22, 22)
 HAIR_SIZE = (SCALE * ORIG_HAIR_SIZE[0], SCALE * ORIG_HAIR_SIZE[1])
 
-RACE_SPRITES = {"Longear": ("sprite_collection.png", 1)
-	,"Ghost": ("sprite_collection.png", 2)
-	,"Croco": ("sprite_collection.png", 3)
-	,"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
+RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"Human2": ("chibi_races_V2_colorkey_fixed.png", 2)
 	,"Devil": ("chibi_races_V2_colorkey_fixed.png", 3)
 	,"Human3": ("chibi_races_V2_colorkey_fixed.png", 4)
@@ -51,7 +48,7 @@ RACE_SPRITES = {"Longear": ("sprite_collection.png", 1)
 	,"Imhotep": ("chibi_races_V2_colorkey_fixed.png", 13)
 	,"Wolf": ("chibi_races_V2_colorkey_fixed.png", 14)}
 
-RACE_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
+HAIR_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
 	,"b": ("hair_collection_colorkey_fixed.png", 2)
 	,"c": ("hair_collection_colorkey_fixed.png", 3)
 	,"d": ("hair_collection_colorkey_fixed.png", 4)
@@ -62,9 +59,7 @@ RACE_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
 	,"i": ("hair_collection_colorkey_fixed.png", 9)
 	,"j": ("hair_collection_colorkey_fixed.png", 10)}
 
-RACE_STATS = {"Longear": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
-	,"Croco": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
-	,"Human": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
+RACE_STATS = {"Human": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Human2": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Devil": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Human3": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
@@ -89,3 +84,5 @@ RACE_HAIRS = {"a": [("Human", 1), ("Human2", 0), ("Human3", 0)]
 	,"h": [("Human", 0), ("Human2", 0), ("Human3", 0)]
 	,"i": [("Human", 0), ("Human2", 0), ("Human3", 0)]
 	,"j": [("Human", 0), ("Human2", 0), ("Human3", 0)]}
+
+ARMOR_SPRITES = {}

@@ -171,12 +171,85 @@ class Tile(pygame.sprite.Sprite):
 		if rect is not None:
 			self.rect = rect
 
+class race_tile:
+	def load_characters(self, filename):
+		
+		chars = load_tiles(filename, CHAR_SIZE, (255, 0, 255), SCALE)
+
+		self.charnames = []
+		self.chartypes = {}
+		for i, char in enumerate(chars):
+			name = 'char' + str(i+1)
+			self.charnames.append(name)
+			self.chartypes[name + '_270'] = char[0]
+			self.chartypes[name + '_180'] = char[1]
+			self.chartypes[name + '_0'] = char[2]
+			self.chartypes[name + '_90'] = char[3]
+	
+	def __init__(self, race):
+		self.race = race
+		self.sprites = pygame.sprite.LayeredUpdates()
+		
+		self.races = RACE_SPRITES
+
+		temp = self.races[race]
+		self.path = temp[0]
+		self.place = 'char' + str(temp[1])
+
+		self.load_characters(self.path)
+
+	def get_sprites(self, x=0, y=0):
+		self.sprites = pygame.sprite.LayeredUpdates()
+		tiles = [self.chartypes[self.place + '_' + str(0)] , self.chartypes[self.place + '_' + str(90)], self.chartypes[self.place + '_' + str(180)], self.chartypes[self.place + '_' + str(270)]]
+		for i in range(len(tiles)):
+			self.sprites.add(Tile(tiles[i], pygame.Rect(x+(48*i)+TILE_SIZE[0], y+TILE_SIZE[1], *TILE_SIZE), layer = 0))
+		return self.sprites
+
+	def get_sprite(self, x=0, y=0, orientation=270):
+		self.sprites = pygame.sprite.LayeredUpdates()
+		print TILE_SIZE
+		self.sprites.add(Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *TILE_SIZE), layer = 0))
+		return self.sprites
+		
+	def get_tile(self, x=0, y=0, orientation=270):
+		return Tile(self.chartypes[self.place + '_' + str(orientation)], pygame.Rect(x, y, *CHAR_SIZE), layer = 0)
+
+class hair_tile:
+	def load_hair_sprites(self, filename):		
+		hair_sprites = load_tiles(filename, HAIR_SIZE, (255, 0, 255), SCALE)
+
+		self.hairnames = []
+		self.hairtypes = {}
+		for i, hair in enumerate(hair_sprites):
+			name = 'hair' + str(i+1)
+			self.hairnames.append(name)
+			self.hairtypes[name + '_270'] = hair[0]
+			self.hairtypes[name + '_180'] = hair[1]
+			self.hairtypes[name + '_0'] = hair[2]
+			self.hairtypes[name + '_90'] = pygame.transform.flip(hair[1], True, False)
+	
+	def __init__(self, race, hairtype):
+		self.race = race
+		self.hairtype = hairtype
+		self.sprites = pygame.sprite.LayeredUpdates()
+
+		self.hair_paths = HAIR_SPRITES
+		
+		temp = self.hair_paths[self.hairtype]
+		self.path = temp[0]
+		self.place = 'hair' + temp[1]
+
+		self.load_hair_sprites(self.path)
+		
+	def get_tile(self, x=0, y=0, orientation=270, layer=0):
+		return Tile(self.hairtypes[self.place + '_' + str(orientation)], pygame.Rect(x, y+ int(self.compatible_hairs[self.hairtype]), *HAIR_SIZE), layer)
+
 class FuncButton(UIObject, pygame.sprite.Sprite):
 	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, layer, function, visible, selected, static):
 		UIObject.__init__(self, parent, (x, y), (width, height))
 		pygame.sprite.Sprite.__init__(self)
 		self.visible = visible
-		self.function = function
+		self.function = function #Function is tuple that consists the function and also the parameter in form of (f, param)
 		self.surface = surface
 		self.fontsize = fontsize
 		self.bg_color = COLOR_BG
@@ -205,11 +278,28 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 			if self.images != None:
 				for i in self.images:
 					try:
-						self.image.blit(i[0], i[0].get_rect())
+						rect = i[0].get_rect()
+						if i[1] == None:
+							rect.centerx = (self.width + (ICON_BORDER * 2))/2
+							rect.centery =  (self.height + (ICON_BORDER * 2))/2
+						else:
+							rect.x = i[1][0]
+							rect.y = i[1][1]
+						self.image.blit(i[0], rect)
 					except AttributeError:
+						rect = i[0].rect
+						if i[1] == None:
+							rect.centerx = (self.width + (ICON_BORDER * 2))/2
+							rect.centery =  (self.height + (ICON_BORDER * 2))/2
+						else:
+							rect.x = i[1][0]
+							rect.y = i[1][1]
 						self.image.blit(i[0].image, i[0].rect)
 			for t in self.texts:
-				self.image.blit(t[0], t[1])
+				if t[1] == None:
+					self.image.blit(t[0], ((self.width + (ICON_BORDER * 2))/2, (self.height + (ICON_BORDER * 2))/2))
+				else:
+					self.image.blit(t[0], t[1])
 		else: self.image = pygame.Surface((0,0))
 				
 	def add_image(self, image, coords):
@@ -226,12 +316,9 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 			rect.x = coords[0]
 			rect.y = coords[1]
 		else:
-			rect.centerx = self.width/2
-			rect.centery = self.height/2
+			rect.centerx = (self.width + (ICON_BORDER * 2))/2
+			rect.centery = (self.height + (ICON_BORDER * 2))/2
 		self.texts.append([text, rect])
-
-	def get_function(self):
-		return self.function
 		
 	def show(self):
 		self.visible = True
@@ -299,7 +386,7 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 			else: self.visible = True
 			
 class CascadeButton(UIComponent):
-	def __init__(self, parent, surface, x, y, width, height, texts, images):
+	def __init__(self, parent, surface, x, y, width, height, texts, images, name=None):
 		self.parent = parent
 		self.surface = surface
 		#self.buttons = pygame.sprite.LayeredUpdates()
@@ -307,6 +394,7 @@ class CascadeButton(UIComponent):
 		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, 0, self.enable_buttons, True, False, False)
 		#self.buttons.add(self.parent_button)
 		self.parent.spritegroup.add(self.parent_button)
+		self.name = name
 		
 	def add_button(self, coords, size, text, image, function, visible=False, static=False, align=None):
 		if align == "centerx":
@@ -314,6 +402,9 @@ class CascadeButton(UIComponent):
 			y = coords[1]
 		elif align == "centery":
 			x = coords[0]
+			y = coords[1] + (self.parent_button.height / 2)
+		elif align == "center":
+			x = coords[0] + (self.parent_button.width / 2)
 			y = coords[1] + (self.parent_button.height / 2)
 		else:
 			x = coords[0]

@@ -47,9 +47,8 @@ class CharTest:
 			for p in self.parent_buttons:
 				p.update_tiles()
 				p.update_texts()
-				p.parent_button.draw()
-				for c in p.child_buttons:
-					if c.visible: c.draw()
+				p.spritegroup.update()
+				p.spritegroup.draw(self.screen)
 			pygame.display.flip()
 
 			"""
@@ -90,6 +89,7 @@ class better_race_preview:
 		self.race_name = race_name
 		self.sprite_file = sprite_file
 		self.stat_file = stat_file
+		self.spritegroup = pygame.sprite.LayeredUpdates()
 
 		self.selected_hair = 0
 		self.hairs = [None, 'a', 'b', 'c', 'd', 'e', 'f', 'i', 'j']
@@ -106,19 +106,36 @@ class better_race_preview:
 		self.load_tiles()
 		self.texts = []
 		self.child_buttons = []
-		self.parent_button = FuncButton(self, 0, 0, self.race_tile.rect.width + 100, self.race_tile.rect.height + 20, self.texts, self.images, 20, self.surface, self.toggle_visibility_buttons, True, False, False)
+		self.parent_button = FuncButton(self, 0, 0, self.race_tile.rect.width + 100, self.race_tile.rect.height + 20, self.texts, self.images, 20, self.surface, 0, self.toggle_visibility_buttons, True, False, False)
+		self.spritegroup.add(self.parent_button)
 		#Adding hideable buttons
-		self.child_buttons.append(FuncButton(self.parent_button, 0, -25, self.race_tile.rect.width + 80, 20, [["Equip", None]], None, 20, self.surface, self.button_click, False, False, True))
-		self.child_buttons.append(FuncButton(self.parent_button, 0, self.race_tile.rect.height+25, self.race_tile.rect.width + 80, 20, [["Sell", None]], None, 20, self.surface, self.button_click, False, False, True))
+		tmp = FuncButton(self.parent_button, 0, -25, self.race_tile.rect.width + 80, 20, [["Equip", None]], None, 20, self.surface, 1, self.button_click, False, False, True)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
+		temp = FuncButton(self.parent_button, 0, self.race_tile.rect.height+25, self.race_tile.rect.width + 80, 20, [["Sell", None]], None, 20, self.surface, 1, self.button_click, False, False, True)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
 		#Adding static buttons
-		self.child_buttons.append(FuncButton(self.parent_button, 8, 10, 18, 18, [["<", None]], None, 20, self.surface, self.prev_hair, True, False, False))
-		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 10, 18, 18, [[">", None]], None, 20, self.surface, self.next_hair, True, False, False))
+		tmp = FuncButton(self.parent_button, 8, 10, 18, 18, [["<", None]], None, 20, self.surface, 1, self.prev_hair, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
+		tmp = FuncButton(self.parent_button, self.race_tile.rect.width+72, 10, 18, 18, [[">", None]], None, 20, self.surface, 1, self.next_hair, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
 
-		self.child_buttons.append(FuncButton(self.parent_button, 8, 35, 18, 18, [["<", None]], None, 20, self.surface, self.prev_race, True, False, False))
-		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 35, 18, 18, [[">", None]], None, 20, self.surface, self.next_race, True, False, False))
+		tmp = FuncButton(self.parent_button, 8, 35, 18, 18, [["<", None]], None, 20, self.surface, 1, self.prev_race, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
+		tmp = FuncButton(self.parent_button, self.race_tile.rect.width+72, 35, 18, 18, [[">", None]], None, 20, self.surface, 1, self.next_race, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
 
-		self.child_buttons.append(FuncButton(self.parent_button, 8, 60, 18, 18, [["<", None]], None, 20, self.surface, self.prev_class, True, False, False))
-		self.child_buttons.append(FuncButton(self.parent_button, self.race_tile.rect.width+72, 60, 18, 18, [[">", None]], None, 20, self.surface, self.next_class, True, False, False))
+		tmp = FuncButton(self.parent_button, 8, 60, 18, 18, [["<", None]], None, 20, self.surface, 1, self.prev_class, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
+		tmp = FuncButton(self.parent_button, self.race_tile.rect.width+72, 60, 18, 18, [[">", None]], None, 20, self.surface, 1, self.next_class, True, False, False)
+		self.child_buttons.append(tmp)
+		self.spritegroup.add(tmp)
 
 	def load_tiles(self):
 		self.race_tile = race_tile(self.races[self.selected_race]).get_tile(self.x, self.y, '270')
@@ -443,12 +460,13 @@ class race_tile:
 		self.race = race
 		self.sprites = pygame.sprite.LayeredUpdates()
 		
-		self.load_races('race_sprites.txt')
+		#self.load_races('race_sprites.txt')
 		#races = {'longear': ['sprite_collection.png', '1']}
+		self.races = RACE_SPRITES
 
 		temp = self.races[race]
 		self.path = temp[0]
-		self.place = 'char' + temp[1]
+		self.place = 'char' + str(temp[1])
 
 		self.load_characters(self.path)
 
@@ -529,9 +547,11 @@ class hair_tile:
 		self.hairtype = hairtype
 		self.sprites = pygame.sprite.LayeredUpdates()
 		
-		self.load_hairs('hair_sprites.txt')
-		self.load_compatible_hairs(self.race, 'race_hairs.txt')
+		#self.load_hairs('hair_sprites.txt')
+		#self.load_compatible_hairs(self.race, 'race_hairs.txt')
 		#races = {'longear': ['sprite_collection.png', '1']}
+
+		self.hair_paths = HAIR_SPRITES
 		
 		temp = self.hair_paths[self.hairtype]
 		self.path = temp[0]
