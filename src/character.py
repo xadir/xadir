@@ -1,4 +1,4 @@
-from races import races, Race
+from race import races, Race
 
 class Character:
 	def __init__(self, name, race_name, class_name, str, dex, con, int):
