@@ -11,9 +11,9 @@ from algo import *
 from UI import *
 
 from dice import Dice
-from races import races, Race
-from armors import armors, Armor
-from weapons import weapons, Weapon
+from race import races, Race
+from armor import armors, Armor
+from weapon import weapons, Weapon
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
