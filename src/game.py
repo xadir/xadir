@@ -20,12 +20,13 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
-L_MAP = 0
-L_SEL = 1
-L_CHAR = 2
-
-L_CHAR_OVERLAY = 0
-L_CHAR_EFFECT = 1
+# XXX: Trees don't occlude characters below them since drawing selections would be a pain in the ass.
+#      If we do it, trees occlude selections too...
+L_MAP =          lambda y: (0, y)
+L_SEL =          lambda y: (1, )
+L_CHAR =         lambda y: (2, y)
+L_CHAR_OVERLAY = lambda y: (2, y, 0)
+L_CHAR_EFFECT =  lambda y: (2, y, 1)
 
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
@@ -75,14 +76,6 @@ def draw_solid_hp_bar2(surface, rect, total, left):
 	color = get_hp_bar_color(total, left)
 	surface.fill((0, 0, 0), rect)
 	surface.fill(color, (rect.x, rect.y, scale_ceil(left, total, rect.width), rect.height))
-
-# XXX: Adding some UI controls to game window
-def write_button(self, surface, text, x, y):
-		buttontext = self.buttonfont.render(text, True, (255,255, 255), (159, 182, 205))
-		buttonrect = buttontext.get_rect()
-		buttonrect.centerx = x
-		buttonrect.centery = y
-		surface.blit(buttontext, buttonrect)
 
 def get_hue_color(i):
 	# red-yellow-green-cyan-blue-magenta-red
@@ -142,7 +135,7 @@ def get_animation_surfaces(path):
 
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
-	def __init__(self, width=1200, height=720, mapname='map2.txt'):
+	def __init__(self, width=1200, height=720, mapname='map_new.txt'):
 		pygame.init()
 		pygame.display.set_caption('Xadir')
 		self.mapname = mapname
@@ -152,26 +145,26 @@ class XadirMain:
 		self.background = pygame.Surface((self.width, self.height))
 		self.background.fill((159, 182, 205))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
-		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
-		self.buttonfont = pygame.font.Font(FONT, int(50*FONTSCALE))
 		self.buttons = []
-		self.playerfont = pygame.font.Font(FONT, int(20*FONTSCALE))
-		self.healthbars = []
-		self.enemy_tiles = []
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 		self.showhealth = False
-		self.buttons.append(Button(970, 600, 230, 100, "End turn", 40, self.screen, self.next_turn))
+		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.next_turn))
 
 		self.disabled_chartypes = {}
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
+		self.sprites.add(self.buttons)
 
 	current_player = property(lambda self: self.players[self.turn])
 
 	def load_resources(self):
+		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
+		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['D']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
+		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
+		self.overlay = load_named_tiles('tilemap_overlay', OVERLAY_SIZE, (255, 0, 255), SCALE)
 		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
 		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
 		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
@@ -201,8 +194,7 @@ class XadirMain:
 					if event.button == 1:
 						for b in self.buttons:
 							if b.contains(*event.pos):
-								f = b.get_function()
-								f()
+								b.function()
 						self.click()
 				if event.type == KEYDOWN and event.key == K_SPACE:
 					self.next_turn()
@@ -214,21 +206,16 @@ class XadirMain:
 			self.clock.tick(self.fps)
 			self.sprites.update()
 			self.sprites.clear(self.screen, self.background)
-			self.update_buttons()
 			# Update layers
 			self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 			self.sprites.draw(self.screen)
 			pygame.display.flip()
 
-	def update_buttons(self):
-		for b in self.buttons:
-			b.draw()
-
 	def load_sprites(self):
 		"""Load the sprites that we need"""
-		self.walkable = [name for name in self.tiletypes.keys() if name.count('W') <= 1]
+		self.walkable = [name for name in self.terrain.keys() if name != 'W']
 		map, mapsize, spawns = load_map(self.mapname)
-		self.map = BackgroundMap(map, *mapsize, tiletypes = self.tiletypes)
+		self.map = BackgroundMap(map, *mapsize, tiletypes = (self.terrain, self.borders, self.overlay))
 		self.spawns = spawns
 		self.players = []
 
@@ -318,7 +305,7 @@ class XadirMain:
 			self.draw(frames)
 
 	def animate_hit(self, character, file_path):
-		anim = Animation(character, file_path, 3)
+		anim = AnimatedEffect(character, file_path, 3)
 
 		self.sprites.add(anim)
 
@@ -469,6 +456,9 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 	def get_state(self):
 		raise NotImplemented, 'This method must be implemented by base classes'
 
+	def redraw(self):
+		raise NotImplemented, 'This method must be implemented by base classes'
+
 	def update(self):
 		if not self.visible:
 			return
@@ -476,18 +466,21 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 		state = self.get_state()
 		if state == self.state:
 			return
+		self.state = state
 
 		self.redraw()
 		self.dirty = 1
 
-class Animation(pygame.sprite.DirtySprite):
-	def __init__(self, character, file_path, interval = 1):
+class AnimatedSprite(pygame.sprite.DirtySprite):
+	def __init__(self, images, rect, layer, interval = 1):
 		pygame.sprite.DirtySprite.__init__(self)
-		self._layer = (L_CHAR, character.grid_y, L_CHAR_EFFECT)
+		self._layer = layer
 
-		self.images = iter(get_animation_surfaces(file_path))
-		self.image = self.images.next()
-		self.rect = character.rect
+		self.images = images
+		self.pos = 0
+
+		self.image = self.images[self.pos]
+		self.rect = rect
 
 		self.interval = interval
 		self.count = 0
@@ -496,16 +489,36 @@ class Animation(pygame.sprite.DirtySprite):
 		if not self.visible:
 			return
 
+		# Do not bother to do anything if there's no animation
+		if len(self.images) <= 1:
+			return
+
 		self.count += 1
 		if self.count >= self.interval:
 			self.count = 0
+			self.pos += 1
+			if self.pos >= len(self.images):
+				self.pos = 0
 
-			try:
-				self.image = self.images.next()
-			except StopIteration:
-				self.visible = 0
-			else:
-				self.dirty = 1
+			self.image = self.images[self.pos]
+			self.dirty = 1
+
+class AnimatedEffect(AnimatedSprite):
+	def __init__(self, character, file_path, interval = 1):
+		images = list(get_animation_surfaces(file_path))
+		rect = character.rect
+		layer = L_CHAR_EFFECT(character.grid_y)
+
+		AnimatedSprite.__init__(self, images, rect, layer, interval)
+
+	def update(self):
+		AnimatedSprite.update(self)
+
+		if self.pos == 0 and self.count == 0:
+			self.visible = 0
+
+class AnimatedTile(AnimatedSprite):
+	pass
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
@@ -532,24 +545,19 @@ class PlayerName(pygame.sprite.DirtySprite):
 		self.rect = self.image.get_rect()
 		self.rect.topleft = rect.topleft
 
-class CurrentPlayerName(pygame.sprite.DirtySprite):
+class CurrentPlayerName(StateTrackingSprite):
 	def __init__(self, main, centerx):
-		pygame.sprite.DirtySprite.__init__(self)
+		StateTrackingSprite.__init__(self)
 		self.centerx = centerx
 		self.main = main
-		self.text = None
 
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
 
-	def update(self):
-		text = self.main.current_player.name
-		if text == self.text:
-			return
+	def get_state(self):
+		return self.main.current_player.name
 
-		self.dirty = 1
-		self.text = text
-
-		self.image = self.font.render(self.text, True, (255,255, 255))
+	def redraw(self):
+		self.image = self.font.render(self.state, True, (255,255, 255))
 		self.rect = self.image.get_rect()
 		self.rect.centerx = self.centerx
 		self.rect.centery = 50
@@ -563,7 +571,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 		self.image = self.rect = None
 		self.update()
 
-	_layer = property(lambda self: (L_CHAR, self.character.grid_y, L_CHAR_OVERLAY), lambda self, value: None)
+	_layer = property(lambda self: L_CHAR_OVERLAY(self.character.grid_y), lambda self, value: None)
 
 	def update(self):
 		try:
@@ -605,20 +613,104 @@ class SpriteGrid:
 	def __init__(self, grid, tile):
 		self.sprites = pygame.sprite.Group()
 		for i in range(len(grid)):
-			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = (L_SEL, )))
+			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = L_SEL(grid[i][1])))
+
+clamp = lambda v, minv, maxv: min(max(v, minv), maxv)
+clamp_r = lambda v, minv, maxv: min(max(v, minv), maxv - 1)
 
 class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
 	def __init__(self, map, width, height, tiletypes):
 		Grid.__init__(self, width, height, map)
+		self.terrain, self.borders, self.overlay = tiletypes
+		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
 		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for (x, y), tiletype in self.map.items():
-			tile = tiletypes[tiletype]
-			#print x, y
-			self.sprites.add(Tile(tile, pygame.Rect(x*TILE_SIZE[0], y*TILE_SIZE[1], *TILE_SIZE), layer = (L_MAP, y)))
+		for x, y in self.map.keys():
+			tiles = self.get_real_tile((x, y))
+			rect = tiles[0].get_rect()
+			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
+			rect.left = x*TILE_SIZE[0]
+			self.sprites.add(AnimatedTile(tiles, rect, layer = L_MAP(y), interval = 30/2))
+
+	def get_repeated(self, (x, y)):
+		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
+
+	def get_repeated_base(self, pos):
+		tile = self.get_repeated(pos)
+		if tile == 'F':
+			return 'G'
+		return tile
+
+	def get_border(self, (x, y), side, tile):
+		dirs = {'t': -1, 'b': 1, 'l': -1, 'r': 1, 'm': 0}
+		hd, vd = dirs[side[1]], dirs[side[0]]
+		d = (hd, vd)
+		c = self.get_repeated_base((x + hd, y + vd)) != tile
+		if 'm' in side:
+			if c: return side.replace('m', ''), d
+			return None, d
+		h = self.get_repeated_base((x + hd, y)) != tile
+		v = self.get_repeated_base((x, y + vd)) != tile
+		if h and v: return '_'.join(side), d
+		if h: return side[1], d
+		if v: return side[0], d
+		if c: return side, d
+		return None, d
+
+	def get_overlay(self, (x, y), tile):
+		l = self.get_repeated((x - 1, y)) == tile
+		r = self.get_repeated((x + 1, y)) == tile
+		if l and r: return 'h'
+		if l: return 'l'
+		if r: return 'r'
+		return 'm'
+
+	def get_real_tile(self, pos):
+		real_tile = tile = self[pos]
+		if tile == 'F':
+			tile = 'G'
+		if tile in ('W', 'D'):
+			borders = tuple(self.get_border(pos, side, tile) for side in 'tl tm tr ml mr bl bm br'.split())
+		else:
+			borders = ()
+		name = (tile, borders)
+		images = self.images.get(name)
+		if not images:
+			images = self.terrain[tile]
+			if any(b for b, d in borders):
+				orig_images = images
+				images = []
+				for image in orig_images:
+					image = image.copy()
+					for b, d in borders:
+						if not b:
+							continue
+						border = self.borders[tile + '-' + b]
+						image.blit(border, (((d[0] + 1) * BORDER_SIZE[0], (d[1] + 1) * BORDER_SIZE[1]), BORDER_SIZE))
+					images.append(image)
+				self.images[name] = images
+		if real_tile == 'F':
+			overlay_tile = real_tile + '-' + self.get_overlay(pos, real_tile)
+			name = (tile, borders, overlay_tile)
+			images2 = self.images.get(name)
+			if not images2:
+				orig_images = images
+				images = []
+				for orig_image in orig_images:
+					image = pygame.Surface(OVERLAY_SIZE)
+					image.fill((255, 0, 255))
+					image.set_colorkey((255, 0, 255))
+					image.blit(orig_image, ((0, OVERLAY_SIZE[1] - TILE_SIZE[1]), TILE_SIZE))
+					overlay = self.overlay[overlay_tile]
+					image.blit(overlay, ((0, 0), OVERLAY_SIZE))
+					images.append(image)
+				self.images[name] = images
+			else:
+				images = images2
+		return images
 
 	def get_map(self):
 		return self.map
@@ -628,7 +720,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [CharacterSprite(self, race_name, 5, (x, y), heading, main) for race_name, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, race_name, (x, y), heading, main) for race_name, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -705,18 +797,16 @@ class Character:
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, race_name, max_mp, coords, heading, main, max_hp = 100, attack_stat = 10):
+	def __init__(self, player, race_name, coords, heading, main):
 		UIGridObject.__init__(self, main.map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
 		self.race = races[race_name]
 		# Movement points
-		self.max_mp = max_mp
-		self.mp = max_mp
+		self.mp = self.max_mp = 5
 		# Health points
-		self.max_hp = max_hp
-		self.hp = max_hp
+		self.hp = self.max_hp = 100
 		# Stats
 		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
 		self.dexterity = self.race.base_dex + rndstats.count('dex')
@@ -742,7 +832,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
 	rect = property(_get_rect)
 
-	_layer = property(lambda self: (L_CHAR, self.grid_y), lambda self, value: None)
+	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
 
 	def update(self):
 		self.image = self.main.chartypes[self.race.name][self.heading]
@@ -806,39 +896,21 @@ class Tile(pygame.sprite.DirtySprite):
 		if rect is not None:
 			self.rect = rect
 
-class Button(UIComponent):
-	def __init__(self, x, y, width, height, name, fontsize, surface, function):
+class Button(UIComponent, pygame.sprite.DirtySprite):
+	def __init__(self, x, y, width, height, text, fontsize, function):
 		UIComponent.__init__(self, x, y, width, height)
-		self.name = name
+		pygame.sprite.DirtySprite.__init__(self)
+
+		self.image = pygame.Surface(self.size)
+
+		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+		image = font.render(text, True, (0, 0, 0), (139, 162, 185))
+		rect = image.get_rect()
+
+		self.image.fill((139, 162, 185))
+		self.image.blit(image, (self.width/2 - rect.centerx, self.height/2 - rect.centery))
+
 		self.function = function
-		self.surface = surface
-		self.fontsize = fontsize
-		self.create_text(self.name, self.fontsize)
-
-	def create_text(self, text, fontsize):
-		self.buttonfont = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		self.buttontext = self.buttonfont.render(text, True, (0, 0, 0), (159, 182, 205))
-		self.buttonrect = self.buttontext.get_rect()
-		self.buttonrect.left = self.x
-		self.buttonrect.top = self.y
-		self.buttonrect.width = self.width
-		self.buttonrect.height = self.height
-
-	def get_function(self):
-		return self.function
-
-	def get_text(self):
-		return self.buttontext
-
-	def get_rect(self):
-		return self.buttonrect
-
-	def get_name(self):
-		return self.name
-
-	def draw(self):
-		self.surface.blit(self.buttontext, self.buttonrect)
-
 
 def start_game(mapname):
 	game = XadirMain(mapname = mapname)
@@ -846,4 +918,4 @@ def start_game(mapname):
 	game.main_loop()
 
 if __name__ == "__main__":
-	start_game('map3.txt')
+	start_game('map_new.txt')
