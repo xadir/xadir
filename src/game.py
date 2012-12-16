@@ -227,7 +227,9 @@ class XadirMain:
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
 		for player_id, name in zip(player_ids, player_names):
 			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player(name, [(random.choice(self.chartypes.keys()), x, y, 0) for x, y in spawn_points])
+			char = Character.random()
+			char.race = races[random.choice(self.chartypes.keys())]
+			self.add_player(name, [(char, x, y, 0) for x, y in spawn_points])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -722,7 +724,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [CharacterSprite(self, race_name, (x, y), heading, main) for race_name, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main) for character, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -777,13 +779,12 @@ def roll_attack_damage(attacker, defender):
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, race_name, coords, heading, main):
+	def __init__(self, player, character, coords, heading, main):
 		UIGridObject.__init__(self, main.map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
-		self.char = Character.random()
-		self.char.race = races[race_name]
+		self.char = character
 		# Movement points
 		self.mp = self.max_mp
 		# Health points
