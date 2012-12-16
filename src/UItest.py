@@ -90,7 +90,7 @@ class UItest:
 		self.manage.clear()
 		self.char_inventory.clear()
 
-		self.manage.spritegroup.add(self.save_btn)
+		#self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 
@@ -568,22 +568,29 @@ class UItest:
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
 			self.parent_buttons[i][b].toggle_visibility()
-	
-	def click(self, event, container):
+
+	def click(self, event):
 		for b in self.manager_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+	
+	def container_click(self, event, container):
+		i = 0
 		for b in container.children:
-			if b.parent_button.contains(*event.pos):
-				b.parent_button.toggle()
-				b.enable_buttons()
-				break
-			else:
-				for c in b.child_buttons:
+			for c in b.child_buttons:
+				if c.visible:
 					if c.contains(*event.pos):
 						f = c.function[0]
 						f(c.function[1])
+						i = 1
+						break
+		if i == 0:
+			for b in container.children:
+				if b.parent_button.contains(*event.pos):
+					b.parent_button.toggle()
+					b.enable_buttons()
+					break
 
 	def loop(self):
 		while 1:
@@ -598,11 +605,12 @@ class UItest:
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
-						self.click(event, self.inventory)
-						self.click(event, self.party_con)
-						self.click(event, self.manage)
-						self.click(event, self.team_con)
-						self.click(event, self.char_inventory)
+						self.click(event)
+						self.container_click(event, self.inventory)
+						self.container_click(event, self.party_con)
+						self.container_click(event, self.manage)
+						self.container_click(event, self.team_con)
+						self.container_click(event, self.char_inventory)
 				elif event.type == pygame.QUIT:
 					sys.exit()
 
