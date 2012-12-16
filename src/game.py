@@ -183,8 +183,9 @@ class XadirMain:
 		self.imgs['green'].set_alpha(120)
 		self.imgs['red'].set_alpha(120)
 
-	def main_loop(self):
 		self.load_sprites()
+
+	def main_loop(self):
 		self.init_sidebar()
 
 		while 1:
@@ -221,15 +222,24 @@ class XadirMain:
 		self.spawns = spawns
 		self.players = []
 
-		player_count = 2
-		character_count = 3
-		player_ids = random.sample(self.spawns, player_count)
+	def get_random_teams(self, player_count = 2, character_count = 3):
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
-		for player_id, name in zip(player_ids, player_names):
-			spawn_points = random.sample(self.spawns[player_id], character_count)
-			char = Character.random()
-			char.race = races[random.choice(self.chartypes.keys())]
-			self.add_player(name, [(char, x, y, 0) for x, y in spawn_points])
+		teams = []
+		for name in player_names:
+			characters = []
+			for i in range(character_count):
+				char = Character.random()
+				char.race = races[random.choice(self.chartypes.keys())]
+				characters.append(char)
+			teams.append((name, characters))
+		return teams
+
+	def init_teams(self, teams):
+		player_ids = random.sample(self.spawns, len(teams))
+		for player_id, team in zip(player_ids, teams):
+			name, characters = team
+			spawn_points = random.sample(self.spawns[player_id], len(characters))
+			self.add_player(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn_points)])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -890,6 +900,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 def start_game(mapname):
 	game = XadirMain(mapname = mapname)
 	game.load_resources()
+	game.init_teams(game.get_random_teams())
 	game.main_loop()
 
 if __name__ == "__main__":
