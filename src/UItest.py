@@ -6,6 +6,7 @@ from UI import *
 from character import Character
 from race import races
 from charclass import classes
+from game import XadirMain
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -23,13 +24,14 @@ class UItest:
 		self.party.append(Character("test0", "human", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test1", "minotaur", "healer", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test2", "imp", "mage", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test3", "orc", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test4", "ogre", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test5", "djinn", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test6", "elf", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test7", "goblin", "warrior", 10, 10, 10, 10, None, None))
 
 		self.team = []
+		self.team1 = []
+		self.team2 = []
 
 		self.selected_char = None
 
@@ -72,9 +74,16 @@ class UItest:
 		self.play_btn = FuncButton(self.team_con, 10, 80, 100, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
+		self.team1_btn = FuncButton(self.team_con, 220, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
+		self.team2_btn = FuncButton(self.team_con, 285, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
+
+		self.team1_btn.select()
+
 		self.manager_buttons.append(self.save_btn)
 		self.manager_buttons.append(self.play_btn)
 		self.manager_buttons.append(self.new_char_btn)
+		self.manager_buttons.append(self.team1_btn)
+		self.manager_buttons.append(self.team2_btn)
 
 		self.update_char_panels()
 
@@ -93,6 +102,8 @@ class UItest:
 		#self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
+		self.team_con.spritegroup.add(self.team1_btn)
+		self.team_con.spritegroup.add(self.team2_btn)
 
 		self.manager_texts = []
 		print self.selected_char
@@ -562,8 +573,30 @@ class UItest:
 		self.points_left -= 1
 		self.update_new_character(self.manage)
 
+	def save_team1(self, team):
+		if self.team1_btn.selected:
+			self.team2_btn.select()
+			self.team1_btn.unselect()
+			self.team1 = self.team
+			self.team = self.team2
+			self.update_char_panels()
+
+	def save_team2(self, team):
+		if self.team2_btn.selected:
+			self.team1_btn.select()
+			self.team2_btn.unselect()
+			self.team2 = self.team
+			self.team = self.team1
+			self.update_char_panels()
+
 	def start_game(self, team):
-		print team
+		print self.team1, self.team2
+		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
+		game = XadirMain(mapname = 'map_new.txt')
+		game.load_resources()
+		game.init_teams(teams)
+		game.main_loop()
+
 
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
