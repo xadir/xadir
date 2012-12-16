@@ -387,7 +387,7 @@ class XadirMain:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			damage, messages = roll_attack_damage(attacker, target)
 			self.messages.messages.extend(messages)
-			target.take_hit(damage * attacker.mp)
+			target.take_hit(damage)
 			attacker.mp = 0
 
 	def is_walkable(self, coords):
