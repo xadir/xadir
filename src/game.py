@@ -155,10 +155,13 @@ class XadirMain:
 
 		self.disabled_chartypes = {}
 
+		self.messages = Messages(980, 380, 200, 200)
+
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
 		self.sprites.add(self.buttons)
+		self.sprites.add(self.messages)
 
 	current_player = property(lambda self: self.players[self.turn])
 
@@ -358,6 +361,7 @@ class XadirMain:
 			print "Next players turn"
 			self.turn = (self.turn + 1) % (len(self.players))
 			print self.turn
+		self.messages.messages.append('%s\'s turn' % self.current_player.name)
 		self.players[self.turn].reset_movement_points()
 
 	def get_all_players(self):
@@ -381,7 +385,8 @@ class XadirMain:
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
-			damage = roll_attack_damage(attacker, target)
+			damage, messages = roll_attack_damage(attacker, target)
+			self.messages.messages.extend(messages)
 			target.take_hit(damage * attacker.mp)
 			attacker.mp = 0
 
@@ -485,6 +490,42 @@ class StateTrackingSprite(pygame.sprite.DirtySprite):
 		self.redraw()
 		self.dirty = 1
 
+class Messages(StateTrackingSprite):
+	def __init__(self, x, y, width, height):
+		StateTrackingSprite.__init__(self)
+
+		self.image = pygame.Surface((width, height))
+		self.rect = pygame.Rect((x, y, width, height))
+
+		self.font = pygame.font.Font(FONT, int(16*FONTSCALE))
+
+		self.messages = []
+
+	def cull_messages(self):
+		linesize = self.font.get_linesize()
+		num_lines = self.rect.height / linesize
+
+		#messages = []
+		#for message in self.messages[::-1]:
+		#	#width, height = self.font.get_size(message)
+		#	#width / self.rect.width
+		#	messages.append(message)
+
+		#self.messages = messages[num_lines - 1::-1]
+		self.messages = self.messages[-num_lines:]
+
+	def get_state(self):
+		self.cull_messages()
+		return self.messages
+
+	def redraw(self):
+		self.image.fill((127, 127, 127))
+		y = 0
+		for message in self.messages:
+			text = self.font.render(message, True, (0, 0, 0))
+			self.image.blit(text, (0, y))
+			y += self.font.get_linesize()
+
 class AnimatedSprite(pygame.sprite.DirtySprite):
 	def __init__(self, images, rect, layer, interval = 1):
 		pygame.sprite.DirtySprite.__init__(self)
@@ -542,11 +583,18 @@ class MainHealthBar(StateTrackingSprite):
 		self.image = pygame.Surface(rect.size)
 		self.rect = rect
 
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+
 	def get_state(self):
 		return self.character.max_hp, self.character.hp
 
 	def redraw(self):
 		draw_main_hp_bar(self.image, self.image.get_rect(), self.character.max_hp, self.character.hp)
+
+		text = self.font.render('%d/%d' % (self.character.hp, self.character.max_hp), True, (127, 127, 255))
+		rect = text.get_rect()
+		pos = ((self.rect.width - rect.width) / 2, (self.rect.height - rect.height) / 2)
+		self.image.blit(text, pos)
 
 class PlayerName(pygame.sprite.DirtySprite):
 	def __init__(self, player, rect):
@@ -756,36 +804,42 @@ class Player:
 			c.mp = c.max_mp
 
 def roll_attack_damage(attacker, defender):
+	messages = []
+
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
 	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dex / 5)
 	miss_chance = attacker_miss_chance + defender_evasion_chance
-	is_hit = random.randrange(100) < 100 - miss_chance
-	print 'Miss chance:', miss_chance
+	hit_chance = 100 - miss_chance
+	is_hit = random.randrange(100) < hit_chance
+
+	messages.append('Hit chance is %d%%' % hit_chance)
 	if not is_hit:
-		print 'Missed!'
-		return 0
+		messages.append('Missed!')
+		return 0, messages
 
 	is_critical_hit = random.randrange(100) < attacker.weapon.critical_chance
 
-	print 'Critical chance and multiplier:', attacker.weapon.critical_chance, attacker.weapon.critical_multiplier
-	if is_critical_hit: print 'Critical!'
+	if is_critical_hit:
+		messages.append('Critical hit!')
+	else:
+		messages.append('Hit!')
 	damage_multiplier = attacker.weapon.critical_multiplier if is_critical_hit else 1
 
 	wc_damage = {'melee': attacker.str, 'ranged': attacker.dex, 'magic': attacker.int}[attacker.weapon.type]
 	weapon_damage = attacker.weapon.damage.roll()
-	print attacker.weapon, 'rolled', weapon_damage, 'of', 'damage'
 
 	# XXX: Magic should bypass damage reduction
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender.armor.damage_reduction
 	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
-		print 'Armor negates', defender.armor.enchanted_damage_reduction, 'of the weapon\'s', '/'.join(defender.armor.enchanted_damage_reduction_type), 'damage'
+		#messages.append('Armor negates %d of the weapon\'s %s damage' % (defender.armor.enchanted_damage_reduction, '/'.join(defender.armor.enchanted_damage_reduction_type)))
 		negative_damage += defender.armor.enchanted_damage_reduction
 	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
 
-	print positive_damage, 'of damage and', negative_damage, 'of damage reduction: dealt', damage, 'of damage'
+	#messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))
+	messages.append('Dealt %d damage' % damage)
 
-	return int(math.floor(max(damage, 0)))
+	return int(math.floor(max(damage, 0))), messages
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
