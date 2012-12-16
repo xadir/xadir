@@ -32,11 +32,13 @@ CHAR_SIZE = (SCALE * ORIG_CHAR_SIZE[0], SCALE * ORIG_CHAR_SIZE[1])
 TILEGROUP_SIZE = (3 * TILE_SIZE[0], 3 * TILE_SIZE[1])
 ORIG_HAIR_SIZE = (22, 22)
 HAIR_SIZE = (SCALE * ORIG_HAIR_SIZE[0], SCALE * ORIG_HAIR_SIZE[1])
+ORIG_BORDER_SIZE = (8, 8)
+BORDER_SIZE = (SCALE * ORIG_BORDER_SIZE[0], SCALE * ORIG_BORDER_SIZE[1])
+ORIG_OVERLAY_SIZE = (24, 32)
+OVERLAY_SIZE = (SCALE * ORIG_OVERLAY_SIZE[0], SCALE * ORIG_OVERLAY_SIZE[1])
 
-RACE_SPRITES = {"Longear": ("sprite_collection.png", 1)
-	,"Ghost": ("sprite_collection.png", 2)
-	,"Croco": ("sprite_collection.png", 3)
-	,"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
+"""
+RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"Human2": ("chibi_races_V2_colorkey_fixed.png", 2)
 	,"Devil": ("chibi_races_V2_colorkey_fixed.png", 3)
 	,"Human3": ("chibi_races_V2_colorkey_fixed.png", 4)
@@ -50,8 +52,24 @@ RACE_SPRITES = {"Longear": ("sprite_collection.png", 1)
 	,"GreyGuy": ("chibi_races_V2_colorkey_fixed.png", 12)
 	,"Imhotep": ("chibi_races_V2_colorkey_fixed.png", 13)
 	,"Wolf": ("chibi_races_V2_colorkey_fixed.png", 14)}
+"""
 
-RACE_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
+RACE_SPRITES = {"dwarf": ("chibi_races_V2_colorkey_fixed.png", 1)
+	,"human": ("chibi_races_V2_colorkey_fixed.png", 2)
+	,"thiefling": ("chibi_races_V2_colorkey_fixed.png", 3)
+	,"gnome": ("chibi_races_V2_colorkey_fixed.png", 4)
+	,"elf": ("chibi_races_V2_colorkey_fixed.png", 5)
+	,"goblin": ("chibi_races_V2_colorkey_fixed.png", 6)
+	,"vampire": ("chibi_races_V2_colorkey_fixed.png", 7)
+	,"djinn": ("chibi_races_V2_colorkey_fixed.png", 8)
+	,"imp": ("chibi_races_V2_colorkey_fixed.png", 9)
+	,"minotaur": ("chibi_races_V2_colorkey_fixed.png", 10)
+	,"mindflayer": ("chibi_races_V2_colorkey_fixed.png", 11)
+	,"ogre": ("chibi_races_V2_colorkey_fixed.png", 12)
+	,"mummy": ("chibi_races_V2_colorkey_fixed.png", 13)
+	,"werewolf": ("chibi_races_V2_colorkey_fixed.png", 14)}
+
+HAIR_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
 	,"b": ("hair_collection_colorkey_fixed.png", 2)
 	,"c": ("hair_collection_colorkey_fixed.png", 3)
 	,"d": ("hair_collection_colorkey_fixed.png", 4)
@@ -62,9 +80,7 @@ RACE_SPRITES = {"a": ("hair_collection_colorkey_fixed.png", 1)
 	,"i": ("hair_collection_colorkey_fixed.png", 9)
 	,"j": ("hair_collection_colorkey_fixed.png", 10)}
 
-RACE_STATS = {"Longear": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
-	,"Croco": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
-	,"Human": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
+RACE_STATS = {"Human": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Human2": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Devil": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]
 	,"Human3": [("Health", 100), ("Defence", 80), ("Attack", 20), ("Dexterity", 40)]

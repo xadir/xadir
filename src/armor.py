@@ -26,3 +26,5 @@ armors = {}
 for name, miss_chance, dmg_reduct, price in armor_data:
 	armors[name] = Armor(name, miss_chance, dmg_reduct, 0, set())
 
+default = Armor('skin', 0, 0, 0, set())
+
