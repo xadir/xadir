@@ -90,7 +90,7 @@ class UItest:
 		self.manage.clear()
 		self.char_inventory.clear()
 
-		self.manage.spritegroup.add(self.save_btn)
+		#self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 
@@ -129,7 +129,7 @@ class UItest:
 			text_y += 15
 
 			if self.selected_char.class_ != None:
-				text = font.render(string.capitalize(self.selected_char.class_), True, COLOR_FONT, COLOR_BG)
+				text = font.render(string.capitalize(self.selected_char.class_.name), True, COLOR_FONT, COLOR_BG)
 				rect = text.get_rect()
 				rect.centerx = 70
 				rect.y = text_y
@@ -227,6 +227,7 @@ class UItest:
 		self.classes = ['warrior', 'healer', 'mage']
 		self.current_race = self.races[self.race_index]
 		self.current_class = self.classes[self.class_index]
+		print self.current_class
 		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, None, None)
 	
 		self.points_left = 20
@@ -266,39 +267,39 @@ class UItest:
 
 		container.spritegroup.add(self.race_sprite)
 
-		prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
-		next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
+		self.prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
+		self.next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
 
-		self.manager_buttons.append(prev_char)
-		container.spritegroup.add(prev_char)
-		self.manager_buttons.append(next_char)
-		container.spritegroup.add(next_char)
+		self.manager_buttons.append(self.prev_char)
+		container.spritegroup.add(self.prev_char)
+		self.manager_buttons.append(self.next_char)
+		container.spritegroup.add(self.next_char)
 
 		
-		prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
-		next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
+		self.prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
+		self.next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(prev_class)
-		container.spritegroup.add(prev_class)
-		self.manager_buttons.append(next_class)
-		container.spritegroup.add(next_class)
+		self.manager_buttons.append(self.prev_class)
+		container.spritegroup.add(self.prev_class)
+		self.manager_buttons.append(self.next_class)
+		container.spritegroup.add(self.next_class)
 		
 
-		inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
-		inc_dex = FuncButton(self.manage, 180, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
-		inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
-		inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
+		self.inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
+		self.inc_dex = FuncButton(self.manage, 180, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
+		self.inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
+		self.inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(inc_str)
-		container.spritegroup.add(inc_str)
-		self.manager_buttons.append(inc_dex)
-		container.spritegroup.add(inc_dex)
-		self.manager_buttons.append(inc_con)
-		container.spritegroup.add(inc_con)
-		self.manager_buttons.append(inc_int)
-		container.spritegroup.add(inc_int)
+		self.manager_buttons.append(self.inc_str)
+		container.spritegroup.add(self.inc_str)
+		self.manager_buttons.append(self.inc_dex)
+		container.spritegroup.add(self.inc_dex)
+		self.manager_buttons.append(self.inc_con)
+		container.spritegroup.add(self.inc_con)
+		self.manager_buttons.append(self.inc_int)
+		container.spritegroup.add(self.inc_int)
 
-		texts = pygame.Surface((140,100))
+		texts = pygame.Surface((140,150))
 		texts.fill(COLOR_BG)
 		text_y = 0
 
@@ -407,29 +408,16 @@ class UItest:
 		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
 
 		container.spritegroup.add(self.race_sprite)
+		self.manage.spritegroup.add(self.save_btn)
 
-		prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
-		next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
-
-		self.manager_buttons.append(prev_char)
-		container.spritegroup.add(prev_char)
-		self.manager_buttons.append(next_char)
-		container.spritegroup.add(next_char)
-
-		
-		prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
-		next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
-
-		self.manager_buttons.append(prev_class)
-		container.spritegroup.add(prev_class)
-		self.manager_buttons.append(next_class)
-		container.spritegroup.add(next_class)
-		
-
-		inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
-		inc_dex = FuncButton(self.manage, 180, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
-		inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
-		inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
+		container.spritegroup.add(self.prev_char)
+		container.spritegroup.add(self.next_char)
+		container.spritegroup.add(self.prev_class)
+		container.spritegroup.add(self.next_class)
+		container.spritegroup.add(self.inc_str)
+		container.spritegroup.add(self.inc_dex)
+		container.spritegroup.add(self.inc_con)
+		container.spritegroup.add(self.inc_int)
 
 		texts = pygame.Surface((140,150))
 		texts.fill(COLOR_BG)
@@ -546,7 +534,7 @@ class UItest:
 		self.update_char_panels()
 
 	def new_char(self, character):
-		self.team.append(character)
+		self.party.append(self.selected_char)
 		self.update_char_panels()
 
 	def char_manage(self, character):
@@ -580,22 +568,29 @@ class UItest:
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
 			self.parent_buttons[i][b].toggle_visibility()
-	
-	def click(self, event, container):
+
+	def click(self, event):
 		for b in self.manager_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+	
+	def container_click(self, event, container):
+		i = 0
 		for b in container.children:
-			if b.parent_button.contains(*event.pos):
-				b.parent_button.toggle()
-				b.enable_buttons()
-				break
-			else:
-				for c in b.child_buttons:
+			for c in b.child_buttons:
+				if c.visible:
 					if c.contains(*event.pos):
 						f = c.function[0]
 						f(c.function[1])
+						i = 1
+						break
+		if i == 0:
+			for b in container.children:
+				if b.parent_button.contains(*event.pos):
+					b.parent_button.toggle()
+					b.enable_buttons()
+					break
 
 	def loop(self):
 		while 1:
@@ -610,11 +605,12 @@ class UItest:
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
-						self.click(event, self.inventory)
-						self.click(event, self.party_con)
-						self.click(event, self.manage)
-						self.click(event, self.team_con)
-						self.click(event, self.char_inventory)
+						self.click(event)
+						self.container_click(event, self.inventory)
+						self.container_click(event, self.party_con)
+						self.container_click(event, self.manage)
+						self.container_click(event, self.team_con)
+						self.container_click(event, self.char_inventory)
 				elif event.type == pygame.QUIT:
 					sys.exit()
 
