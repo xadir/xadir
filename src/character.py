@@ -1,7 +1,8 @@
+import random
 from race import races, Race
 from charclass import classes, CharacterClass
 from armor import armors, Armor
-from weapons import weapons, Weapon
+from weapon import weapons, Weapon
 
 class Character:
 	def __init__(self, name, race_name, class_name, str, dex, con, int, armor, weapon):
