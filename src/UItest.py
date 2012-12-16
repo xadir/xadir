@@ -2,8 +2,10 @@ import sys, time
 import pygame
 import string
 from resources import *
-from game import *
 from UI import *
+from character import Character
+from race import races
+from charclass import classes
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -18,14 +20,14 @@ class UItest:
 		icon = pygame.image.load(os.path.join(GFXDIR, "test_icon.png"))
 
 		self.party = []
-		self.party.append(Character("test0", "human", "Warrior", 10, 10, 10, 10))
-		self.party.append(Character("test1", "minotaur", "Healer", 10, 10, 10, 10))
-		self.party.append(Character("test2", "imp", "Mage", 10, 10, 10, 10))
-		self.party.append(Character("test3", "orc", "Warrior", 10, 10, 10, 10))
-		self.party.append(Character("test4", "ogre", "Warrior", 10, 10, 10, 10))
-		self.party.append(Character("test5", "djinn", "Warrior", 10, 10, 10, 10))
-		self.party.append(Character("test6", "elf", "Warrior", 10, 10, 10, 10))
-		self.party.append(Character("test7", "goblin", "Warrior", 10, 10, 10, 10))
+		self.party.append(Character("test0", "human", "warrior", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test1", "minotaur", "healer", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test2", "imp", "mage", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test3", "orc", "warrior", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test4", "ogre", "warrior", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test5", "djinn", "warrior", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test6", "elf", "warrior", 10, 10, 10, 10, None, None))
+		self.party.append(Character("test7", "goblin", "warrior", 10, 10, 10, 10, None, None))
 
 		self.team = []
 
@@ -66,7 +68,7 @@ class UItest:
 		#self.add_char("Taurus", self.party)
 		#self.add_char("Wolf", self.party)
 		
-		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.char_add, self.selected_char), True, False, True)
+		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
 		self.play_btn = FuncButton(self.team_con, 10, 80, 100, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
@@ -219,10 +221,13 @@ class UItest:
 		self.party_con.spritegroup.add(self.new_char_btn)
 
 		self.race_index = 0
+		self.class_index = 0
 
 		self.races = RACE_SPRITES.keys()
+		self.classes = ['warrior', 'healer', 'mage']
 		self.current_race = self.races[self.race_index]
-		self.selected_char = Character("test", self.current_race, "Warrior", 0, 0, 0, 0)
+		self.current_class = self.classes[self.class_index]
+		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, None, None)
 	
 		self.points_left = 20
 
@@ -269,20 +274,20 @@ class UItest:
 		self.manager_buttons.append(next_char)
 		container.spritegroup.add(next_char)
 
-		"""
-		prev_class = FuncButton(self.manage, 100, 10, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.class_index), True, False, True)
-		next_class = FuncButton(self.manage, 100, 200, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.class_index), True, False, True)
+		
+		prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
+		next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
 		self.manager_buttons.append(prev_class)
 		container.spritegroup.add(prev_class)
 		self.manager_buttons.append(next_class)
 		container.spritegroup.add(next_class)
-		"""
+		
 
-		inc_str = FuncButton(self.manage, 15, 95, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
-		inc_dex = FuncButton(self.manage, 180, 95, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
-		inc_con = FuncButton(self.manage, 15, 120, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
-		inc_int = FuncButton(self.manage, 180, 120, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
+		inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
+		inc_dex = FuncButton(self.manage, 180, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
+		inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
+		inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
 
 		self.manager_buttons.append(inc_str)
 		container.spritegroup.add(inc_str)
@@ -303,7 +308,14 @@ class UItest:
 		rect.centerx = 70
 		rect.y = text_y
 		texts.blit(text, rect)
-		text_y += 15
+		text_y += 20
+
+		text = font.render(string.capitalize(self.selected_char.class_.name), True, COLOR_FONT, COLOR_BG)
+		rect = text.get_rect()
+		rect.centerx = 70
+		rect.y = text_y
+		texts.blit(text, rect)
+		text_y += 30
 
 		text = font.render("Str: " + str(self.selected_char.str), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
@@ -316,7 +328,7 @@ class UItest:
 		rect.left = 90
 		rect.y = text_y
 		texts.blit(text, rect)
-		text_y += 15
+		text_y += 30
 
 		text = font.render("Con: " + str(self.selected_char.con), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
@@ -396,27 +408,28 @@ class UItest:
 
 		container.spritegroup.add(self.race_sprite)
 
-		prev_char = FuncButton(self.manage, 10, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
-		next_char = FuncButton(self.manage, 200, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
+		prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
+		next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
 
 		self.manager_buttons.append(prev_char)
 		container.spritegroup.add(prev_char)
 		self.manager_buttons.append(next_char)
 		container.spritegroup.add(next_char)
 
-		inc_str = FuncButton(self.manage, 15, 100, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
-		inc_dex = FuncButton(self.manage, 180, 100, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
-		inc_con = FuncButton(self.manage, 15, 130, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
-		inc_int = FuncButton(self.manage, 180, 130, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
+		
+		prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
+		next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(inc_str)
-		container.spritegroup.add(inc_str)
-		self.manager_buttons.append(inc_dex)
-		container.spritegroup.add(inc_dex)
-		self.manager_buttons.append(inc_con)
-		container.spritegroup.add(inc_con)
-		self.manager_buttons.append(inc_int)
-		container.spritegroup.add(inc_int)
+		self.manager_buttons.append(prev_class)
+		container.spritegroup.add(prev_class)
+		self.manager_buttons.append(next_class)
+		container.spritegroup.add(next_class)
+		
+
+		inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
+		inc_dex = FuncButton(self.manage, 180, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
+		inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
+		inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
 
 		texts = pygame.Surface((140,150))
 		texts.fill(COLOR_BG)
@@ -428,7 +441,14 @@ class UItest:
 		rect.centerx = 70
 		rect.y = text_y
 		texts.blit(text, rect)
-		text_y += 15
+		text_y += 20
+
+		text = font.render(string.capitalize(self.selected_char.class_.name), True, COLOR_FONT, COLOR_BG)
+		rect = text.get_rect()
+		rect.centerx = 70
+		rect.y = text_y
+		texts.blit(text, rect)
+		text_y += 30
 
 		text = font.render("Str: " + str(self.selected_char.str), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
@@ -441,7 +461,7 @@ class UItest:
 		rect.left = 90
 		rect.y = text_y
 		texts.blit(text, rect)
-		text_y += 15
+		text_y += 30
 
 		text = font.render("Con: " + str(self.selected_char.con), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
@@ -500,9 +520,15 @@ class UItest:
 
 	def prev_class(self, *param):
 		print "Previous class"
+		self.class_index = (self.class_index - 1) % len(self.classes)
+		self.selected_char.class_ = classes[self.classes[self.class_index]]
+		self.update_new_character(self.manage)
 	
 	def next_class(self, *param):
 		print "Next class"
+		self.class_index = (self.class_index + 1) % len(self.classes)
+		self.selected_char.class_ = classes[self.classes[self.class_index]]
+		self.update_new_character(self.manage)
 
 	def char_add(self, character):
 		try:
@@ -517,6 +543,10 @@ class UItest:
 		print "Removed character from team"
 		self.team.remove(character)
 		self.party.append(character)
+		self.update_char_panels()
+
+	def new_char(self, character):
+		self.team.append(character)
 		self.update_char_panels()
 
 	def char_manage(self, character):
