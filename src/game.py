@@ -12,8 +12,8 @@ from UI import *
 
 from dice import Dice
 from race import races, Race
-from armor import armors, Armor
-from weapon import weapons, Weapon
+from armor import armors, Armor, default as default_armor
+from weapon import weapons, Weapon, default as default_weapon
 from charclass import classes, CharacterClass
 from character import Character
 
@@ -806,8 +806,11 @@ class Player:
 def roll_attack_damage(attacker, defender):
 	messages = []
 
-	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
-	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dex / 5)
+	attacker_weapon = attacker.weapon or default_weapon
+	defender_armor = defender.armor or default_armor
+
+	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker_weapon.class_, 10) - attacker_weapon.magic_enchantment * 2
+	defender_evasion_chance = defender.terrain_miss_chance + defender_armor.miss_chance + math.floor(defender.dex / 5)
 	miss_chance = attacker_miss_chance + defender_evasion_chance
 	hit_chance = 100 - miss_chance
 	is_hit = random.randrange(100) < hit_chance
@@ -817,23 +820,23 @@ def roll_attack_damage(attacker, defender):
 		messages.append('Missed!')
 		return 0, messages
 
-	is_critical_hit = random.randrange(100) < attacker.weapon.critical_chance
+	is_critical_hit = random.randrange(100) < attacker_weapon.critical_chance
 
 	if is_critical_hit:
 		messages.append('Critical hit!')
 	else:
 		messages.append('Hit!')
-	damage_multiplier = attacker.weapon.critical_multiplier if is_critical_hit else 1
+	damage_multiplier = attacker_weapon.critical_multiplier if is_critical_hit else 1
 
-	wc_damage = {'melee': attacker.str, 'ranged': attacker.dex, 'magic': attacker.int}[attacker.weapon.type]
-	weapon_damage = attacker.weapon.damage.roll()
+	wc_damage = {'melee': attacker.str, 'ranged': attacker.dex, 'magic': attacker.int}[attacker_weapon.type]
+	weapon_damage = attacker_weapon.damage.roll()
 
 	# XXX: Magic should bypass damage reduction
-	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
-	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender.armor.damage_reduction
-	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
-		#messages.append('Armor negates %d of the weapon\'s %s damage' % (defender.armor.enchanted_damage_reduction, '/'.join(defender.armor.enchanted_damage_reduction_type)))
-		negative_damage += defender.armor.enchanted_damage_reduction
+	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker_weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
+	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender_armor.damage_reduction
+	if not attacker_weapon.damage_type - defender_armor.enchanted_damage_reduction_type:
+		#messages.append('Armor negates %d of the weapon\'s %s damage' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type)))
+		negative_damage += defender_armor.enchanted_damage_reduction
 	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
 
 	#messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))

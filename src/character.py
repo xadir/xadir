@@ -5,7 +5,7 @@ from armor import armors, Armor
 from weapon import weapons, Weapon
 
 class Character:
-	def __init__(self, name, race_name, class_name, str, dex, con, int, armor, weapon):
+	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None):
 		self.name = name
 
 		self.race = races[race_name]

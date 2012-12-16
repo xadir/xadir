@@ -81,3 +81,5 @@ for name, type, size, dmg_type, dmg_roll, crit_mult, crit_chance, min_range, max
 	dmg_roll = Dice(*map(int, dmg_roll.split('d')))
 	weapons[name] = Weapon(name, size, type, None, dmg_roll, set(dmg_type), 0, crit_mult, crit_chance)
 
+default = Weapon('fist', 'light', 'melee', None, Dice(0, 0), set([]), 0, 1, 0)
+
