@@ -583,11 +583,18 @@ class MainHealthBar(StateTrackingSprite):
 		self.image = pygame.Surface(rect.size)
 		self.rect = rect
 
+		self.font = pygame.font.Font(FONT, int(20*FONTSCALE))
+
 	def get_state(self):
 		return self.character.max_hp, self.character.hp
 
 	def redraw(self):
 		draw_main_hp_bar(self.image, self.image.get_rect(), self.character.max_hp, self.character.hp)
+
+		text = self.font.render('%d/%d' % (self.character.hp, self.character.max_hp), True, (127, 127, 255))
+		rect = text.get_rect()
+		pos = ((self.rect.width - rect.width) / 2, (self.rect.height - rect.height) / 2)
+		self.image.blit(text, pos)
 
 class PlayerName(pygame.sprite.DirtySprite):
 	def __init__(self, player, rect):
