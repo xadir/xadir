@@ -11,9 +11,11 @@ from algo import *
 from UI import *
 
 from dice import Dice
-from races import races, Race
-from armors import armors, Armor
-from weapons import weapons, Weapon
+from race import races, Race
+from armor import armors, Armor
+from weapon import weapons, Weapon
+from charclass import classes, CharacterClass
+from character import Character
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -181,8 +183,9 @@ class XadirMain:
 		self.imgs['green'].set_alpha(120)
 		self.imgs['red'].set_alpha(120)
 
-	def main_loop(self):
 		self.load_sprites()
+
+	def main_loop(self):
 		self.init_sidebar()
 
 		while 1:
@@ -219,13 +222,24 @@ class XadirMain:
 		self.spawns = spawns
 		self.players = []
 
-		player_count = 2
-		character_count = 3
-		player_ids = random.sample(self.spawns, player_count)
+	def get_random_teams(self, player_count = 2, character_count = 3):
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
-		for player_id, name in zip(player_ids, player_names):
-			spawn_points = random.sample(self.spawns[player_id], character_count)
-			self.add_player(name, [(random.choice(self.chartypes.keys()), x, y, 0) for x, y in spawn_points])
+		teams = []
+		for name in player_names:
+			characters = []
+			for i in range(character_count):
+				char = Character.random()
+				char.race = races[random.choice(self.chartypes.keys())]
+				characters.append(char)
+			teams.append((name, characters))
+		return teams
+
+	def init_teams(self, teams):
+		player_ids = random.sample(self.spawns, len(teams))
+		for player_id, team in zip(player_ids, teams):
+			name, characters = team
+			spawn_points = random.sample(self.spawns[player_id], len(characters))
+			self.add_player(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn_points)])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -720,7 +734,7 @@ class Player:
 	def __init__(self, name, chardata, main):
 		self.name = name
 		self.main = main
-		self.all_characters = [CharacterSprite(self, race_name, (x, y), heading, main) for race_name, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main) for character, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -743,7 +757,7 @@ class Player:
 
 def roll_attack_damage(attacker, defender):
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker.weapon.class_, 10) - attacker.weapon.magic_enchantment * 2
-	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dexterity / 5)
+	defender_evasion_chance = defender.terrain_miss_chance + defender.armor.miss_chance + math.floor(defender.dex / 5)
 	miss_chance = attacker_miss_chance + defender_evasion_chance
 	is_hit = random.randrange(100) < 100 - miss_chance
 	print 'Miss chance:', miss_chance
@@ -757,13 +771,13 @@ def roll_attack_damage(attacker, defender):
 	if is_critical_hit: print 'Critical!'
 	damage_multiplier = attacker.weapon.critical_multiplier if is_critical_hit else 1
 
-	wc_damage = {'melee': attacker.strength, 'ranged': attacker.dexterity, 'magic': attacker.intelligence}[attacker.weapon.type]
+	wc_damage = {'melee': attacker.str, 'ranged': attacker.dex, 'magic': attacker.int}[attacker.weapon.type]
 	weapon_damage = attacker.weapon.damage.roll()
 	print attacker.weapon, 'rolled', weapon_damage, 'of', 'damage'
 
 	# XXX: Magic should bypass damage reduction
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker.weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
-	negative_damage = defender.class_damage_reduction + math.floor(defender.constitution / 10) + defender.armor.damage_reduction
+	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender.armor.damage_reduction
 	if not attacker.weapon.damage_type - defender.armor.enchanted_damage_reduction_type:
 		print 'Armor negates', defender.armor.enchanted_damage_reduction, 'of the weapon\'s', '/'.join(defender.armor.enchanted_damage_reduction_type), 'damage'
 		negative_damage += defender.armor.enchanted_damage_reduction
@@ -773,62 +787,32 @@ def roll_attack_damage(attacker, defender):
 
 	return int(math.floor(max(damage, 0)))
 
-class Character:
-	def __init__(self, name, race_name, class_name, str, dex, con, int):
-		self.name = name
-		self.race = races[race_name]
-		self.class_ = None
-		self.str = 1 + self.race.base_str + str
-		self.dex = 1 + self.race.base_dex + dex
-		self.con = 1 + self.race.base_con + con
-		self.int = 1 + self.race.base_int + int
-
-		self.max_hp = self.con * 10
-		self.max_sp = self.int
-		self.max_mp = self.dex
-
-	@classmethod
-	def random(cls):
-		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
-		str = rndstats.count('str')
-		dex = rndstats.count('dex')
-		con = rndstats.count('con')
-		int = rndstats.count('int')
-		return cls(None, random.choice(races.keys()), None, str, dex, con, int)
-
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, race_name, coords, heading, main):
+	def __init__(self, player, character, coords, heading, main):
 		UIGridObject.__init__(self, main.map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
-		self.race = races[race_name]
+		self.char = character
 		# Movement points
-		self.mp = self.max_mp = 5
+		self.mp = self.max_mp
 		# Health points
-		self.hp = self.max_hp = 100
-		# Stats
-		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
-		self.dexterity = self.race.base_dex + rndstats.count('dex')
-		self.constitution = self.race.base_con + rndstats.count('con')
-		self.intelligence = self.race.base_int + rndstats.count('int')
-		self.strength = self.race.base_str + rndstats.count('str')
+		self.hp = self.max_hp
 		# Status
 		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
 		self.selected = False
 		self.alive = True
 
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
-		self.per_wc_miss_chance = {}
-		self.class_damage_reduction = random.randrange(3)
-		self.armor = Armor.random()
-		self.weapon = random.choice(weapons.values())#Weapon.random()
 
 		self.main = main
 		self.background_map = self.main.map.get_map()
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
+
+	def __getattr__(self, name):
+		return getattr(self.char, name)
 
 	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
 	rect = property(_get_rect)
@@ -916,6 +900,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 def start_game(mapname):
 	game = XadirMain(mapname = mapname)
 	game.load_resources()
+	game.init_teams(game.get_random_teams())
 	game.main_loop()
 
 if __name__ == "__main__":
