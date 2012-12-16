@@ -1,0 +1,60 @@
+#Warrior#
+Hitpoints per level: 8
+1:+1 weapon dmg, 
+2:+1 weapon dmg, +1 DR
+3:+1 weapon dmg, +1 DR, +1 RES
+4:+2 weapon dmg, +1 DR, +1 RES
+5:+2 weapon dmg, +2 DR, +1 RES
+6:+2 weapon dmg, +2 DR, +2 RES, 5% chance on hit to heal 1d6
+7:+3 weapon dmg, +2 DR, +2 RES, 5% chance on hit to heal 1d6+1
+8:+3 weapon dmg, +3 DR, +2 RES, 5% chance on hit to heal 1d6+2
+9:+3 weapon dmg, +3 DR, +3 RES, 5% chance on hit to heal 1d6+3
+10:+4 weapon dmg, +3 DR, +3 RES, 5% chance on hit to heal 1d6+4
+Can use:
+All melee and ranged weapons
+Heavy Armors
+ 
+
+//Special notes
+
+
+#Wizard#
+Hitpoints per level: 4
+1:1% hit, 
+2:1% hit, +1 DR
+3:2% hit, +1 DR, +1 weapon dmg
+4:2% hit, +1 DR, +1 weapon dmg
+5:3% hit, +1 DR, +1 weapon dmg
+6:3% hit, +1 DR, +1 weapon dmg, 1% chance to do double attack
+7:4% hit, +2 DR, +2 weapon dmg, 2% chance to do double attack
+8:4% hit, +2 DR, +2 weapon dmg, 3% chance to do double attack
+9:5% hit, +2 DR, +2 weapon dmg, 4% chance to do double attack
+10:5% hit, +2 DR, +2 weapon dmg, 5% chance to do double attack
+Can use:
+Staffs and wands
+Light Armors
+
+//Special notes
+Second attack has it's own hit chance, crit chance and so on.
+
+
+
+#Rogue#
+Hitpoints per level: 6
+Can use:
+All melee and ranged
+Medium Armors
+1:1 MP, 
+2:1 MP, +1% miss
+3:1 MP, +1% miss, +1% crit
+4:2 MP, +2% miss, +1% crit
+5:2 MP, +2% miss, +2% crit
+6:2 MP, +3% miss, +2% crit, 5% to deal 1d6 extra damage
+7:3 MP, +3% miss, +3% crit, 5% to deal 1d6 extra damage
+8:3 MP, +4% miss, +3% crit, 5% to deal 2d6 extra damage
+9:3 MP, +4% miss, +4% crit, 5% to deal 2d6 extra damage
+10:3 MP, +5% miss, +4% crit, 5% to deal 3d6 extra damage
+
+
+
+
