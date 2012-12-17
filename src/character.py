@@ -16,14 +16,14 @@ class Character:
 		self.con = 1 + self.race.base_con + con
 		self.int = 1 + self.race.base_int + int
 
-		self.max_hp = self.con * 10
-		self.max_sp = self.int
-		self.max_mp = self.dex
-
 		self.per_wc_miss_chance = {}
 
 		self.armor = armor
 		self.weapon = weapon
+
+	max_hp = property(lambda self: self.con * 10)
+	max_sp = property(lambda self: self.int)
+	max_mp = property(lambda self: self.dex)
 
 	@classmethod
 	def random(cls):
