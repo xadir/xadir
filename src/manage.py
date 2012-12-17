@@ -19,8 +19,8 @@ if not pygame.mixer:
 class Manager:
 	def __init__(self, screen):
 		self.screen = screen
-		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "test_icon.png"))
-		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "test_icon.png"))
+		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
+		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
 		self.party = []
 		self.party.append(Character("test0", "human", "warrior", 10, 10, 10, 10, None, None))
@@ -47,10 +47,10 @@ class Manager:
 		#inventory = [(icon)]
 
 		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
-		self.party_con = UIContainer(None, (390, 20), (152, 250), self.screen)
-		self.inventory_con = UIContainer(None, (390, 290), (152, 380), self.screen)
+		self.party_con = UIContainer(None, (410, 20), (152, 250), self.screen)
+		self.inventory_con = UIContainer(None, (410, 290), (152, 380), self.screen)
 		self.char_inventory_con = UIContainer(None, (240, 20), (152, 250), self.screen)
-		self.team_con = UIContainer(None, (20, 290), (345, 120), self.screen)
+		self.team_con = UIContainer(None, (20, 290), (371, 120), self.screen)
 		self.store_con = UIContainer(None, (650, 20), (500, 660), self.screen)
 
 		self.race_sprite_x = self.manage.x + 90
