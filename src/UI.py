@@ -249,7 +249,7 @@ class hair_tile:
 		return Tile(self.hairtypes[self.place + '_' + str(orientation)], pygame.Rect(x, y+ int(self.compatible_hairs[self.hairtype]), *HAIR_SIZE), layer)
 
 class FuncButton(UIObject, pygame.sprite.Sprite):
-	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, layer, function, visible, selected, static):
+	def __init__(self, parent, x, y, width, height, text, image, fontsize, surface, layer, function, visible, selected, static, simple=False):
 		UIObject.__init__(self, parent, (x, y), (width, height))
 		pygame.sprite.Sprite.__init__(self)
 		self.visible = visible
@@ -263,8 +263,14 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 		self.selected = selected
 		self.static = static
 		
-		self.border = self.add_round_rect(pygame.Rect(0, 0, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
-		self.background = self.add_round_rect(pygame.Rect(ICON_BORDER, ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
+		if simple:
+			self.border = [pygame.Surface((self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2))), pygame.Rect(0, 0, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2))]
+			self.border[0].fill(COLOR_BORDER)
+			self.background = [pygame.Surface((self.width, self.height)), pygame.Rect(0, 0, self.width, self.height)]
+			self.background[0].fill(COLOR_BG)
+		else:
+			self.border = self.add_round_rect(pygame.Rect(0, 0, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
+			self.background = self.add_round_rect(pygame.Rect(ICON_BORDER, ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
 		
 		self.image = self.border[0]
 		self._layer = layer
@@ -277,7 +283,7 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 	def update(self):
 		self.image = self.border[0]
 		if self.visible:
-			self.image.blit(self.border[0], self.border[1])
+			#self.image.blit(self.border[0], self.border[1])
 			self.image.blit(self.background[0], self.background[1])
 			if self.images != None:
 				for i in self.images:

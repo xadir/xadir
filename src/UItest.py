@@ -554,22 +554,22 @@ class UItest:
 		self.update_char_panels()
 
 	def increase_str(self, character):
-		character.str += 1
+		character.var_str += 1
 		self.points_left -= 1
 		self.update_new_character(self.manage)
 
 	def increase_dex(self, character):
-		character.dex += 1	
+		character.var_dex += 1	
 		self.points_left -= 1
 		self.update_new_character(self.manage)
 
 	def increase_con(self, character):
-		character.con += 1
+		character.var_con += 1
 		self.points_left -= 1
 		self.update_new_character(self.manage)
 
 	def increase_int(self, character):
-		character.int += 1
+		character.var_int += 1
 		self.points_left -= 1
 		self.update_new_character(self.manage)
 
