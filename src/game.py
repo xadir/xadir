@@ -501,18 +501,45 @@ class Messages(StateTrackingSprite):
 
 		self.messages = []
 
+	def wrap_line(self, line):
+		words = line.split()
+
+		wrapped = []
+		while words:
+			fit, words = self.find_max_fit(words)
+			if fit:
+				wrapped.append(' '.join(fit))
+			else:
+				fit, rest = self.find_max_fit(words[0])
+				wrapped.append(fit)
+				words[0] = rest
+
+		return wrapped
+
+	def find_max_fit(self, words):
+		fits, cuts = 0, len(words) + 1
+		while fits + 1 < cuts:
+			index = (fits + cuts) / 2
+			if isinstance(words, list):
+				partial = ' '.join(words[:index])
+			else:
+				partial = words[:index]
+			width, height = self.font.size(partial)
+			if width > self.rect.width:
+				cuts = index
+			else:
+				fits = index
+		return words[:fits], words[fits:]
+
 	def cull_messages(self):
 		linesize = self.font.get_linesize()
 		num_lines = self.rect.height / linesize
 
-		#messages = []
-		#for message in self.messages[::-1]:
-		#	#width, height = self.font.get_size(message)
-		#	#width / self.rect.width
-		#	messages.append(message)
+		messages = []
+		for message in self.messages:
+			messages.extend(self.wrap_line(message))
 
-		#self.messages = messages[num_lines - 1::-1]
-		self.messages = self.messages[-num_lines:]
+		self.messages = messages[-num_lines:]
 
 	def get_state(self):
 		self.cull_messages()
@@ -835,12 +862,12 @@ def roll_attack_damage(attacker, defender):
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker_weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender_armor.damage_reduction
 	if not attacker_weapon.damage_type - defender_armor.enchanted_damage_reduction_type:
-		#messages.append('Armor negates %d of the weapon\'s %s damage' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type)))
+		messages.append('Armor negates %d of the weapon\'s %s damage' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type)))
 		negative_damage += defender_armor.enchanted_damage_reduction
 	damage = positive_damage - negative_damage
 	damage = int(math.floor(max(damage, 0)))
 
-	#messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))
+	messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))
 	messages.append('Dealt %d damage' % damage)
 
 	return damage, messages
