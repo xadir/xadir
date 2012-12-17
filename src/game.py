@@ -837,12 +837,13 @@ def roll_attack_damage(attacker, defender):
 	if not attacker_weapon.damage_type - defender_armor.enchanted_damage_reduction_type:
 		#messages.append('Armor negates %d of the weapon\'s %s damage' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type)))
 		negative_damage += defender_armor.enchanted_damage_reduction
-	damage = positive_damage - negative_damage # XXX Alexer: no total negative allowed
+	damage = positive_damage - negative_damage
+	damage = int(math.floor(max(damage, 0)))
 
 	#messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))
 	messages.append('Dealt %d damage' % damage)
 
-	return int(math.floor(max(damage, 0))), messages
+	return damage, messages
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
