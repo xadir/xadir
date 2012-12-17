@@ -20,6 +20,7 @@ Z = 'magic' # "zap"
 weapon_data = [
 	#                                 |    damage    |    critical    |   range   |
 	# name              | type | size | type | roll  |  mult | chance | min | max | price
+	('carrot',            M,     L,     [P],   '1d1',   10.0,  1,       0,    0,    10),
 	('rapier',            M,     L,     [P],   '1d6',   1.5,   10,      0,    0,    10),
 	('dagger',            M,     L,     [P],   '1d4',   1.5,   15,      0,    0,    10),
 	('throwing dagger',   R,     L,     [P],   '1d4',   1.5,   2,       0,    2,    10),
