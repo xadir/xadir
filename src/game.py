@@ -162,6 +162,7 @@ class XadirMain:
 		self.sprites.add(self.messages)
 
 	current_player = property(lambda self: self.players[self.turn])
+	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
 
 	def load_resources(self):
 		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
@@ -350,17 +351,15 @@ class XadirMain:
 		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
 
 	def next_turn(self):
-		if len(self.players) < 1:
-			print "Error, less than one player"
-		elif len(self.players) == 1:
-			print "There is only one player"
-			self.turn = 0
-		else:
-			print "Next players turn"
-			self.turn = (self.turn + 1) % (len(self.players))
-			print self.turn
+		if len(self.players) < 1 or len(self.live_players) < 1:
+			return
+
+		self.turn = (self.turn + 1) % len(self.players)
+		while not self.current_player.is_alive():
+			self.turn = (self.turn + 1) % len(self.players)
+
 		self.messages.messages.append('%s\'s turn' % self.current_player.name)
-		self.players[self.turn].reset_movement_points()
+		self.current_player.reset_movement_points()
 
 	def get_all_players(self):
 		return self.players
@@ -811,6 +810,9 @@ class Player:
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
+
+	def is_alive(self):
+		return bool(self.characters)
 
 	def get_characters_coords(self):
 		coords = []
