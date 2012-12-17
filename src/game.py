@@ -137,13 +137,11 @@ def get_animation_surfaces(path):
 
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
-	def __init__(self, width=1200, height=720, mapname='map_new.txt'):
-		pygame.init()
+	def __init__(self, screen, mapname='map_new.txt'):
 		pygame.display.set_caption('Xadir')
 		self.mapname = mapname
-		self.width = width
-		self.height = height
-		self.screen = pygame.display.set_mode((self.width, self.height))
+		self.screen = screen
+		self.width, self.height = self.screen.get_size()
 		self.background = pygame.Surface((self.width, self.height))
 		self.background.fill((159, 182, 205))
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
@@ -988,7 +986,10 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def start_game(mapname):
-	game = XadirMain(mapname = mapname)
+	pygame.init()
+	screen = pygame.display.set_mode((1200, 720))
+
+	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()
 	game.init_teams(game.get_random_teams())
 	game.main_loop()
