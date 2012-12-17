@@ -11,15 +11,20 @@ class Character:
 		self.race = races[race_name]
 		self.class_ = classes[class_name]
 
-		self.str = 1 + self.race.base_str + str
-		self.dex = 1 + self.race.base_dex + dex
-		self.con = 1 + self.race.base_con + con
-		self.int = 1 + self.race.base_int + int
+		self.var_str = str
+		self.var_dex = dex
+		self.var_con = con
+		self.var_int = int
 
 		self.per_wc_miss_chance = {}
 
 		self.armor = armor
 		self.weapon = weapon
+
+	str = property(lambda self: 1 + self.race.base_str + self.var_str)
+	dex = property(lambda self: 1 + self.race.base_dex + self.var_dex)
+	con = property(lambda self: 1 + self.race.base_con + self.var_con)
+	int = property(lambda self: 1 + self.race.base_int + self.var_int)
 
 	max_hp = property(lambda self: self.con * 10)
 	max_sp = property(lambda self: self.int)
