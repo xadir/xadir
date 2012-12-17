@@ -386,7 +386,7 @@ class XadirMain:
 		if attacker.mp > 0:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			damage, messages = roll_attack_damage(attacker, target)
-			self.messages.messages.extend(messages)
+			self.messages.messages.append(' '.join(messages))
 			target.take_hit(damage)
 			attacker.mp = 0
 
@@ -842,7 +842,7 @@ def roll_attack_damage(attacker, defender):
 	hit_chance = 100 - miss_chance
 	is_hit = random.randrange(100) < hit_chance
 
-	messages.append('Hit chance is %d%%' % hit_chance)
+	messages.append('Hit chance is %d%%...' % hit_chance)
 	if not is_hit:
 		messages.append('Missed!')
 		return 0, messages
@@ -851,6 +851,7 @@ def roll_attack_damage(attacker, defender):
 
 	if is_critical_hit:
 		messages.append('Critical hit!')
+		messages.append('%.1fx damage!' % attacker_weapon.critical_multiplier)
 	else:
 		messages.append('Hit!')
 	damage_multiplier = attacker_weapon.critical_multiplier if is_critical_hit else 1
@@ -858,17 +859,21 @@ def roll_attack_damage(attacker, defender):
 	wc_damage = {'melee': attacker.str, 'ranged': attacker.dex, 'magic': attacker.int}[attacker_weapon.type]
 	weapon_damage = attacker_weapon.damage.roll()
 
+	messages.append('%s does %d+%d of %s damage on top of %d base damage.' % ((attacker_weapon.name or 'weapon').capitalize(), weapon_damage, attacker_weapon.magic_enchantment, '/'.join(attacker_weapon.damage_type), wc_damage))
+	messages.append('%s negates %d of the damage on top of %d base damage reduction' % ((defender_armor.name or 'armor').capitalize(), defender_armor.damage_reduction, defender.class_.damage_reduction + math.floor(defender.con / 10)))
+
 	# XXX: Magic should bypass damage reduction
 	positive_damage = damage_multiplier * (weapon_damage + wc_damage + attacker_weapon.magic_enchantment)#+ attacker.class_(passive)_skill.damage # XXX Alexer: add passive skill damage
 	negative_damage = defender.class_.damage_reduction + math.floor(defender.con / 10) + defender_armor.damage_reduction
 	if not attacker_weapon.damage_type - defender_armor.enchanted_damage_reduction_type:
-		messages.append('Armor negates %d of the weapon\'s %s damage' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type)))
+		messages[-1] += ' and %d of the weapon\'s %s damage.' % (defender_armor.enchanted_damage_reduction, '/'.join(defender_armor.enchanted_damage_reduction_type))
 		negative_damage += defender_armor.enchanted_damage_reduction
+	else:
+		messages[-1] += '.'
 	damage = positive_damage - negative_damage
 	damage = int(math.floor(max(damage, 0)))
 
-	messages.append('%d damage and %d damage reduction' % (positive_damage, negative_damage))
-	messages.append('Dealt %d damage' % damage)
+	messages.append('Total %d damage and %d damage reduction: Dealt %d damage.' % (positive_damage, negative_damage, damage))
 
 	return damage, messages
 
