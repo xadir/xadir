@@ -29,6 +29,7 @@ L_SEL =          lambda y: (1, )
 L_CHAR =         lambda y: (2, y)
 L_CHAR_OVERLAY = lambda y: (2, y, 0)
 L_CHAR_EFFECT =  lambda y: (2, y, 1)
+L_GAMEOVER =     (3, )
 
 def get_distance_2(pos1, pos2):
 	"""Get squared euclidean distance"""
@@ -205,6 +206,21 @@ class XadirMain:
 					self.next_turn()
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
+			if len(self.live_players) <= 1:
+				self.gameover()
+
+	def gameover(self):
+		if len(self.live_players) < 1:
+			text = 'Draw!'
+		else:
+			text = '%s wins!' % self.live_players[0].name
+		sprite = Textile(text, pygame.Rect((0, 0, 960, 720)), layer = L_GAMEOVER)
+		self.sprites.add(sprite)
+		while 1:
+			self.draw()
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					sys.exit()
 
 	def draw(self, frames = 1):
 		for i in range(frames):
@@ -970,6 +986,15 @@ class Tile(pygame.sprite.DirtySprite):
 		self._layer = layer
 		if rect is not None:
 			self.rect = rect
+
+class Textile(Tile): # hehehehehe
+	def __init__(self, text, area_rect, layer):
+		font = pygame.font.Font(FONT, int(150*FONTSCALE))
+		image = font.render(text, True, (0, 0, 0))
+		rect = image.get_rect()
+		rect.center = area_rect.center
+
+		Tile.__init__(self, image, rect, layer)
 
 class Button(UIComponent, pygame.sprite.DirtySprite):
 	def __init__(self, x, y, width, height, text, fontsize, function):
