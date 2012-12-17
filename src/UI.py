@@ -320,7 +320,7 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 
 	def add_text(self, string, coords, fontsize):
 		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		text = font.render(string, True, COLOR_FONT, COLOR_BG)
+		text = font.render(string, True, COLOR_FONT)
 		rect = text.get_rect()
 		if coords != None:
 			rect.x = coords[0]
