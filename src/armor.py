@@ -5,6 +5,7 @@ armor_data = [
 	('leather armor', 3, 2, 10),
 ]
 
+_armor_id = 0
 class Armor:
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
@@ -16,11 +17,14 @@ class Armor:
 
 	@classmethod
 	def random(cls):
+		global _armor_id
+		name = 'armor%d' % _armor_id
+		_armor_id += 1
 		miss_chance = random.randrange(-5, 6)
 		damage_reduction = random.randrange(6)
 		enchanted_damage_reduction = random.randrange(3)
 		enchanted_damage_reduction_type = set([random.choice(cls.damage_types)])
-		return cls(None, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
+		return cls(name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
 
 armors = {}
 for name, miss_chance, dmg_reduct, price in armor_data:
