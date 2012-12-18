@@ -68,6 +68,8 @@ class Menu:
 				f(b.function[1])
 
 	def loop(self):
+		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
+
 		title_alpha = 0
 		load_finished = False
 		title_image = load_image("Xadir.png", None, 3)

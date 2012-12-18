@@ -212,6 +212,7 @@ class XadirMain:
 				self.gameover()
 
 	def gameover(self):
+		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
 		if len(self.live_players) < 1:
 			text = 'Draw!'
 		else:
