@@ -250,7 +250,7 @@ class XadirMain:
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
-		self.map_sprites = self.map.sprites
+		self.map_sprites = self.map.sprites.values()
 		self.sprites.add(self.map_sprites)
 		for p in self.players:
 			self.sprites.add(p.all_characters)
@@ -717,13 +717,13 @@ class BackgroundMap(Grid):
 		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
-		self.sprites = pygame.sprite.LayeredUpdates()
+		self.sprites = Grid(width, height)
 		for x, y in self.keys():
 			tiles = self.get_real_tile((x, y))
 			rect = tiles[0].get_rect()
 			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
 			rect.left = x*TILE_SIZE[0]
-			self.sprites.add(AnimatedTile(tiles, rect, layer = L_MAP(y), interval = FPS / TILE_FPS))
+			self.sprites[x, y] = AnimatedTile(tiles, rect, layer = L_MAP(y), interval = FPS / TILE_FPS)
 
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
