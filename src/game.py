@@ -879,6 +879,9 @@ def roll_attack_damage(attacker, defender):
 
 	messages.append('Total %d damage and %d damage reduction: Dealt %d damage.' % (positive_damage, negative_damage, damage))
 
+	if not damage:
+		messages.append('That wasn\'t very effective...')
+
 	return damage, messages
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
