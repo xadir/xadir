@@ -17,6 +17,8 @@
 	- Ui-suunnittelu 
 	- Class/race suunnittelu
 
+// 13t yhteensä
+
 - 1.10 (3t)
 	- Muiden taktisten pelien käyttöliittymään tutustuminen
 	
@@ -64,6 +66,8 @@
 	- Hahmosrpitejen suunnittelu
 	- (päätös) Jarkko tekee suurimman osan hahmosrpiteista
 
+//62t yhteensä
+
 - 8.11 (4t) 
 	- Hahmoluokkasuunnittelu
 	- Muusiikin suunnittelu (8-bit/tyyliseen tähdätään)
@@ -89,6 +93,8 @@
 - 29.11 (4t) 
 	- Musiikinteko
 
+//89t yhteensä
+
 - 1.12 (3t)
 	- Musiikinteko
 
@@ -100,8 +106,16 @@
 
 - 7.12 (4t)
 	- Musiikinteko
+
+- 17.12 (8t)
+	- Musiikinteko
+
+- 18.12 (4t)
+	- Musiikinteko
+	- Asioiden tarkistus
+
 	
-//103t
+//115t yhteensä
 	
 
 
