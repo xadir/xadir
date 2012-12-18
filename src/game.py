@@ -16,6 +16,7 @@ from armor import armors, Armor, default as default_armor
 from weapon import weapons, Weapon, default as default_weapon
 from charclass import classes, CharacterClass
 from character import Character
+from terrain import terrains
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -386,7 +387,7 @@ class XadirMain:
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
-			damage, messages = roll_attack_damage(attacker, target)
+			damage, messages = roll_attack_damage(self.map, attacker, target)
 			self.messages.messages.append(' '.join(messages))
 			target.take_hit(damage)
 			attacker.mp = 0
@@ -834,14 +835,16 @@ class Player:
 		for c in self.all_characters:
 			c.mp = c.max_mp
 
-def roll_attack_damage(attacker, defender):
+def roll_attack_damage(map_, attacker, defender):
 	messages = []
 
 	attacker_weapon = attacker.weapon or default_weapon
 	defender_armor = defender.armor or default_armor
 
+	defender_terrain = terrains[map_[defender.grid_pos]]
+
 	attacker_miss_chance = attacker.per_wc_miss_chance.get(attacker_weapon.class_, 10) - attacker_weapon.magic_enchantment * 2
-	defender_evasion_chance = defender.terrain_miss_chance + defender_armor.miss_chance + math.floor(defender.dex / 5)
+	defender_evasion_chance = defender_terrain.miss_chance + defender_armor.miss_chance + math.floor(defender.dex / 5)
 	miss_chance = attacker_miss_chance + defender_evasion_chance
 	hit_chance = 100 - miss_chance
 	is_hit = random.randrange(100) < hit_chance
