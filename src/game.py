@@ -241,7 +241,6 @@ class XadirMain:
 			characters = []
 			for i in range(character_count):
 				char = Character.random()
-				char.race = races[random.choice(self.chartypes.keys())]
 				characters.append(char)
 			teams.append((name, characters))
 		return teams
