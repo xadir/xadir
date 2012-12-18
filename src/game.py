@@ -191,9 +191,7 @@ class XadirMain:
 	def main_loop(self):
 		self.init_sidebar()
 
-		bgm_channel = pygame.mixer.Channel(0)
-		bgm_sound = load_sound('battle.ogg')
-		bgm_channel.play(bgm_sound, loops = -1)
+		change_sound(pygame.mixer.Channel(0), load_sound('battle.ogg'), BGM_FADE_MS)
 
 		while 1:
 			self.draw()

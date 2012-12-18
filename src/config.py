@@ -37,6 +37,8 @@ BORDER_SIZE = (SCALE * ORIG_BORDER_SIZE[0], SCALE * ORIG_BORDER_SIZE[1])
 ORIG_OVERLAY_SIZE = (24, 32)
 OVERLAY_SIZE = (SCALE * ORIG_OVERLAY_SIZE[0], SCALE * ORIG_OVERLAY_SIZE[1])
 
+BGM_FADE_MS = 500
+
 """
 RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"Human2": ("chibi_races_V2_colorkey_fixed.png", 2)
