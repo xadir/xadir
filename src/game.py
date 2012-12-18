@@ -166,25 +166,16 @@ class XadirMain:
 	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
 
 	def load_resources(self):
-		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
-		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['D']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
-		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
-		self.overlay = load_named_tiles('tilemap_overlay', OVERLAY_SIZE, (255, 0, 255), SCALE)
-		tiles = load_tiles('placeholder_other24.png', TILE_SIZE, (255, 0, 255), SCALE)
-		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
-		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
+		self.ctx = Resources(None)
+		self.ctx.load_terrain()
+		self.ctx.load_races()
+		self.ctx.load_selections()
 
-		self.tiletypes = load_named_tiles('placeholder_tilemap24', TILE_SIZE, (255, 0, 255), SCALE)
-
-		self.chartypes = {}
-		for name, char in zip(racenames, raceimages):
-			self.chartypes[name] = {270: char[0], 180: char[1], 0: char[2], 90: char[3]}
-
-		self.imgs = {}
-		self.imgs['green'] = tiles[1][0]
-		self.imgs['red'] = tiles[2][0]
-		self.imgs['green'].set_alpha(120)
-		self.imgs['red'].set_alpha(120)
+		self.terrain = self.ctx.terrain
+		self.borders = self.ctx.borders
+		self.overlay = self.ctx.overlay
+		self.chartypes = self.ctx.races
+		self.imgs = self.ctx.selections
 
 		self.load_sprites()
 

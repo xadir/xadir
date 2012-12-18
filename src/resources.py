@@ -3,6 +3,32 @@ from pygame.locals import *
 from config import *
 import time
 
+class Resources:
+	def __init__(self, screen):
+		self.screen = screen
+
+	def load_terrain(self):
+		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
+		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['D']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
+		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
+		self.overlay = load_named_tiles('tilemap_overlay', OVERLAY_SIZE, (255, 0, 255), SCALE)
+
+	def load_races(self):
+		raceimages = load_tiles('races.png', CHAR_SIZE, (255, 0, 255), SCALE)
+		racenames = file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')
+
+		self.races = {}
+		for name, images in zip(racenames, raceimages):
+			self.races[name] = {270: images[0], 180: images[1], 0: images[2], 90: images[3]}
+
+	def load_selections(self):
+		self.selections = {}
+		for name, color in [('red', (255, 0, 0)), ('green', (10, 212, 0))]:
+			surf = pygame.Surface(TILE_SIZE)
+			surf.fill(color)
+			surf.set_alpha(120)
+			self.selections[name] = surf
+
 def init_pygame():
 	pygame.mixer.pre_init(48000)
 	pygame.init()
