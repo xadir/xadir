@@ -162,22 +162,25 @@ class XadirMain:
 		self.sprites.add(self.buttons)
 		self.sprites.add(self.messages)
 
+		self.players = []
+
 	current_player = property(lambda self: self.players[self.turn])
 	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
 
 	def load_resources(self):
-		self.ctx = Resources(None)
-		self.ctx.load_terrain()
-		self.ctx.load_races()
-		self.ctx.load_selections()
+		self.res = Resources(None)
+		self.res.load_terrain()
+		self.res.load_races()
+		self.res.load_selections()
 
-		self.terrain = self.ctx.terrain
-		self.borders = self.ctx.borders
-		self.overlay = self.ctx.overlay
-		self.chartypes = self.ctx.races
-		self.imgs = self.ctx.selections
+		self.chartypes = self.res.races
+		self.imgs = self.res.selections
 
-		self.load_sprites()
+		self.walkable = [name for name in self.res.terrain.keys() if name != 'W']
+
+		map, mapsize, spawns = load_map(self.mapname)
+		self.map = BackgroundMap(map, *mapsize, res = self.res)
+		self.spawns = spawns
 
 	def main_loop(self):
 		self.init_sidebar()
@@ -225,14 +228,6 @@ class XadirMain:
 			self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
 			self.sprites.draw(self.screen)
 			pygame.display.flip()
-
-	def load_sprites(self):
-		"""Load the sprites that we need"""
-		self.walkable = [name for name in self.terrain.keys() if name != 'W']
-		map, mapsize, spawns = load_map(self.mapname)
-		self.map = BackgroundMap(map, *mapsize, tiletypes = (self.terrain, self.borders, self.overlay))
-		self.spawns = spawns
-		self.players = []
 
 	def get_random_teams(self, player_count = 2, character_count = 3):
 		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
@@ -715,9 +710,9 @@ clamp_r = lambda v, minv, maxv: min(max(v, minv), maxv - 1)
 
 class BackgroundMap(Grid):
 	"""Map class to create the background layer, holds any static and dynamical elements in the field."""
-	def __init__(self, map, width, height, tiletypes):
+	def __init__(self, map, width, height, res):
 		Grid.__init__(self, width, height, map)
-		self.terrain, self.borders, self.overlay = tiletypes
+		self.terrain, self.borders, self.overlay = res.terrain, res.borders, res.overlay
 		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
