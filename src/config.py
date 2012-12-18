@@ -43,6 +43,15 @@ TILE_FPS = 2
 
 BGM_FADE_MS = 500
 
+# XXX: Trees don't occlude characters below them since drawing selections would be a pain in the ass.
+#      If we do it, trees occlude selections too...
+L_MAP =          lambda y: (0, y)
+L_SEL =          lambda y: (1, )
+L_CHAR =         lambda y: (2, y)
+L_CHAR_OVERLAY = lambda y: (2, y, 0)
+L_CHAR_EFFECT =  lambda y: (2, y, 1)
+L_GAMEOVER =     (3, )
+
 """
 RACE_SPRITES = {"Human": ("chibi_races_V2_colorkey_fixed.png", 1)
 	,"Human2": ("chibi_races_V2_colorkey_fixed.png", 2)
