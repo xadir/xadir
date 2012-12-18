@@ -4,6 +4,7 @@ from charclass import classes, CharacterClass
 from armor import armors, Armor
 from weapon import weapons, Weapon
 
+_character_id = 0
 class Character(object):
 	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None):
 		self.name = name
@@ -32,6 +33,9 @@ class Character(object):
 
 	@classmethod
 	def random(cls):
+		global _character_id
+		name = 'character%d' % _character_id
+		_character_id += 1
 		race_name = random.choice(races.keys())
 		class_name = random.choice(classes.keys())
 		rndstats = [random.choice(['dex', 'con', 'int', 'str']) for i in range(random.randrange(4, 6+1))]
@@ -41,5 +45,5 @@ class Character(object):
 		int = rndstats.count('int')
 		armor = Armor.random()
 		weapon = random.choice(weapons.values())#Weapon.random()
-		return cls(None, race_name, class_name, str, dex, con, int, armor, weapon)
+		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon)
 
