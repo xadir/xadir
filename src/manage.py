@@ -23,6 +23,10 @@ class Manager:
 		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
 		self.party = []
+		for i in range(5):
+			char = Character.random()
+			self.party.append(char)
+		"""
 		self.party.append(Character("test0", "human", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test1", "minotaur", "healer", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test2", "imp", "mage", 10, 10, 10, 10, None, None))
@@ -30,6 +34,7 @@ class Manager:
 		self.party.append(Character("test5", "djinn", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test6", "elf", "warrior", 10, 10, 10, 10, None, None))
 		self.party.append(Character("test7", "goblin", "warrior", 10, 10, 10, 10, None, None))
+		"""
 
 		self.team = []
 		self.team1 = []
@@ -274,7 +279,7 @@ class Manager:
 	def new_character(self, container):
 
 		self.manage.clear()
-		self.char_inventory.clear()
+		self.char_inventory_con.clear()
 
 		self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
