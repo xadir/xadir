@@ -148,7 +148,7 @@ class XadirMain:
 		self.sidebar = pygame.Rect(960, 0, 240, 720)
 		self.buttons = []
 		self.clock = pygame.time.Clock()
-		self.fps = 30
+		self.fps = FPS
 		self.showhealth = False
 		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.next_turn))
 
@@ -325,7 +325,7 @@ class XadirMain:
 			self.draw(frames)
 
 	def animate_hit(self, character, file_path):
-		anim = AnimatedEffect(character, file_path, 3)
+		anim = AnimatedEffect(character, file_path, FPS / HIT_FPS)
 
 		self.sprites.add(anim)
 
@@ -338,8 +338,8 @@ class XadirMain:
 		change_sign = sign(change)
 		change_amount = abs(change)
 		orig_hp = character.hp
-		for i in range(1, 30):
-			character.hp = orig_hp + change_sign * scale(i, 30, change_amount)
+		for i in range(1, FPS):
+			character.hp = orig_hp + change_sign * scale(i, FPS, change_amount)
 			if character.hp < 1:
 				break
 			self.draw()
@@ -723,7 +723,7 @@ class BackgroundMap(Grid):
 			rect = tiles[0].get_rect()
 			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
 			rect.left = x*TILE_SIZE[0]
-			self.sprites.add(AnimatedTile(tiles, rect, layer = L_MAP(y), interval = 30/2))
+			self.sprites.add(AnimatedTile(tiles, rect, layer = L_MAP(y), interval = FPS / TILE_FPS))
 
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
