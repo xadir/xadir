@@ -191,6 +191,9 @@ class XadirMain:
 	def main_loop(self):
 		self.init_sidebar()
 
+		bgm = load_sound('battle.ogg')
+		bgm.play(loops = -1)
+
 		while 1:
 			self.draw()
 			for event in pygame.event.get():
@@ -1013,6 +1016,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def start_game(mapname):
+	pygame.mixer.pre_init(48000)
 	pygame.init()
 	screen = pygame.display.set_mode((1200, 720))
 
