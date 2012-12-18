@@ -1016,9 +1016,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def start_game(mapname):
-	pygame.mixer.pre_init(48000)
-	pygame.init()
-	screen = pygame.display.set_mode((1200, 720))
+	screen = init_pygame()
 
 	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()

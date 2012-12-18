@@ -2,6 +2,12 @@ import pygame
 from pygame.locals import *
 from config import *
 
+def init_pygame():
+	pygame.mixer.pre_init(48000)
+	pygame.init()
+	screen = pygame.display.set_mode((1200, 720))
+	return screen
+
 def load_image(name, colorkey=None, scale=1):
 	path = os.path.join(GFXDIR, name)
 	try:

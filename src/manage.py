@@ -726,7 +726,6 @@ class Manager:
 			time.sleep(0.05)
 
 if __name__ == "__main__":
-	pygame.init()
-	screen = pygame.display.set_mode((1200, 720))
+	screen = init_pygame()
 	win = Manager(screen)
 	win.loop()

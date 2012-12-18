@@ -19,11 +19,9 @@ if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
 class Menu:
-	def __init__(self, width=1200, height=720):
-		pygame.init()
-		self.width = width
-		self.height = height
-		self.screen = pygame.display.set_mode((self.width, self.height))
+	def __init__(self, screen):
+		self.screen = screen
+		self.width, self.height = self.screen.get_size()
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 
@@ -101,7 +99,7 @@ class Menu:
 			self.clock.tick(self.fps)
 
 if __name__ == "__main__":
-
-	win = Menu()
+	screen = init_pygame()
+	win = Menu(screen)
 	win.loop()
 
