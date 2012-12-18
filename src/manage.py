@@ -279,7 +279,7 @@ class Manager:
 	def new_character(self, container):
 
 		self.manage.clear()
-		self.char_inventory.clear()
+		self.char_inventory_con.clear()
 
 		self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
