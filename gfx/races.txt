@@ -12,3 +12,4 @@ mindflayer
 ogre
 mummy
 werewolf
+orc

@@ -45,6 +45,7 @@ weapon_data = [
 	('heavy mace',        M,     H,     [B],   '1d12',  2.5,   5,       0,    0,    10),
 ]
 
+_weapon_id = 0
 class Weapon:
 	sizes = ['light', 'medium', 'heavy']
 	types = ['melee', 'ranged', 'magic']
@@ -63,13 +64,16 @@ class Weapon:
 
 	@classmethod
 	def random(cls):
+		global _weapon_id
+		name = 'weapon%d' % _weapon_id
+		_weapon_id += 1
 		size = random.choice(cls.sizes)
 		type = random.choice(cls.types)
 		class_ = random.choice(cls.classes)
 		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
 		damage_type = set([random.choice(cls.damage_types)])
 		magic_enchantment = random.randrange(11)
-		return cls(None, size, type, class_, damage, damage_type, magic_enchantment)
+		return cls(name, size, type, class_, damage, damage_type, magic_enchantment)
 
 	def __repr__(self):
 		return 'Weapon(%r, %r, %r, %r, %r, %r, %r)' % (self.name, self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
