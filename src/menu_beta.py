@@ -19,11 +19,9 @@ if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
 class Menu:
-	def __init__(self, width=1200, height=720):
-		pygame.init()
-		self.width = width
-		self.height = height
-		self.screen = pygame.display.set_mode((self.width, self.height))
+	def __init__(self, screen):
+		self.screen = screen
+		self.width, self.height = self.screen.get_size()
 		self.clock = pygame.time.Clock()
 		self.fps = 30
 
@@ -70,6 +68,8 @@ class Menu:
 				f(b.function[1])
 
 	def loop(self):
+		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
+
 		title_alpha = 0
 		load_finished = False
 		title_image = load_image("Xadir.png", None, 3)
@@ -101,7 +101,7 @@ class Menu:
 			self.clock.tick(self.fps)
 
 if __name__ == "__main__":
-
-	win = Menu()
+	screen = init_pygame()
+	win = Menu(screen)
 	win.loop()
 

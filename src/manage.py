@@ -705,6 +705,8 @@ class Manager:
 					break
 
 	def loop(self):
+		change_sound(pygame.mixer.Channel(0), load_sound('menu-old.ogg'), BGM_FADE_MS)
+
 		while 1:
 			self.screen.fill((127, 127, 127))
 			self.manage.draw()
@@ -731,7 +733,6 @@ class Manager:
 			time.sleep(0.05)
 
 if __name__ == "__main__":
-	pygame.init()
-	screen = pygame.display.set_mode((1200, 720))
+	screen = init_pygame()
 	win = Manager(screen)
 	win.loop()

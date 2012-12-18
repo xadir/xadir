@@ -18,11 +18,9 @@ if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
 class Menu:
-	def __init__(self, width=1200, height=720):
-		pygame.init()
-		self.width = width
-		self.height = height
-		self.screen = pygame.display.set_mode((self.width, self.height))
+	def __init__(self, screen):
+		self.screen = screen
+		self.width, self.height = self.screen.get_size()
 		self.titlefield = pygame.Surface((1200, 350))
 		self.titlefield_rect = pygame.Rect(0, 0, 1200, 350)
 		self.titlefield.fill((50, 50, 50))
@@ -278,7 +276,7 @@ class Tile(pygame.sprite.Sprite):
 			self.rect = rect
 
 if __name__ == "__main__":
-
-	win = Menu()
+	screen = init_pygame()
+	win = Menu(screen)
 	win.loop()
 

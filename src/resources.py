@@ -1,6 +1,23 @@
 import pygame
 from pygame.locals import *
 from config import *
+import time
+
+def init_pygame():
+	pygame.mixer.pre_init(48000)
+	pygame.init()
+	screen = pygame.display.set_mode((1200, 720))
+	pygame.mixer.set_reserved(1)
+	return screen
+
+def change_sound(channel, new_sound, fade_ms, loops = -1):
+	if channel.get_sound():
+		channel.set_endevent(USEREVENT)
+		channel.fadeout(fade_ms)
+		while pygame.event.wait().type != USEREVENT:
+			pass
+		channel.set_endevent()
+	channel.play(new_sound, loops = loops, fade_ms = fade_ms)
 
 def load_image(name, colorkey=None, scale=1):
 	path = os.path.join(GFXDIR, name)

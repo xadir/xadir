@@ -191,6 +191,8 @@ class XadirMain:
 	def main_loop(self):
 		self.init_sidebar()
 
+		change_sound(pygame.mixer.Channel(0), load_sound('battle.ogg'), BGM_FADE_MS)
+
 		while 1:
 			self.draw()
 			for event in pygame.event.get():
@@ -210,6 +212,7 @@ class XadirMain:
 				self.gameover()
 
 	def gameover(self):
+		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
 		if len(self.live_players) < 1:
 			text = 'Draw!'
 		else:
@@ -1013,8 +1016,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def start_game(mapname):
-	pygame.init()
-	screen = pygame.display.set_mode((1200, 720))
+	screen = init_pygame()
 
 	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()
