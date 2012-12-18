@@ -700,6 +700,10 @@ class Manager:
 					break
 
 	def loop(self):
+		bgm_channel = pygame.mixer.Channel(0)
+		bgm_sound = load_sound('menu.ogg')
+		bgm_channel.play(bgm_sound, loops = -1)
+
 		while 1:
 			self.screen.fill((127, 127, 127))
 			self.manage.draw()

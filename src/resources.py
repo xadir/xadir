@@ -6,6 +6,7 @@ def init_pygame():
 	pygame.mixer.pre_init(48000)
 	pygame.init()
 	screen = pygame.display.set_mode((1200, 720))
+	pygame.mixer.set_reserved(1)
 	return screen
 
 def load_image(name, colorkey=None, scale=1):
