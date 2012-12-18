@@ -394,7 +394,7 @@ class XadirMain:
 
 	def is_walkable(self, coords):
 		"""Is the terrain at this point walkable?"""
-		grid = self.map.get_map()
+		grid = self.map
 		return coords in grid and grid[coords] in self.walkable
 
 	def is_passable_for(self, character, coords):
@@ -437,7 +437,7 @@ class XadirMain:
 		"""Get surrounding points, filtered by some function"""
 		if filter is None:
 			filter = lambda pos: True
-		grid = self.map.get_map()
+		grid = self.map
 		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
 		result.sort(key = lambda pos: get_distance_2(pos, coords))
 		return result
@@ -717,9 +717,8 @@ class BackgroundMap(Grid):
 		self.images = {}
 		self.cell_size = TILE_SIZE
 		self.x = self.y = 0
-		self.map = self
 		self.sprites = pygame.sprite.LayeredUpdates()
-		for x, y in self.map.keys():
+		for x, y in self.keys():
 			tiles = self.get_real_tile((x, y))
 			rect = tiles[0].get_rect()
 			rect.top = y*TILE_SIZE[1] - (rect.height - TILE_SIZE[1])
@@ -802,9 +801,6 @@ class BackgroundMap(Grid):
 			else:
 				images = images2
 		return images
-
-	def get_map(self):
-		return self.map
 
 class Player:
 	"""Class to create player or team in the game. One player may have many characters."""
@@ -907,7 +903,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 
 		self.main = main
-		self.background_map = self.main.map.get_map()
+		self.background_map = self.main.map
 		self.walkable_tiles = self.main.walkable
 		self.players = self.main.get_all_players()
 
