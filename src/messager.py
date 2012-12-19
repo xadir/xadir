@@ -10,11 +10,9 @@ class Messager(asynchat.async_chat):
 		self.set_terminator('\n')
 
 	def collect_incoming_data(self, data):
-		print 'INCOMING:', repr(data)
 		self.line += data
 
 	def found_terminator(self):
-		print 'TERMINATOR'
 		line = self.line
 		self.line = ''
 		self.handle_line(line)

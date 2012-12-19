@@ -955,7 +955,6 @@ def host_game(screen, port, mapname, team):
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
-			print type, data
 			if type == 'TEAM':
 				other_team[0] = deserialize_team(data)
 
@@ -990,7 +989,6 @@ def join_game(screen, host, port, team):
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
-			print type, data
 			if type == 'MAP':
 				mapname[0] = data
 			if type == 'TEAM':

@@ -1,4 +1,5 @@
 import pygame
+from config import *
 
 class StaticSprite(pygame.sprite.DirtySprite):
 	def __init__(self, image, rect=None, layer=0):
