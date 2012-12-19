@@ -8,12 +8,12 @@ armor_data = [
 	# name type miss_chance% resilience damage_reduction price
 	#T=Light/Medium/Heavy
 	#                     T    M%  R   DR  P
-	('Robe',              L,  10,  0,  0,  5),  
+	('Robe',              L,  10,  0,  0,  5),
 	('Padded Armor',      L,   7,  1,  0,  10),
 	('Armored Robe',      L,   5,  1,  1,  20),
 	('Leather Armor',     M,   3,  0,  1,  20),
 	('Studded Leather',   M,   0,  1,  2,  30),
-	('Scale Mail',        M,  -3,  2,  2   50),
+	('Scale Mail',        M,  -3,  2,  2,  50),
 	('Chainmail',         H,  -5,  1,  3,  50),
 	('Half-Plate',        H,  -7,  2,  3,  100),
 	('Full-Plate',        H, -10,  3,  4,  200),
@@ -22,6 +22,7 @@ armor_data = [
 _armor_id = 0
 class Armor:
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
+	fields = 'name:str miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:damage'
 	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
 		self.name = name
 		self.miss_chance = miss_chance

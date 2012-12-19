@@ -58,6 +58,7 @@ class Weapon:
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
+	fields = 'name:str size:str type:str class_:str damage:dice damage_type:damage magic_enchantment:int critical_multiplier:float critical_chance:int'
 	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment, critical_multiplier = None, critical_chance = None):
 		self.name = name
 		self.size = size

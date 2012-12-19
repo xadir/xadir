@@ -3,14 +3,16 @@ from race import races, Race
 from charclass import classes, CharacterClass
 from armor import armors, Armor
 from weapon import weapons, Weapon
+import binascii
 
 _character_id = 0
 class Character(object):
+	fields = 'name:str race_name:str class_name:str var_str:int var_dex:int var_con:int var_int:int armor:armor weapon:weapon'
 	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None):
 		self.name = name
 
-		self.race = races[race_name]
-		self.class_ = classes[class_name]
+		self.race_name = race_name
+		self.class_name = class_name
 
 		self.var_str = str
 		self.var_dex = dex
@@ -21,6 +23,9 @@ class Character(object):
 
 		self.armor = armor
 		self.weapon = weapon
+
+	race = property(lambda self: races[self.race_name])
+	class_ = property(lambda self: classes[self.class_name])
 
 	str = property(lambda self: 1 + self.race.base_str + self.var_str)
 	dex = property(lambda self: 1 + self.race.base_dex + self.var_dex)
