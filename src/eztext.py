@@ -10,8 +10,8 @@ class Config:
     def __init__(self, options, *look_for):
         assertions = []
         for key in look_for:
-            if key[0] in options.keys(): exec('self.'+key[0]+' = options[\''+key[0]+'\']')
-            else: exec('self.'+key[0]+' = '+key[1])
+            if key[0] in options.keys(): setattr(self, key[0], options[key[0]])
+            else: setattr(self, key[0], key[1])
             assertions.append(key[0])
         for key in options.keys():
             if key not in assertions: raise ConfigError(key+' not expected as option')
@@ -20,9 +20,9 @@ class Input:
     """ A text input for pygame apps """
     def __init__(self, **options):
         """ Options: x, y, font, color, restricted, maxlength, prompt """
-        self.options = Config(options, ['x', '0'], ['y', '0'], ['font', 'pygame.font.Font(FONT, int(32*FONTSCALE))'],
-                              ['color', '(0,0,0)'], ['restricted', '\'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\\\'()*+,-./:;<=>?@[\]^_`{|}~\''],
-                              ['maxlength', '-1'], ['prompt', '\'\''])
+        self.options = Config(options, ['x', 0], ['y', 0], ['font', pygame.font.Font(FONT, int(32*FONTSCALE))],
+                              ['color', (0,0,0)], ['restricted', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'],
+                              ['maxlength', -1], ['prompt', ''])
         self.x = self.options.x; self.y = self.options.y
         self.font = self.options.font
         self.color = self.options.color
