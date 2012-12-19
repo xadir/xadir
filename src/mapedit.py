@@ -19,11 +19,9 @@ def parse_tile(s):
 	return [tl, tr, br, bl, n]
 
 class MapEditor:
-	def __init__(self, mapname=None, width=1200, height=720):
-		pygame.init()
-		self.width = width
-		self.height = height
-		self.screen = pygame.display.set_mode((self.width, self.height))
+	def __init__(self, screen, mapname=None):
+		self.screen = screen
+		self.width, self.height = self.screen.get_size()
 
 		self.spawnfont = pygame.font.Font(None, 20)
 
@@ -31,7 +29,7 @@ class MapEditor:
 
 		# Ensure toolbar has empty squares too (aka. removal tool)
 		# Ensure at least same width than spawnpoint toolbox
-		size = max(size[0], 6), max(size[1], height/17)
+		size = max(size[0], 6), max(size[1], self.height/17)
 
 		self.res = Resources(None)
 		self.res.load_terrain()
@@ -226,6 +224,7 @@ if __name__ == "__main__":
 	if len(sys.argv) >= 2:
 		mapname = sys.argv[1]
 
-	win = MapEditor(mapname)
+	screen = init_pygame()
+	win = MapEditor(screen, mapname)
 	win.loop()
 

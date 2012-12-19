@@ -10,6 +10,7 @@ from config import *
 from chartest import *
 from UI import *
 from manage import *
+from mapedit import MapEditor
 import game
 import eztext
 
@@ -28,7 +29,7 @@ class Menu:
 		self.buttons = []
 
 		menu_size = (400, 400)
-		self.menu = UIContainer(None, ((self.width - menu_size[0])/2, 300), menu_size, self.screen, True)
+		self.menu = UIContainer(None, ((self.width - menu_size[0])/2, 270), menu_size, self.screen, True)
 		#self.menu = UIContainer(None, ((self.width - menu_size[0]) / 2, (self.height - menu_size[1]) / 2), menu_size, self.screen, True)
 
 		new_game = FuncButton(self.menu, 0, 0, 400, 70, [["New Game", None]], None, 70, self.screen, 0, (self.start_game, None), True, False, True, True)
@@ -36,7 +37,14 @@ class Menu:
 		new_game.image.set_alpha(200)
 		new_game.update()
 		self.menu.spritegroup.add(new_game)
-		quit = FuncButton(self.menu, 0, 120, 400, 70, [["Quit", None]], None, 70, self.screen, 0, (self.quit, None), True, False, True, True)
+
+		map_edit = FuncButton(self.menu, 0, 100, 400, 70, [["Map editor", None]], None, 70, self.screen, 0, (self.map_edit, None), True, False, True, True)
+		self.buttons.append(map_edit)
+		map_edit.image.set_alpha(200)
+		map_edit.update()
+		self.menu.spritegroup.add(map_edit)
+
+		quit = FuncButton(self.menu, 0, 200, 400, 70, [["Quit", None]], None, 70, self.screen, 0, (self.quit, None), True, False, True, True)
 		self.buttons.append(quit)
 		quit.image.set_alpha(200)
 		quit.update()
@@ -57,6 +65,10 @@ class Menu:
 		print "Starting game"
 		manage_win = Manager(self.screen)
 		manage_win.loop()
+
+	def map_edit(self, param):
+		win = MapEditor(self.screen, None)
+		win.loop()
 
 	def quit(self, param):
 		sys.exit()
