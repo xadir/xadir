@@ -84,16 +84,20 @@ class Manager:
 		#self.add_char("Wolf", self.party)
 		
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
-		self.play_btn = FuncButton(self.team_con, 10, 80, 100, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
+		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
+		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
+		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
-		self.team1_btn = FuncButton(self.team_con, 220, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
-		self.team2_btn = FuncButton(self.team_con, 285, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
+		self.team1_btn = FuncButton(self.team_con, 255, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
+		self.team2_btn = FuncButton(self.team_con, 310, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
 
 		self.team1_btn.select()
 
 		self.manager_buttons.append(self.save_btn)
 		self.manager_buttons.append(self.play_btn)
+		self.manager_buttons.append(self.join_btn)
+		self.manager_buttons.append(self.host_btn)
 		self.manager_buttons.append(self.new_char_btn)
 		self.manager_buttons.append(self.team1_btn)
 		self.manager_buttons.append(self.team2_btn)
@@ -129,6 +133,8 @@ class Manager:
 
 		#self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
+		self.team_con.spritegroup.add(self.join_btn)
+		self.team_con.spritegroup.add(self.host_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 		self.team_con.spritegroup.add(self.team1_btn)
 		self.team_con.spritegroup.add(self.team2_btn)
@@ -283,6 +289,8 @@ class Manager:
 
 		self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
+		self.team_con.spritegroup.add(self.join_btn)
+		self.team_con.spritegroup.add(self.host_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 
 		self.race_index = 0
@@ -295,7 +303,7 @@ class Manager:
 		print self.current_class
 		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, None, None)
 	
-		self.points_left = 20
+		self.points_left = 2
 
 		"""
 		all_hairs = RACE_HAIRS.keys()
@@ -463,7 +471,7 @@ class Manager:
 		"""
 
 	def update_new_character(self, container):
-		print "Update"
+		print "Update", self.selected_char.class_
 
 		container.clear()
 
@@ -676,6 +684,11 @@ class Manager:
 		game.init_teams(teams)
 		game.main_loop()
 
+	def join_game(self, team):
+		print self.team
+
+	def host_game(self, team):
+		print self.team
 
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
