@@ -1,4 +1,6 @@
-import src.menu
+from src.menu_beta import *
 
-win = src.menu.Menu()
+screen = init_pygame()
+win = Menu(screen)
 win.loop()
+
