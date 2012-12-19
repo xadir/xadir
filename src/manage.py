@@ -681,7 +681,7 @@ class Manager:
 		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
 		game = XadirMain(self.screen, mapname = 'map_new.txt')
 		game.load_resources()
-		game.init_teams(teams)
+		game.init_teams(teams, game.get_spawnpoints(teams))
 		game.main_loop()
 
 	def join_game(self, team):

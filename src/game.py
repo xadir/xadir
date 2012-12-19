@@ -21,6 +21,11 @@ from terrain import terrains
 from tiles import *
 from bgmap import BackgroundMap
 
+from wire import *
+from messager import Messager
+import socket
+import asyncore
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -130,7 +135,6 @@ def get_animation_surfaces(path):
 		surface = pygame_surface_from_pil_image(im)
 		rect = surface.get_rect()
 		yield pygame.transform.scale(surface, (rect.width * SCALE, rect.height * SCALE))
-
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, screen, mapname='map_new.txt'):
@@ -177,6 +181,25 @@ class XadirMain:
 		self.map = BackgroundMap(map, *mapsize, res = self.res)
 		self.spawns = spawns
 
+	def poll_local_events(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				sys.exit()
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if event.button == 1:
+					for b in self.buttons:
+						if b.contains(*event.pos):
+							b.function()
+					self.click()
+			if event.type == KEYDOWN and event.key == K_SPACE:
+				self.next_turn()
+
+	def poll_remote_events(self):
+		asyncore.loop(count=1, timeout=0.01)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				sys.exit()
+
 	def main_loop(self):
 		self.init_sidebar()
 
@@ -184,17 +207,8 @@ class XadirMain:
 
 		while 1:
 			self.draw()
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					sys.exit()
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					if event.button == 1:
-						for b in self.buttons:
-							if b.contains(*event.pos):
-								b.function()
-						self.click()
-				if event.type == KEYDOWN and event.key == K_SPACE:
-					self.next_turn()
+			self.poll_local_events()
+
 			if self.players[self.turn].movement_points_left() < 1:
 				self.next_turn()
 			if len(self.live_players) <= 1:
@@ -224,23 +238,19 @@ class XadirMain:
 			self.sprites.draw(self.screen)
 			pygame.display.flip()
 
-	def get_random_teams(self, player_count = 2, character_count = 3):
-		player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
-		teams = []
-		for name in player_names:
-			characters = []
-			for i in range(character_count):
-				char = Character.random()
-				characters.append(char)
-			teams.append((name, characters))
-		return teams
-
-	def init_teams(self, teams):
+	def get_spawnpoints(self, teams):
+		result = []
 		player_ids = random.sample(self.spawns, len(teams))
 		for player_id, team in zip(player_ids, teams):
 			name, characters = team
 			spawn_points = random.sample(self.spawns[player_id], len(characters))
-			self.add_player(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn_points)])
+			result.append(spawn_points)
+		return result
+
+	def init_teams(self, teams, spawns):
+		teams = [(name, zip(team, spawn)) for (name, team), spawn in zip(teams, spawns)]
+		for name, characters in teams:
+			self.add_player(name, [(char, x, y, 0) for char, (x, y) in characters])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -846,13 +856,112 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 
 		self.function = function
 
-def start_game(mapname):
-	screen = init_pygame()
+def get_random_teams(player_count = 2, character_count = 3):
+	player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
+	teams = []
+	for name in player_names:
+		characters = []
+		for i in range(character_count):
+			char = Character.random()
+			characters.append(char)
+		teams.append((name, characters))
+	return teams
+
+def serialize_team(team):
+	return ' '.join(binascii.hexlify(serialize(char)) for char in team)
+
+def deserialize_team(team):
+	return [deserialize(Character, binascii.unhexlify(char)) for char in team.split(' ')]
+
+def serialize_spawns(players):
+	return ' '.join(':'.join(','.join(map(str, spawn)) for spawn in player) for player in players)
+
+def deserialize_spawns(players):
+	return [[tuple(map(int, spawn.split(','))) for spawn in player.split(':')] for player in players.split(' ')]
+
+def start_game(screen, mapname, teams):
+	game = XadirMain(screen, mapname = mapname)
+	game.load_resources()
+	game.init_teams(teams, game.get_spawnpoints(teams))
+	game.main_loop()
+
+def host_game(screen, port, mapname, team):
+	try:
+		serv = socket.socket()
+		serv.bind(('0.0.0.0', port))
+		serv.listen(1)
+		sock, addr = serv.accept()
+		serv.close()
+
+		other_team = [None]
+		spawns = [None]
+		def handler(type, data):
+			print type, data
+			if type == 'TEAM':
+				other_team[0] = deserialize_team(data)
+
+		conn = Messager(handler, sock)
+		conn.push_message('MAP', mapname)
+		conn.push_message('TEAM', serialize_team(team))
+
+		while other_team[0] is None:
+			asyncore.loop(count=1, timeout=0.1)
+
+	except:
+		sys.excepthook(*sys.exc_info())
+		return
+
+	teams = [('Player 1', team), ('Player 2', other_team[0])]
 
 	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()
-	game.init_teams(game.get_random_teams())
+
+	spawns = game.get_spawnpoints(teams)
+	conn.push_message('SPAWNS', serialize_spawns(spawns))
+
+	game.init_teams(teams, spawns)
+	game.main_loop()
+
+def join_game(screen, host, port, team):
+	try:
+		sock = socket.socket()
+		sock.connect((host, port))
+
+		mapname = [None]
+		other_team = [None]
+		spawns = [None]
+		def handler(type, data):
+			print type, data
+			if type == 'MAP':
+				mapname[0] = data
+			if type == 'TEAM':
+				other_team[0] = deserialize_team(data)
+			if type == 'SPAWNS':
+				spawns[0] = deserialize_spawns(data)
+
+		conn = Messager(handler, sock)
+		conn.push_message('TEAM', serialize_team(team))
+
+		while mapname[0] is None or other_team[0] is None or spawns[0] is None:
+			asyncore.loop(count=1, timeout=0.1)
+	except:
+		sys.excepthook(*sys.exc_info())
+		return
+
+	teams = [('Player 1', other_team[0]), ('Player 2', team)]
+
+	game = XadirMain(screen, mapname = mapname[0])
+	game.load_resources()
+	game.init_teams(teams, spawns[0])
 	game.main_loop()
 
 if __name__ == "__main__":
-	start_game('map_new.txt')
+	screen = init_pygame()
+
+	if len(sys.argv) == 1:
+		start_game(screen, 'map_new.txt', get_random_teams())
+	if len(sys.argv) == 2:
+		host_game(screen, int(sys.argv[1]), 'map_new.txt', get_random_teams()[0][1])
+	if len(sys.argv) == 3:
+		join_game(screen, sys.argv[1], int(sys.argv[2]), get_random_teams()[0][1])
+
