@@ -102,6 +102,14 @@ class MapSelection:
 				maps.pop(i)
 				i = i - 1
 			else:
+				try:
+					map, mapsize, spawns = load_map(maps[i])
+					for row in map:
+						for tile in row:
+							assert tile in self.tiles
+				except:
+					maps.pop(i)
+					i = i - 1
 				i = i + 1
 		x = 10
 		y = 360
