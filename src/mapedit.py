@@ -62,16 +62,19 @@ class MapEditor:
 		self.sprites = pygame.sprite.LayeredUpdates()
 		self.sprites.add(self.grid.sprites.values())
 
-		self.maplist_container = UIContainer(None, (957, 500), (238, 400), self.screen)
-		self.save_input = eztext.Input(x=self.maplist_container.x + 10, y=self.maplist_container.y + 100, maxlength=40, color=COLOR_FONT, prompt='Map name: ')
+		self.maplist_container = UIContainer(None, (963, 200), (240, 550), self.screen)
+		self.save_input = eztext.Input(x=self.maplist_container.x + 10, y=self.maplist_container.y + 400, maxlength=40, color=COLOR_FONT, prompt='Map name: ', font=pygame.font.Font(FONT, int(20*FONTSCALE)))
 
-		self.save_btn = FuncButton(self.maplist_container, 10, 150, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_save, None), True, False, True)
+		self.save_btn = FuncButton(self.maplist_container, 10, 430, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_save, None), True, False, True)
+		self.menu_btn = FuncButton(self.maplist_container, 10, 465, 218, 30, [["Main menu", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_done, None), True, False, True)
 
 		self.buttons = []
 		self.maplist = []
 
 		self.maplist_container.spritegroup.add(self.save_btn)
+		self.maplist_container.spritegroup.add(self.menu_btn)
 		self.buttons.append(self.save_btn)
+		self.buttons.append(self.menu_btn)
 
 		self._update_ui_elements()
 
@@ -102,7 +105,7 @@ class MapEditor:
 		maps = self.list_maps()
 		i = 0
 		while i < len(maps):
-			if maps[i] == "tools.txt" or maps[i] == "README":
+			if maps[i] == "tools.txt" or maps[i] == "README" or not maps[i].endswith(".txt"):
 				maps.pop(i)
 				i = i - 1
 			else:
@@ -217,8 +220,9 @@ class MapEditor:
 
 	def do_save(self, xxx):
 		self.save(self.save_input.value)
+		self.update_maplist()
 
-	def do_done(self):
+	def do_done(self, xxx):
 		self.done = True
 
 	def click(self, event):
@@ -231,12 +235,6 @@ class MapEditor:
 	def loop(self):
 		self.update_maplist()
 		left, right, spawnui = self.left, self.right, self.spawnui
-
-		btns = [
-			(self.save_btn, 'save', self.do_save),
-			#(self.load_btn, 'load', self.do_load),
-			(self.done_btn, 'done', self.do_done),
-		]
 
 		area = None
 		start = None
