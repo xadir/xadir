@@ -305,13 +305,14 @@ class XadirMain:
 	def handle_remote(self, type, data):
 		if type == 'TURN':
 			self.next_turn()
-		if type in ('MOVE', 'ATTACK'):
+		if type == 'MOVE':
 			charno, path = deserialize_path(data)
 			char = self.current_player.all_characters[charno]
-		if type == 'MOVE':
 			self.blah_move(char, path)
 		if type == 'ATTACK':
-			self.blah_attack(char, path)
+			charno, path, damage, messages = deserialize_attack(data)
+			char = self.current_player.all_characters[charno]
+			self.blah_attack(char, path, damage, messages)
 
 	def do_next_turn(self):
 		if self.remote:
@@ -321,10 +322,12 @@ class XadirMain:
 	def do_attack(self, character, mouse_grid_pos):
 		start = character.grid_pos
 		path = self.get_attack_path_for(character, start, mouse_grid_pos)
-		self.remote.push_message('ATTACK', serialize_path(self.current_player.all_characters.index(character), path))
-		self.blah_attack(character, path)
+		target = self.get_other_character_at(mouse_grid_pos)
+		damage, messages = roll_attack_damage(self.map, character, target)
+		self.remote.push_message('ATTACK', serialize_attack(self.current_player.all_characters.index(character), path, damage, messages))
+		self.blah_attack(character, path, damage, messages)
 
-	def blah_attack(self, character, path):
+	def blah_attack(self, character, path, damage, messages):
 		mouse_grid_pos = path[-1]
 		end = path[-2]
 		distance = len(path) - 2
@@ -332,13 +335,16 @@ class XadirMain:
 		character.grid_pos = end
 		character.mp -= distance
 		character.heading = self.get_heading(end, mouse_grid_pos)
+		target = self.get_other_character_at(mouse_grid_pos)
+		self.attack(character, target, damage, messages)
+
+	def get_other_character_at(self, mouse_grid_pos):
 		target = None
 		for p in self.get_other_players():
 			for c in p.characters:
-				print c.grid_pos, mouse_grid_pos
 				if c.grid_pos == mouse_grid_pos:
 					target = c
-		self.attack(character, target)
+		return target
 
 	def do_move(self, character, mouse_grid_pos):
 		start = character.grid_pos
@@ -420,13 +426,12 @@ class XadirMain:
 	def add_player(self, name, remote, characters):
 		self.players.append(Player(name, characters, self, remote))
 
-	def attack(self, attacker, target):
+	def attack(self, attacker, target, damage, messages):
 		attacker_position = attacker.grid_pos
 		target_position = target.grid_pos
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
-			damage, messages = roll_attack_damage(self.map, attacker, target)
 			self.messages.messages.append(' '.join(messages))
 			target.take_hit(damage)
 			attacker.mp = 0
@@ -921,6 +926,17 @@ def serialize_path(charno, path):
 def deserialize_path(data):
 	charno, path = data.split(' ')
 	return int(charno), [tuple(map(int, pos.split(','))) for pos in path.split(':')]
+
+def serialize_attack(charno, path, damage, messages):
+	pathdata = serialize_path(charno, path)
+	damage = str(damage)
+	messages = ' '.join(map(binascii.hexlify, messages))
+	return ' '.join(map(binascii.hexlify, (pathdata, damage, messages)))
+
+def deserialize_attack(data):
+	pathdata, damage, messages = map(binascii.unhexlify, data.split(' '))
+	charno, path = deserialize_path(pathdata)
+	return charno, path, int(damage), map(binascii.unhexlify, messages.split(' '))
 
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
