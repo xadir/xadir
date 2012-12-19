@@ -205,12 +205,12 @@ class MapEditor:
 				rect.center = (rx + self.right.cell_size[0]/2, ry + self.right.cell_size[1]/2)
 				self.screen.blit(text, rect)
 
-		for btn, text in [(self.save_btn, 'Save map'), (self.done_btn, 'Back to main menu')]:
-			self.screen.fill((127, 127, 127), (btn.x, btn.y, btn.width, btn.height))
-			text = self.spawnfont.render(text, True, (0, 0, 0))
-			rect = text.get_rect()
-			rect.center = (btn.x + btn.width / 2, btn.y + btn.height / 2)
-			self.screen.blit(text, rect)
+		#for btn, text in [(self.save_btn, 'Save map'), (self.done_btn, 'Back to main menu')]:
+		#	self.screen.fill((127, 127, 127), (btn.x, btn.y, btn.width, btn.height))
+		#	text = self.spawnfont.render(text, True, (0, 0, 0))
+		#	rect = text.get_rect()
+		#	rect.center = (btn.x + btn.width / 2, btn.y + btn.height / 2)
+		#	self.screen.blit(text, rect)
 
 	def do_load(self):
 		print 'Load'
