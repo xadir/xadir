@@ -20,7 +20,7 @@ class Messager(asynchat.async_chat):
 		self.handle_line(line)
 
 	def handle_line(self, line):
-		msg_type, msg_data = line.split()
+		msg_type, msg_data = line.split(' ')
 		msg_data = binascii.unhexlify(msg_data)
 		self.handle_message(msg_type, msg_data)
 

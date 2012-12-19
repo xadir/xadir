@@ -162,6 +162,7 @@ class XadirMain:
 		self.sprites.add(self.messages)
 
 		self.players = []
+		self.remote = None
 
 	current_player = property(lambda self: self.players[self.turn])
 	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
@@ -192,7 +193,7 @@ class XadirMain:
 							b.function()
 					self.click()
 			if event.type == KEYDOWN and event.key == K_SPACE:
-				self.next_turn()
+				self.do_next_turn()
 
 	def poll_remote_events(self):
 		asyncore.loop(count=1, timeout=0.01)
@@ -207,10 +208,14 @@ class XadirMain:
 
 		while 1:
 			self.draw()
-			self.poll_local_events()
+			if self.current_player.remote:
+				self.poll_remote_events()
+			else:
+				self.poll_local_events()
 
-			if self.players[self.turn].movement_points_left() < 1:
-				self.next_turn()
+				if self.players[self.turn].movement_points_left() < 1:
+					self.do_next_turn()
+
 			if len(self.live_players) <= 1:
 				self.gameover()
 
@@ -248,7 +253,11 @@ class XadirMain:
 		return result
 
 	def init_teams(self, teams, spawns):
+		self.remote = None
 		for (name, remote, characters), spawn in zip(teams, spawns):
+			if remote:
+				remote.handle_message = self.handle_remote
+				self.remote = remote
 			self.add_player(name, remote, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)])
 
 		self.turn = 0
@@ -293,9 +302,30 @@ class XadirMain:
 			if character.grid_pos != mouse_grid_pos:
 				character.unselect()
 
+	def handle_remote(self, type, data):
+		if type == 'TURN':
+			self.next_turn()
+		if type in ('MOVE', 'ATTACK'):
+			charno, path = deserialize_path(data)
+			char = self.current_player.all_characters[charno]
+		if type == 'MOVE':
+			self.blah_move(char, path)
+		if type == 'ATTACK':
+			self.blah_attack(char, path)
+
+	def do_next_turn(self):
+		if self.remote:
+			self.remote.push_message('TURN', '')
+		self.next_turn()
+
 	def do_attack(self, character, mouse_grid_pos):
 		start = character.grid_pos
 		path = self.get_attack_path_for(character, start, mouse_grid_pos)
+		self.remote.push_message('ATTACK', serialize_path(self.current_player.all_characters.index(character), path))
+		self.blah_attack(character, path)
+
+	def blah_attack(self, character, path):
+		mouse_grid_pos = path[-1]
 		end = path[-2]
 		distance = len(path) - 2
 		self.animate_move(path, character)
@@ -305,6 +335,7 @@ class XadirMain:
 		target = None
 		for p in self.get_other_players():
 			for c in p.characters:
+				print c.grid_pos, mouse_grid_pos
 				if c.grid_pos == mouse_grid_pos:
 					target = c
 		self.attack(character, target)
@@ -313,6 +344,11 @@ class XadirMain:
 		start = character.grid_pos
 		end = mouse_grid_pos
 		path = self.get_move_path_for(character, start, end)
+		self.remote.push_message('MOVE', serialize_path(self.current_player.all_characters.index(character), path))
+		self.blah_move(character, path)
+
+	def blah_move(self, character, path):
+		end = mouse_grid_pos = path[-1]
 		distance = len(path) - 1
 		self.animate_move(path, character)
 		character.grid_pos = end
@@ -878,6 +914,13 @@ def serialize_spawns(players):
 
 def deserialize_spawns(players):
 	return [[tuple(map(int, spawn.split(','))) for spawn in player.split(':')] for player in players.split(' ')]
+
+def serialize_path(charno, path):
+	return str(charno) + ' ' + ':'.join(','.join(map(str, pos)) for pos in path)
+
+def deserialize_path(data):
+	charno, path = data.split(' ')
+	return int(charno), [tuple(map(int, pos.split(','))) for pos in path.split(':')]
 
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
