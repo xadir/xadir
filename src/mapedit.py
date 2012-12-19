@@ -65,7 +65,7 @@ class MapEditor:
 		self.maplist_container = UIContainer(None, (957, 500), (238, 400), self.screen)
 		self.save_input = eztext.Input(x=self.maplist_container.x + 10, y=self.maplist_container.y + 100, maxlength=40, color=COLOR_FONT, prompt='Map name: ')
 
-		self.save_btn = FuncButton(self.maplist_container, 10, 150, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save, self.save_input.value), True, False, True)
+		self.save_btn = FuncButton(self.maplist_container, 10, 150, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_save, None), True, False, True)
 
 		self.buttons = []
 		self.maplist = []
@@ -162,11 +162,11 @@ class MapEditor:
 
 	def save(self, mapname):
 		path = os.path.join(MAPDIR, mapname)
-		with file(path + '.new', 'wb') as f:
+		with file(path, 'wb') as f:
 			self._save(f)
 		# XXX: Figure out which error rename() raises on Windows when the file already exists
 		#try:
-		os.rename(path + '.new', path)
+		#os.rename(path + '.new', path)
 		#except xxx:
 		#	os.(path + '.old')
 		#	os.rename(h, path + '.old')
@@ -215,8 +215,8 @@ class MapEditor:
 	def do_load(self):
 		print 'Load'
 
-	def do_save(self):
-		print 'Save'
+	def do_save(self, xxx):
+		self.save(self.save_input.value)
 
 	def do_done(self):
 		self.done = True
@@ -263,10 +263,10 @@ class MapEditor:
 							area = 'right'
 						elif spawnui.contains(*event.pos):
 							area = 'spawn'
-						else:
-							for btn, name, func in btns:
-								if btn.contains(*event.pos):
-									area = name
+						#else:
+						#	for btn, name, func in btns:
+						#		if btn.contains(*event.pos):
+						#			area = name
 						start = event.pos
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
@@ -282,9 +282,9 @@ class MapEditor:
 						if area == 'spawn' and spawnui.contains(*event.pos):
 							x, y = spawnui.screen2grid_translate(*event.pos)
 							tool = ('spawn', self.spawntools[x, y])
-						for btn, name, func in btns:
-							if area == name and btn.contains(*event.pos):
-								func()
+						#for btn, name, func in btns:
+						#	if area == name and btn.contains(*event.pos):
+						#		func()
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
