@@ -29,7 +29,7 @@ class MapEditor:
 
 		# Ensure toolbar has empty squares too (aka. removal tool)
 		# Ensure at least same width than spawnpoint toolbox
-		size = max(size[0], 6), max(size[1], self.height/17)
+		size = max(size[0], 4), size[1] + 1
 
 		self.res = Resources(None)
 		self.res.load_terrain()
@@ -70,6 +70,7 @@ class MapEditor:
 		self.right = UIGrid(0, 0, self.grid, TILE_SIZE, 0)
 		self.spawnui = UIGrid(self.right.width + 6, 0, self.spawntools, TILE_SIZE, 1)
 		self.left = UIGrid(self.right.width + 6, self.spawnui.height + 6, self.tools, OVERLAY_SIZE, 1)
+		self.done_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
 
 	def _load(self, mapname):
 		map, mapsize, spawns = load_map(mapname)
@@ -142,13 +143,21 @@ class MapEditor:
 				rect.center = (rx + self.right.cell_size[0]/2, ry + self.right.cell_size[1]/2)
 				self.screen.blit(text, rect)
 
+		self.screen.fill((127, 127, 127), (self.done_btn.x, self.done_btn.y, self.done_btn.width, self.done_btn.height))
+		text = self.spawnfont.render('Back to main menu', True, (0, 0, 0))
+		rect = text.get_rect()
+		rect.center = (self.done_btn.x + self.done_btn.width/2, self.done_btn.y + self.done_btn.height / 2)
+		self.screen.blit(text, rect)
+
 	def loop(self):
 		left, right, spawnui = self.left, self.right, self.spawnui
 
 		area = None
 		start = None
 		tool = None
-		while 1:
+
+		self.done = False
+		while not self.done:
 			self.screen.fill((0, 0, 0))
 			self.draw()
 			pygame.display.flip()
@@ -162,6 +171,8 @@ class MapEditor:
 							area = 'right'
 						elif spawnui.contains(*event.pos):
 							area = 'spawn'
+						elif self.done_btn.contains(*event.pos):
+							area = 'done'
 						start = event.pos
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
@@ -177,6 +188,8 @@ class MapEditor:
 						if area == 'spawn' and spawnui.contains(*event.pos):
 							x, y = spawnui.screen2grid_translate(*event.pos)
 							tool = ('spawn', self.spawntools[x, y])
+						if area == 'done' and self.done_btn.contains(*event.pos):
+							self.done = True
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
