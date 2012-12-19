@@ -91,6 +91,7 @@ class MapSelection:
 
 	def add_map(self, mapname, x, y, w, h):
 		map_btn = FuncButton(self.sidebar_container, x, y, w, h, [[mapname, None]], None, 20, self.screen, 1, (self.select_map, mapname), True, False, True)
+		print mapname, map_btn, w, h
 		self.sidebar_container.spritegroup.add(map_btn)
 		self.buttons.append(map_btn)
 
@@ -118,8 +119,7 @@ class MapSelection:
 		margin = 5
 		self.maplist = []
 		for m in maps:
-			self.maplist.append(self.add_map(m, x, y, h, w))
-			self.add_map(m, x, y, w, h)
+			self.maplist.append(self.add_map(m, x, y, w, h))
 			y = (y + h) + margin
 
 	def select_map(self, mapname):
