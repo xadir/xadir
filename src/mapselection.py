@@ -158,6 +158,7 @@ class MapSelection:
 		print "Hosting: ", self.network_host
 		print "Selected IP: ", self.ip_input.value
 		print "Selected Port: ", self.port_input.value
+		self.done = True
 
 	def do_done(self):
 		self.done = True
