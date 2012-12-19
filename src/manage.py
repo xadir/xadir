@@ -597,25 +597,25 @@ class Manager:
 	def prev_race(self, race_sprite):
 		print "Previous race"
 		self.race_index = (self.race_index - 1) % len(self.races)
-		self.selected_char.race = races[self.races[self.race_index]]
+		self.selected_char.race_name = races[self.races[self.race_index]].name
 		self.update_new_character(self.manage)
 	
 	def next_race(self, race_sprite):
 		print "Next race"
 		self.race_index = (self.race_index + 1) % len(self.races)
-		self.selected_char.race = races[self.races[self.race_index]]
+		self.selected_char.race_name = races[self.races[self.race_index]].name
 		self.update_new_character(self.manage)
 
 	def prev_class(self, *param):
 		print "Previous class"
 		self.class_index = (self.class_index - 1) % len(self.classes)
-		self.selected_char.class_ = classes[self.classes[self.class_index]]
+		self.selected_char.class_name = classes[self.classes[self.class_index]].name
 		self.update_new_character(self.manage)
 	
 	def next_class(self, *param):
 		print "Next class"
 		self.class_index = (self.class_index + 1) % len(self.classes)
-		self.selected_char.class_ = classes[self.classes[self.class_index]]
+		self.selected_char.class_name = classes[self.classes[self.class_index]].name
 		self.update_new_character(self.manage)
 
 	def char_add(self, character):
