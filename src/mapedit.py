@@ -102,7 +102,7 @@ class MapEditor:
 		maps = self.list_maps()
 		i = 0
 		while i < len(maps):
-			if maps[i] == "tools.txt" or maps[i] == "README":
+			if maps[i] == "tools.txt" or maps[i] == "README" or not maps[i].endswith(".txt"):
 				maps.pop(i)
 				i = i - 1
 			else:
