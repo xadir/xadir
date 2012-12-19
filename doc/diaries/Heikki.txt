@@ -1,4 +1,4 @@
-﻿Total: 85t
+﻿Total: 198t
 
 - 17.9 (3t) Pre-Alphan kehitys
 	- kartan renderöinti
