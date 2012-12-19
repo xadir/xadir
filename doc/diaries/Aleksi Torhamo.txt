@@ -1,4 +1,4 @@
-total: 67h (+4h)
+total: ~162h (+4h)
 
 - 18.9. (3t) Palaveri 1 (kaikki paikalla)
 	- Peli idean varmistuminen
@@ -82,4 +82,23 @@ total: 67h (+4h)
 	- Replaced movement machinery
 	- Fixed inverted blocking logic
 	- Prevented characters ending up on same square
+
+- 26.11. (5h) UI Framework
+- 28.11. (2h) UI fixes
+- 29.11. (10h) Stat system, cleanup
+- 30.11. (3h) Bugfixes
+- 1.12. (1h) Drawing logic updates
+- 2.12. (12h) Drawing logic rework, updated races
+- 4.12. (1h) Bugfix, more stat system
+- 5.12. (10h) Stat system, weapons, armors
+- 7.12. (6h) Updated map drawing to use new tile system, drawing logic updates, bugfixes
+- 10.12. (1h) Cleanup
+- 12.12. (2h) More updates to map tile system
+- 14.12. (4h) Finished drawing logic changes etc.
+- 16.12. (7h) Added in-game combat log, groundwork for character management
+- 17.12. (8h) Combat log fixes, management fixes, bugfixes
+- 18.12. (13h) Music, stat system updates, fixed map editor for new tile system
+- 19.12. (10h) Network game, bugfixes, exe generation, etc. etc.
+
+...And probably more, since these were largely sniffed from git commit times....
 
