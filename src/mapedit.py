@@ -70,7 +70,9 @@ class MapEditor:
 		self.right = UIGrid(0, 0, self.grid, TILE_SIZE, 0)
 		self.spawnui = UIGrid(self.right.width + 6, 0, self.spawntools, TILE_SIZE, 1)
 		self.left = UIGrid(self.right.width + 6, self.spawnui.height + 6, self.tools, OVERLAY_SIZE, 1)
-		self.done_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
+		self.load_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
+		self.save_btn = UIComponent(self.right.width + 6, self.load_btn.y + self.load_btn.height + 6, self.left.width, 50)
+		self.done_btn = UIComponent(self.right.width + 6, self.save_btn.y + self.save_btn.height + 6, self.left.width, 50)
 
 	def _load(self, mapname):
 		map, mapsize, spawns = load_map(mapname)
@@ -143,14 +145,30 @@ class MapEditor:
 				rect.center = (rx + self.right.cell_size[0]/2, ry + self.right.cell_size[1]/2)
 				self.screen.blit(text, rect)
 
-		self.screen.fill((127, 127, 127), (self.done_btn.x, self.done_btn.y, self.done_btn.width, self.done_btn.height))
-		text = self.spawnfont.render('Back to main menu', True, (0, 0, 0))
-		rect = text.get_rect()
-		rect.center = (self.done_btn.x + self.done_btn.width/2, self.done_btn.y + self.done_btn.height / 2)
-		self.screen.blit(text, rect)
+		for btn, text in [(self.load_btn, 'Load map'), (self.save_btn, 'Save map'), (self.done_btn, 'Back to main menu')]:
+			self.screen.fill((127, 127, 127), (btn.x, btn.y, btn.width, btn.height))
+			text = self.spawnfont.render(text, True, (0, 0, 0))
+			rect = text.get_rect()
+			rect.center = (btn.x + btn.width / 2, btn.y + btn.height / 2)
+			self.screen.blit(text, rect)
+
+	def do_load(self):
+		print 'Load'
+
+	def do_save(self):
+		print 'Save'
+
+	def do_done(self):
+		self.done = True
 
 	def loop(self):
 		left, right, spawnui = self.left, self.right, self.spawnui
+
+		btns = [
+			(self.save_btn, 'save', self.do_save),
+			(self.load_btn, 'load', self.do_load),
+			(self.done_btn, 'done', self.do_done),
+		]
 
 		area = None
 		start = None
@@ -171,8 +189,10 @@ class MapEditor:
 							area = 'right'
 						elif spawnui.contains(*event.pos):
 							area = 'spawn'
-						elif self.done_btn.contains(*event.pos):
-							area = 'done'
+						else:
+							for btn, name, func in btns:
+								if btn.contains(*event.pos):
+									area = name
 						start = event.pos
 				elif event.type == pygame.MOUSEBUTTONUP:
 					if event.button == 1:
@@ -188,8 +208,9 @@ class MapEditor:
 						if area == 'spawn' and spawnui.contains(*event.pos):
 							x, y = spawnui.screen2grid_translate(*event.pos)
 							tool = ('spawn', self.spawntools[x, y])
-						if area == 'done' and self.done_btn.contains(*event.pos):
-							self.done = True
+						for btn, name, func in btns:
+							if area == name and btn.contains(*event.pos):
+								func()
 						area = None
 						start = None
 				elif event.type == pygame.MOUSEMOTION:
