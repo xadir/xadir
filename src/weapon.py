@@ -20,29 +20,36 @@ Z = 'magic' # "zap"
 weapon_data = [
 	#                                 |    damage    |    critical    |   range   |
 	# name              | type | size | type | roll  |  mult | chance | min | max | price
-	('carrot',            M,     L,     [P],   '1d1',   2.0,   2,       0,    0,    0),
-	('rapier',            M,     L,     [P],   '1d6',   1.5,   10,      0,    0,    10),
-	('dagger',            M,     L,     [P],   '1d4',   1.5,   15,      0,    0,    10),
-	('throwing dagger',   R,     L,     [P],   '1d4',   1.5,   2,       0,    2,    10),
-	('handaxe',           M,     L,     [S],   '1d6',   2.0,   2,       0,    0,    10),
-	('short sword',       M,     L,     [S],   '1d6',   1.5,   8,       0,    0,    10),
-	('light mace',        M,     L,     [B],   '1d6',   1.7,   5,       0,    0,    10),
-	('sling',             R,     L,     [B],   '1d4',   1.5,   5,       1,    4,    10),
-	('wand',              Z,     L,     [M],   '1d4',   1.5,   5,       0,    8,    10),
-	('morningstar',       M,     N,     [B,P], '1d8',   2.0,   1,       0,    0,    10),
-	('battleaxe',         M,     N,     [S],   '1d8',   3.0,   1,       0,    0,    10),
-	('scimitar',          M,     N,     [S],   '1d6',   2.0,   5,       0,    0,    10),
-#	('mace',              M,     N,     [B],   '1d6',   1.5,   ?,       ?,    ?,    ?),
-#	('flail',             M,     N,     [B],   '1d6',   ?.?,   ?,       ?,    ?,    ?),
-#	('staff',             Z,     N,     [M],   '1d6',   ?.?,   ?,       ?,    ?,    ?),
-	('scythe',            M,     H,     [P,S], '2d4',   4.0,   1,       0,    0,    10),
-#	('spear',             M,     H,     [P],   '1d10',  ?.?,   ?,       ?,    ?,    ?),
-#	('trident',           M,     H,     [P],   '1d12,   ?.?,   ?,       ?,    ?,    ?),
-	('halberd',           M,     H,     [P,S], '1d10',  3.0,   1,       0,    1,    10),
-	('greatsword',        M,     H,     [S],   '1d10',  2.5,   10,      0,    0,    10),
-	('greataxe',          M,     H,     [S],   '2d6',   3.0,   1,       0,    0,    10),
-	('heavy club',        M,     H,     [B],   '1d10',  2.5,   8,       0,    0,    10),
-	('heavy mace',        M,     H,     [B],   '1d12',  2.5,   5,       0,    0,    10),
+	# before final release add reload time to crossbows
+	('Potato', 			  R,     L,     [B],    '1d1',  2.0,    3,       1,    2,     0), 
+	('Carrot',            M,     L,     [P],    '1d1',  2.0,    3,       0,    0,     0),
+	('Rapier',            M,     L,     [P],    '1d6',  1.5,   10,       0,    0,    10),
+	('Dagger',            M,     L,     [P,S],  '1d4',  1.5,   15,       0,    0,     5),
+	('Throwing Dagger',   R,     L,     [P],    '1d4',  1.5,    2,       0,    3,    10),
+	('Handaxe',           M,     L,     [S],    '1d6',  2.0,    2,       0,    0,    10),
+	('Short Sword',       M,     L,     [S],    '1d6',  1.5,    8,       0,    0,    10),
+	('Light Mace',        M,     L,     [B],    '1d6',  1.7,    5,       0,    0,    10),
+	('Sling',             R,     L,     [B],    '1d4',  1.5,    5,       1,    5,    10),
+	('Wand',              Z,     L,     [M],    '1d6',  1.5,    5,       0,   10,    10),
+	('Morningstar',       M,     N,     [B,P],  '1d8',  2.0,    1,       0,    0,    10),
+	('Battleaxe',         M,     N,     [S],    '1d8',  3.0,    1,       0,    0,    10),
+	('Scimitar',          M,     N,     [S],    '1d6',  1.5,   10,       0,    0,    10),
+	('Longsword',         M,     N,     [S],    '1d8',  2.0,    5,       0,    0,    10),   
+	('Warhammer',         M,     N,     [B],    '1d8',  2.5,    1,       0,    0,    10),
+	('Flail',             M,     N,     [B],    '1d6',  2.0,    1,       0,    0,    10),
+	('Staff',             Z,     N,     [M],    '1d8',  1.5,    5,       1,   10,    10),
+	('Light Crossbow',    R,     N,     [P],    '1d8',  2.5,    1,       1,    8,    10),
+    ('Shortbow',          R,     N,     [P],    '1d6',  2.0,    2,       1,   10,    10),	
+	('Scythe',            M,     H,     [P,S],  '2d4',  4.0,    1,       0,    0,    10),
+	('Spear',             M,     H,     [P],   '1d10',  2.0,    5,       0,    1,    10),
+	('Trident',           M,     H,     [P],   '1d12',  2.5,    3,       0,    1,    10),
+	('Halberd',           M,     H,     [P,S], '1d10',  3.0,    1,       0,    1,    10),
+	('Greatsword',        M,     H,     [S],   '1d10',  2.5,   10,       0,    0,    10),
+	('Greataxe',          M,     H,     [S],    '2d6',  3.0,    1,       0,    0,    10),
+	('Heavy club',        M,     H,     [B],   '1d10',  2.5,    8,       0,    0,    10),
+	('Heavy mace',        M,     H,     [B],   '1d12',  2.5,    5,       0,    0,    10),
+	('Heavy Crossbow',    R,     H,     [P],   '1d10',  2.5,    1,       1,    8,    10),
+	('Longbow',           R,     H,     [P],   '1d8',   2.0,    2,       1,   10,    10)
 ]
 
 _weapon_id = 0
@@ -51,6 +58,7 @@ class Weapon:
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
+	fields = 'name:str size:str type:str class_:str damage:dice damage_type:damage magic_enchantment:int critical_multiplier:float critical_chance:int'
 	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment, critical_multiplier = None, critical_chance = None):
 		self.name = name
 		self.size = size
