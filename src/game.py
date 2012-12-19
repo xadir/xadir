@@ -205,7 +205,8 @@ class XadirMain:
 
 		change_sound(pygame.mixer.Channel(0), load_sound('battle.ogg'), BGM_FADE_MS)
 
-		while 1:
+		self.done = False
+		while not self.done:
 			self.draw()
 			if self.current_player.remote:
 				self.poll_remote_events()
@@ -218,6 +219,9 @@ class XadirMain:
 			if len(self.live_players) <= 1:
 				self.gameover()
 
+	def end_game(self):
+		self.done = True
+
 	def gameover(self):
 		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
 		if len(self.live_players) < 1:
@@ -226,9 +230,17 @@ class XadirMain:
 			text = '%s wins!' % self.live_players[0].name
 		sprite = Textile(text, pygame.Rect((0, 0, 960, 720)), layer = L_GAMEOVER)
 		self.sprites.add(sprite)
-		while 1:
+		self.sprites.remove(self.buttons)
+		self.buttons = [Button(980, 600, 200, 100, "End game", 40, self.end_game, (185, 139, 139))]
+		self.sprites.add(self.buttons)
+		while not self.done:
 			self.draw()
 			for event in pygame.event.get():
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if event.button == 1:
+						for b in self.buttons:
+							if b.contains(*event.pos):
+								b.function()
 				if event.type == pygame.QUIT:
 					sys.exit()
 
@@ -883,17 +895,17 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 # Following classes define the graphical elements, or Sprites.
 class Button(UIComponent, pygame.sprite.DirtySprite):
-	def __init__(self, x, y, width, height, text, fontsize, function):
+	def __init__(self, x, y, width, height, text, fontsize, function, bgcolor = (139, 162, 185)):
 		UIComponent.__init__(self, x, y, width, height)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.image = pygame.Surface(self.size)
 
 		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		image = font.render(text, True, (0, 0, 0), (139, 162, 185))
+		image = font.render(text, True, (0, 0, 0), bgcolor)
 		rect = image.get_rect()
 
-		self.image.fill((139, 162, 185))
+		self.image.fill(bgcolor)
 		self.image.blit(image, (self.width/2 - rect.centerx, self.height/2 - rect.centery))
 
 		self.function = function
