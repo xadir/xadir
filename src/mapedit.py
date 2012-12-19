@@ -5,6 +5,7 @@ from resources import *
 from config import *
 from grid import *
 from bgmap import *
+from UI import *
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -60,6 +61,10 @@ class MapEditor:
 		self.sprites = pygame.sprite.LayeredUpdates()
 		self.sprites.add(self.grid.sprites.values())
 
+		self.maplist_container = UIContainer(None, (957, 500), (238, 400), self.screen)
+		self.buttons = []
+		self.maplist = []
+
 		self._update_ui_elements()
 
 		if mapname:
@@ -73,6 +78,49 @@ class MapEditor:
 		self.load_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
 		self.save_btn = UIComponent(self.right.width + 6, self.load_btn.y + self.load_btn.height + 6, self.left.width, 50)
 		self.done_btn = UIComponent(self.right.width + 6, self.save_btn.y + self.save_btn.height + 6, self.left.width, 50)
+
+	def list_maps(self):
+		maps = os.listdir(MAPDIR)
+		print maps
+		return maps
+
+	def add_map(self, mapname, x, y, w, h):
+		map_btn = FuncButton(self.maplist_container, x, y, w, h, [[mapname, None]], None, 20, self.screen, 1, (self.select_map, mapname), True, False, True)
+		print mapname, map_btn, w, h
+		self.maplist_container.spritegroup.add(map_btn)
+		self.buttons.append(map_btn)
+
+	def update_maplist(self):
+		maps = self.list_maps()
+		i = 0
+		while i < len(maps):
+			if maps[i] == "tools.txt" or maps[i] == "README":
+				maps.pop(i)
+				i = i - 1
+			else:
+				try:
+					map, mapsize, spawns = load_map(maps[i])
+					for row in map:
+						for tile in row:
+							assert tile in self.tiles
+				except:
+					maps.pop(i)
+					i = i - 1
+				i = i + 1
+		x = 10
+		y = 10
+		w = 218
+		h = 20
+		margin = 5
+		self.maplist = []
+		for m in maps:
+			self.maplist.append(self.add_map(m, x, y, w, h))
+			y = (y + h) + margin
+
+	def select_map(self, mapname):
+		self.mapname = mapname
+		print self.mapname
+		self.load(self.mapname)
 
 	def _load(self, mapname):
 		map, mapsize, spawns = load_map(mapname)
@@ -111,13 +159,16 @@ class MapEditor:
 		#try:
 		os.rename(path + '.new', path)
 		#except xxx:
-		#	os.remove(path + '.old')
-		#	os.rename(path, path + '.old')
+		#	os.(path + '.old')
+		#	os.rename(h, path + '.old')
 		#	os.rename(path + '.new', path)
 		#	os.remove(path + '.old')
 		# XXX: should we leave the old map in path.old?
 
 	def draw(self):
+		
+		self.maplist_container.draw()
+
 		for (x, y), num in self.spawntools.items():
 			if num:
 				text = self.spawnfont.render(str(num), True, (255, 255, 255))
@@ -161,7 +212,15 @@ class MapEditor:
 	def do_done(self):
 		self.done = True
 
+	def click(self, event):
+		for b in self.buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+				break
+
 	def loop(self):
+		self.update_maplist()
 		left, right, spawnui = self.left, self.right, self.spawnui
 
 		btns = [
