@@ -38,6 +38,9 @@ class Manager:
 		self.party.append(Character("test7", "goblin", "warrior", 10, 10, 10, 10, None, None))
 		"""
 
+		self.ip = ''
+		IpResolver2(self).start()
+
 		self.team = []
 		self.team1 = []
 		self.team2 = []
@@ -691,7 +694,7 @@ class Manager:
 		join_game(self.screen, mapsel.ip_input.value, int(mapsel.port_input.value), team)
 
 	def host_game(self, team):
-		mapsel = MapSelection(self.screen, 'map_new.txt', network=True, network_host=True)
+		mapsel = MapSelection(self.screen, 'map_new.txt', network=True, network_host=True, ip = self.ip)
 		mapsel.loop()
 		host_game(self.screen, int(mapsel.port_input.value), mapsel.mapname, team)
 
@@ -749,6 +752,20 @@ class Manager:
 					sys.exit()
 
 			time.sleep(0.05)
+
+import threading
+import urllib
+import re
+class IpResolver2(threading.Thread):
+	def __init__(self, win):
+		threading.Thread.__init__(self)
+		self.win = win
+
+	def run(self):
+		data = urllib.urlopen('http://whatismyip.xadir.net/plain2').read()
+		data = data.strip()
+		if re.match('^\\d+[.]\\d+[.]\\d+[.]\\d+$', data):
+			self.win.ip = data
 
 if __name__ == "__main__":
 	screen = init_pygame()

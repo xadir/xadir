@@ -21,7 +21,7 @@ def parse_tile(s):
 	return [tl, tr, br, bl, n]
 
 class MapSelection:
-	def __init__(self, screen, mapname=None, network=False, network_host=False):
+	def __init__(self, screen, mapname=None, network=False, network_host=False, ip = ''):
 		self.screen = screen
 		self.width, self.height = self.screen.get_size()
 		self.network = network
@@ -64,7 +64,7 @@ class MapSelection:
 		#else:
 		self.ip_btn = FuncButton(self.sidebar_container, 10, 10, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "ip"), True, False, True)
 		if network_host:
-			self.ip_input.value += "127.0.0.1"
+			self.ip_input.value += ip
 		self.port_btn = FuncButton(self.sidebar_container, 10, 75, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "port"), True, False, True)
 
 		self.buttons = []
