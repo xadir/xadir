@@ -6,6 +6,7 @@ from config import *
 from grid import *
 from bgmap import *
 from UI import *
+import eztext
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -62,8 +63,15 @@ class MapEditor:
 		self.sprites.add(self.grid.sprites.values())
 
 		self.maplist_container = UIContainer(None, (957, 500), (238, 400), self.screen)
+		self.save_input = eztext.Input(x=self.maplist_container.x + 10, y=self.maplist_container.y + 100, maxlength=40, color=COLOR_FONT, prompt='Map name: ')
+
+		self.save_btn = FuncButton(self.maplist_container, 10, 150, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save, self.save_input.value), True, False, True)
+
 		self.buttons = []
 		self.maplist = []
+
+		self.maplist_container.spritegroup.add(self.save_btn)
+		self.buttons.append(self.save_btn)
 
 		self._update_ui_elements()
 
@@ -75,9 +83,9 @@ class MapEditor:
 		self.right = UIGrid(0, 0, self.grid, TILE_SIZE, 0)
 		self.spawnui = UIGrid(self.right.width + 6, 0, self.spawntools, TILE_SIZE, 1)
 		self.left = UIGrid(self.right.width + 6, self.spawnui.height + 6, self.tools, OVERLAY_SIZE, 1)
-		self.load_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
-		self.save_btn = UIComponent(self.right.width + 6, self.load_btn.y + self.load_btn.height + 6, self.left.width, 50)
-		self.done_btn = UIComponent(self.right.width + 6, self.save_btn.y + self.save_btn.height + 6, self.left.width, 50)
+		#self.load_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
+		#self.save_btn = UIComponent(self.right.width + 6, self.left.y + self.left.height + 6, self.left.width, 50)
+		self.done_btn = UIComponent(self.right.width + 6, self. left.y + self.left.height + 6, self.left.width, 50)
 
 	def list_maps(self):
 		maps = os.listdir(MAPDIR)
@@ -121,6 +129,7 @@ class MapEditor:
 		self.mapname = mapname
 		print self.mapname
 		self.load(self.mapname)
+		self.save_input.value = self.mapname
 
 	def _load(self, mapname):
 		map, mapsize, spawns = load_map(mapname)
@@ -196,7 +205,7 @@ class MapEditor:
 				rect.center = (rx + self.right.cell_size[0]/2, ry + self.right.cell_size[1]/2)
 				self.screen.blit(text, rect)
 
-		for btn, text in [(self.load_btn, 'Load map'), (self.save_btn, 'Save map'), (self.done_btn, 'Back to main menu')]:
+		for btn, text in [(self.save_btn, 'Save map'), (self.done_btn, 'Back to main menu')]:
 			self.screen.fill((127, 127, 127), (btn.x, btn.y, btn.width, btn.height))
 			text = self.spawnfont.render(text, True, (0, 0, 0))
 			rect = text.get_rect()
@@ -225,7 +234,7 @@ class MapEditor:
 
 		btns = [
 			(self.save_btn, 'save', self.do_save),
-			(self.load_btn, 'load', self.do_load),
+			#(self.load_btn, 'load', self.do_load),
 			(self.done_btn, 'done', self.do_done),
 		]
 
@@ -235,13 +244,19 @@ class MapEditor:
 
 		self.done = False
 		while not self.done:
+			events = pygame.event.get()
 			self.screen.fill((0, 0, 0))
+
 			self.draw()
+			self.save_input.update(events)
+			self.save_input.draw(self.screen)
+
 			pygame.display.flip()
 
-			for event in pygame.event.get():
+			for event in events:
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
+						self.click(event)
 						if left.contains(*event.pos):
 							area = 'left'
 						elif right.contains(*event.pos):
