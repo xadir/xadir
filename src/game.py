@@ -155,6 +155,7 @@ class XadirMain:
 		self.messages = Messages(980, 380, 200, 200)
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
+		self.sprites.set_clip()
 		self.sprites.add(Fps(self.clock, self.sidebar.centerx))
 		self.sprites.add(CurrentPlayerName(self, self.sidebar.centerx))
 		self.sprites.add(self.buttons)
@@ -373,6 +374,8 @@ class XadirMain:
 		character.grid_pos = end
 		character.mp -= distance
 		new_heading = self.get_heading(path[-2], mouse_grid_pos)
+		self.draw()
+		pygame.display.flip()
 		character.heading = new_heading
 
 	def animate_move(self, path, character):
@@ -444,6 +447,15 @@ class XadirMain:
 		target_position = target.grid_pos
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
+			text = draw_speech_bubble('Prepare to die!')
+			rect = text.get_rect()
+			rect.topleft = attacker.pos
+			rect.top -= rect.height
+			sprite = Tile(text, rect, layer=(4,))
+			self.sprites.add(sprite)
+			self.draw(FPS)
+			self.sprites.remove(sprite)
+
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
 			target.take_hit(damage)
@@ -901,14 +913,68 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 
 		self.image = pygame.Surface(self.size)
 
-		font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
-		image = font.render(text, True, (0, 0, 0), bgcolor)
+		#font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+		#image = font.render(text, True, (0, 0, 0), bgcolor)
+		image = draw_pixel_text(text)
+		rect = image.get_rect()
+		image = pygame.transform.scale(image, (SCALE * rect.width, SCALE * rect.height))
 		rect = image.get_rect()
 
 		self.image.fill(bgcolor)
 		self.image.blit(image, (self.width/2 - rect.centerx, self.height/2 - rect.centery))
 
 		self.function = function
+
+def draw_pixel_text(text):
+	import Image, ImageDraw, ImageFont
+
+	font = ImageFont.FreeTypeFont('font/pf_tempesta_five_condensed.ttf', 8)
+	width = font.getsize(text)[0]
+	im = Image.new('1', (width, 15))
+	draw = ImageDraw.Draw(im)
+	draw.rectangle(((0, 0), (width, 15)), fill=1)
+	draw.text((0, 0), text, font=font, fill=0)
+	im = im.crop((0, 4, width, 10)).convert('RGB')
+
+	text = pygame.image.fromstring(im.tostring(), im.size, im.mode)
+	text.set_colorkey((255, 255, 255))
+
+	return text
+
+def draw_speech_bubble(text):
+	text = draw_pixel_text(text)
+	rect = text.get_rect()
+	rect.topleft = (3, 2)
+	width, height = size = max(3 + rect.width + 2, 13), max(2 + rect.height + 2 + 4, 10)
+	bubble = pygame.Surface(size)
+	# Transparency
+	bubble.set_colorkey((255, 0, 255))
+	bubble.fill((255, 0, 255))
+	# Inside of the bubble
+	bubble.fill((255, 255, 255), (1, 1, width - 2, height - 6))
+	# Borders of the bubble
+	bubble.fill((0, 0, 0), (0, 2, 1, height - 8))
+	bubble.fill((0, 0, 0), (width - 1, 2, 1, height - 8))
+	bubble.fill((0, 0, 0), (2, 0, width - 4, 1))
+	bubble.fill((0, 0, 0), (2, height - 5, width - 4, 1))
+	# Corners of the bubble
+	bubble.fill((0, 0, 0), (1, 1, 1, 1))
+	bubble.fill((0, 0, 0), (width - 2, 1, 1, 1))
+	bubble.fill((0, 0, 0), (1, height - 6, 1, 1))
+	bubble.fill((0, 0, 0), (width - 2, height - 6, 1, 1))
+	# Inside of the jag
+	bubble.fill((255, 255, 255), (5, height - 5, 3, 3))
+	bubble.fill((255, 0, 255), (7, height - 3, 1, 1))
+	# Border of the jag
+	bubble.fill((0, 0, 0), (4, height - 5, 1, 4))
+	bubble.fill((0, 0, 0), (5, height - 2, 1, 1))
+	bubble.fill((0, 0, 0), (6, height - 3, 1, 1))
+	bubble.fill((0, 0, 0), (7, height - 4, 1, 1))
+	# Text
+	bubble.blit(text, rect)
+	rect = bubble.get_rect()
+	bubble = pygame.transform.scale(bubble, (SCALE * rect.width, SCALE * rect.height))
+	return bubble
 
 def get_random_teams(player_count = 2, character_count = 3):
 	player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
