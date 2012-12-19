@@ -69,7 +69,6 @@ class MapSelection:
 
 		self.buttons = []
 		self.maplist = []
-		self.maplinks = []
 
 		self.buttons.append(self.play_btn)
 		if self.network:
@@ -82,8 +81,43 @@ class MapSelection:
 			self.sidebar_container.spritegroup.add(self.port_btn)
 
 		if self.mapname:
-			self.load(self.mapname)	
+			self.load(self.mapname)
 			
+
+	def list_maps(self):
+		maps = os.listdir(MAPDIR)
+		print maps
+		return maps
+
+	def add_map(self, mapname, x, y, w, h):
+		map_btn = FuncButton(self.sidebar_container, x, y, w, h, [[mapname, None]], None, 20, self.screen, 1, (self.select_map, mapname), True, False, True)
+		self.sidebar_container.spritegroup.add(map_btn)
+		self.buttons.append(map_btn)
+
+	def update_maplist(self):
+		maps = self.list_maps()
+		i = 0
+		while i < len(maps):
+			if maps[i] == "tools.txt" or maps[i] == "README":
+				maps.pop(i)
+				i = i - 1
+			else:
+				i = i + 1
+		x = 10
+		y = 360
+		w = 218
+		h = 20
+		margin = 5
+		self.maplist = []
+		for m in maps:
+			self.maplist.append(self.add_map(m, x, y, h, w))
+			self.add_map(m, x, y, w, h)
+			y = (y + h) + margin
+
+	def select_map(self, mapname):
+		self.mapname = mapname
+		print self.mapname
+		self.load(self.mapname)
 
 	def _load(self, mapname):
 		map, mapsize, spawns = load_map(mapname)
@@ -187,6 +221,8 @@ class MapSelection:
 				break
 
 	def loop(self):
+		self.update_maplist()
+
 		area = None
 		start = None
 		tool = None
