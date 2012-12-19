@@ -240,7 +240,7 @@ class MapEditor:
 
 		area = None
 		start = None
-		tool = None
+		tool = ('tile', None)
 
 		self.done = False
 		while not self.done:
