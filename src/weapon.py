@@ -20,7 +20,7 @@ Z = 'magic' # "zap"
 weapon_data = [
 	#                                 |    damage    |    critical    |   range   |
 	# name              | type | size | type | roll  |  mult | chance | min | max | price
-	('carrot',            M,     L,     [P],   '1d1',   10.0,  1,       0,    0,    10),
+	('carrot',            M,     L,     [P],   '1d1',   2.0,   2,       0,    0,    0),
 	('rapier',            M,     L,     [P],   '1d6',   1.5,   10,      0,    0,    10),
 	('dagger',            M,     L,     [P],   '1d4',   1.5,   15,      0,    0,    10),
 	('throwing dagger',   R,     L,     [P],   '1d4',   1.5,   2,       0,    2,    10),
@@ -32,12 +32,12 @@ weapon_data = [
 	('morningstar',       M,     N,     [B,P], '1d8',   2.0,   1,       0,    0,    10),
 	('battleaxe',         M,     N,     [S],   '1d8',   3.0,   1,       0,    0,    10),
 	('scimitar',          M,     N,     [S],   '1d6',   2.0,   5,       0,    0,    10),
-#	('mace',              M,     N,     [B],   '?d?',   ?.?,   ?,       ?,    ?,    ?),
-#	('flail',             M,     N,     [B],   '?d?',   ?.?,   ?,       ?,    ?,    ?),
-#	('staff',             ?,     ?,     [?],   '?d?',   ?.?,   ?,       ?,    ?,    ?),
+#	('mace',              M,     N,     [B],   '1d6',   1.5,   ?,       ?,    ?,    ?),
+#	('flail',             M,     N,     [B],   '1d6',   ?.?,   ?,       ?,    ?,    ?),
+#	('staff',             Z,     N,     [M],   '1d6',   ?.?,   ?,       ?,    ?,    ?),
 	('scythe',            M,     H,     [P,S], '2d4',   4.0,   1,       0,    0,    10),
-#	('spear',             ?,     ?,     [?],   '?d?',   ?.?,   ?,       ?,    ?,    ?),
-#	('trident',           ?,     ?,     [?],   '?d?',   ?.?,   ?,       ?,    ?,    ?),
+#	('spear',             M,     H,     [P],   '1d10',  ?.?,   ?,       ?,    ?,    ?),
+#	('trident',           M,     H,     [P],   '1d12,   ?.?,   ?,       ?,    ?,    ?),
 	('halberd',           M,     H,     [P,S], '1d10',  3.0,   1,       0,    1,    10),
 	('greatsword',        M,     H,     [S],   '1d10',  2.5,   10,      0,    0,    10),
 	('greataxe',          M,     H,     [S],   '2d6',   3.0,   1,       0,    0,    10),
