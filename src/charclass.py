@@ -1,6 +1,8 @@
 
 class_data = [
 	# XXX: <Insert real class data here>
+	# weapon dmg, DR, RES, hit, MP, miss, crit
+	# hit, miss, crit, RES, DR, MP, weapon dmg
 	('warrior', 0),
 	('mage',    0),
 	('healer',  0),

@@ -1,4 +1,4 @@
-﻿Total: 85t
+﻿Total: 198t
 
 - 17.9 (3t) Pre-Alphan kehitys
 	- kartan renderöinti
@@ -103,3 +103,52 @@
 	- Uudet rotukuvat muunnettu tukemaan läpinäkyvyyttä
 	- Päivitetty hahmon valintatyökalu tukemaan uusia rotuja
 	- Valintatyökalun implementointi päävalikkoon
+
+- 20.11 (5h)
+	- Managerointi-ikkunan kehittämistä
+
+- 24.11 (8h)
+	- Hiusten lisääminen characterin spriteen
+	- Uusi päävalikko
+	- Characterin luontityökalun kehitys
+
+- 28.11 (8h)
+	- Painikkeiden luokien korjailua tukemaan uutta UIComponent-luokkaa
+	- FuncButtonin toiminnan kehitys
+
+- 1.12 (6h)
+	- Uuden menun kehitystä
+	- Päivityksiä FuncButtoniin ja CascadeButtoniin
+	- Korjailtu päävalikkografiikka
+
+- 2.12 (2h)
+	- Korjailtu ja rikottu menu_beta.py
+
+- 3.12 (4h)
+	- FuncButtonin fiksailua tukemaan spritejä
+
+- 5.12 (8h)
+	- Painikkeiden bugien korjailua
+	- Painikkeille layer-ominaisuus
+	- config.py-tiedostoon väreille ja muille UI-asetuksille oletusarvot
+
+- 14.12 (5h)
+	- Config.py siivottu
+	- Päivitetty layout manage-ikkunaan
+
+- 15.12 (9h)
+	- Character-class käytössä UItestissä
+	- Management-ikkunan kehitystä
+	- Pelin käynnistys Management-ikkunasta
+
+- 16.12 (5h)
+	- Joukkueiden muodostus ja hallinta
+	- Uudet ikonit management-ikkunaan
+
+- 17.12 (6h)
+	- Management-ikkunan, päävalikon ja peli-ikkunan yhteensopivuuden korjailua
+	- Hahmojen luonti satunnaisesti pelaajan hahmolistaukseen
+
+- 18.12 (6h)
+	- Management-ikkunan bugien korjailua
+	- Pelin testausta
