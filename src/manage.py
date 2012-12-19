@@ -11,6 +11,8 @@ from weapon import Weapon, weapons
 from armor import Armor, armors
 import random
 
+from mapselection import MapSelection
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -679,13 +681,19 @@ class Manager:
 	def start_game(self, team):
 		print self.team1, self.team2
 		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
-		start_game(self.screen, 'map_new.txt', teams)
+		mapsel = MapSelection(self.screen, 'map_new.txt')
+		mapsel.loop()
+		start_game(self.screen, mapsel.mapname, teams)
 
 	def join_game(self, team):
-		print self.team
+		mapsel = MapSelection(self.screen, network=True)
+		mapsel.loop()
+		join_game(self.screen, mapsel.ip_input.value, int(mapsel.port_input.value), team)
 
 	def host_game(self, team):
-		print self.team
+		mapsel = MapSelection(self.screen, 'map_new.txt', network=True, network_host=True)
+		mapsel.loop()
+		host_game(self.screen, int(mapsel.port_input.value), mapsel.mapname, team)
 
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
