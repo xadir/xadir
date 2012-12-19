@@ -32,6 +32,13 @@ class AnimatedSprite(pygame.sprite.DirtySprite):
 		self.interval = interval
 		self.count = 0
 
+	def reset(self):
+		self.count = 0
+		if self.pos != 0:
+			self.pos = 0
+			self.image = self.images[self.pos]
+			self.dirty = 1
+
 	def update(self):
 		if not self.visible:
 			return

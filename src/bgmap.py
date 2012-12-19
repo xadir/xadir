@@ -23,6 +23,17 @@ class BackgroundMap(Grid):
 			rect.left = x*TILE_SIZE[0]
 			self.sprites[x, y] = AnimatedTile(tiles, rect, layer = L_MAP(y), interval = FPS / TILE_FPS)
 
+	def __setitem__(self, pos, value):
+		Grid.__setitem__(self, pos, value)
+		for (x, y), sprite in self.sprites.full_env_items(pos):
+			sprite.images = self.get_real_tile((x, y))
+			sprite.image = sprite.images[0]
+			sprite.rect = sprite.image.get_rect()
+			sprite.rect.topleft = (x*TILE_SIZE[0], y*TILE_SIZE[1] - (sprite.rect.height - TILE_SIZE[1]))
+			sprite.dirty = 1
+		for sprite in self.sprites.values():
+			sprite.reset()
+
 	def get_repeated(self, (x, y)):
 		return self[clamp_r(x, 0, self.width), clamp_r(y, 0, self.height)]
 
