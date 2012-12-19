@@ -242,15 +242,14 @@ class XadirMain:
 		result = []
 		player_ids = random.sample(self.spawns, len(teams))
 		for player_id, team in zip(player_ids, teams):
-			name, characters = team
+			name, remote, characters = team
 			spawn_points = random.sample(self.spawns[player_id], len(characters))
 			result.append(spawn_points)
 		return result
 
 	def init_teams(self, teams, spawns):
-		teams = [(name, zip(team, spawn)) for (name, team), spawn in zip(teams, spawns)]
-		for name, characters in teams:
-			self.add_player(name, [(char, x, y, 0) for char, (x, y) in characters])
+		for (name, remote, characters), spawn in zip(teams, spawns):
+			self.add_player(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -880,6 +879,7 @@ def deserialize_spawns(players):
 	return [[tuple(map(int, spawn.split(','))) for spawn in player.split(':')] for player in players.split(' ')]
 
 def start_game(screen, mapname, teams):
+	teams = [(name, None, team) for name, team in teams]
 	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()
 	game.init_teams(teams, game.get_spawnpoints(teams))
@@ -911,7 +911,7 @@ def host_game(screen, port, mapname, team):
 		sys.excepthook(*sys.exc_info())
 		return
 
-	teams = [('Player 1', team), ('Player 2', other_team[0])]
+	teams = [('Player 1', None, team), ('Player 2', conn, other_team[0])]
 
 	game = XadirMain(screen, mapname = mapname)
 	game.load_resources()
@@ -948,7 +948,7 @@ def join_game(screen, host, port, team):
 		sys.excepthook(*sys.exc_info())
 		return
 
-	teams = [('Player 1', other_team[0]), ('Player 2', team)]
+	teams = [('Player 1', conn, other_team[0]), ('Player 2', None, team)]
 
 	game = XadirMain(screen, mapname = mapname[0])
 	game.load_resources()

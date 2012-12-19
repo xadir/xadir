@@ -6,7 +6,7 @@ from UI import *
 from character import Character
 from race import races
 from charclass import classes
-from game import XadirMain
+from game import start_game, host_game, join_game
 from weapon import Weapon, weapons
 from armor import Armor, armors
 import random
@@ -679,10 +679,7 @@ class Manager:
 	def start_game(self, team):
 		print self.team1, self.team2
 		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
-		game = XadirMain(self.screen, mapname = 'map_new.txt')
-		game.load_resources()
-		game.init_teams(teams, game.get_spawnpoints(teams))
-		game.main_loop()
+		start_game(self.screen, 'map_new.txt', teams)
 
 	def join_game(self, team):
 		print self.team
