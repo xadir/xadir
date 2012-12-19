@@ -12,7 +12,7 @@ def isSystemDLL(pathname):
 py2exe.build_exe.isSystemDLL = isSystemDLL
 
 basedir = '.'
-data_dirs = 'gfx map font'.split()
+data_dirs = 'gfx snd map font'.split()
 data_files = []
 for data_dir in data_dirs:
 	filenames = os.listdir(data_dir)
