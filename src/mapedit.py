@@ -25,7 +25,7 @@ class MapEditor:
 		self.screen = screen
 		self.width, self.height = self.screen.get_size()
 
-		self.spawnfont = pygame.font.Font(None, 20)
+		self.spawnfont = pygame.font.Font(FONT, int(20*FONTSCALE))
 
 		tools, size, _ = load_map('tools.txt')
 

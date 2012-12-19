@@ -28,7 +28,7 @@ class MapSelection:
 		self.network_host = network_host
 		self.mapname = mapname
 
-		self.spawnfont = pygame.font.Font(None, 20)
+		self.spawnfont = pygame.font.Font(FONT, int(20*FONTSCALE))
 
 		self.ip_input_enabled = False
 		self.port_input_enabled = False
