@@ -249,7 +249,7 @@ class XadirMain:
 
 	def init_teams(self, teams, spawns):
 		for (name, remote, characters), spawn in zip(teams, spawns):
-			self.add_player(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)])
+			self.add_player(name, remote, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)])
 
 		self.turn = 0
 		self.grid_sprites = pygame.sprite.Group()
@@ -381,8 +381,8 @@ class XadirMain:
 	def get_own_other_players(self):
 		return [self.players[self.turn], self.get_other_players()]
 
-	def add_player(self, name, characters):
-		self.players.append(Player(name, characters, self))
+	def add_player(self, name, remote, characters):
+		self.players.append(Player(name, characters, self, remote))
 
 	def attack(self, attacker, target):
 		attacker_position = attacker.grid_pos
@@ -676,9 +676,10 @@ class SpriteGrid:
 
 class Player:
 	"""Class to create player or team in the game. One player may have many characters."""
-	def __init__(self, name, chardata, main):
+	def __init__(self, name, chardata, main, remote):
 		self.name = name
 		self.main = main
+		self.remote = remote
 		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main) for character, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
