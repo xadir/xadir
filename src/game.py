@@ -323,7 +323,8 @@ class XadirMain:
 		path = self.get_attack_path_for(character, start, mouse_grid_pos)
 		target = self.get_other_character_at(mouse_grid_pos)
 		damage, messages = roll_attack_damage(self.map, character, target)
-		self.remote.push_message('ATTACK', serialize_attack(self.current_player.all_characters.index(character), path, damage, messages))
+		if self.remote:
+			self.remote.push_message('ATTACK', serialize_attack(self.current_player.all_characters.index(character), path, damage, messages))
 		self.blah_attack(character, path, damage, messages)
 
 	def blah_attack(self, character, path, damage, messages):
@@ -349,7 +350,8 @@ class XadirMain:
 		start = character.grid_pos
 		end = mouse_grid_pos
 		path = self.get_move_path_for(character, start, end)
-		self.remote.push_message('MOVE', serialize_path(self.current_player.all_characters.index(character), path))
+		if self.remote:
+			self.remote.push_message('MOVE', serialize_path(self.current_player.all_characters.index(character), path))
 		self.blah_move(character, path)
 
 	def blah_move(self, character, path):
