@@ -110,12 +110,23 @@
 - 17.12 (8t)
 	- Musiikinteko
 
-- 18.12 (4t)
+- 18.12 (6t)
 	- Musiikinteko
 	- Asioiden tarkistus
 
+//117t yhteensä
+
+
+- 19.12 (6t) "Post-production Session"
+	- Grafiikan hiominen
+	- Musiikin hiominen
+	- Asetaulukot
+	- Armoritaulukot
+	- Viimeisen buildin tekeminen
 	
-//115t yhteensä
+
+//123t yhteensä
+
 	
 
 
