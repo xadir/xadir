@@ -32,7 +32,7 @@ class Character(object):
 	con = property(lambda self: 1 + self.race.base_con + self.var_con)
 	int = property(lambda self: 1 + self.race.base_int + self.var_int)
 
-	max_hp = property(lambda self: self.con * 10)
+	max_hp = property(lambda self: self.con * self.class_.hp_per_con)
 	max_sp = property(lambda self: self.int)
 	max_mp = property(lambda self: self.dex)
 

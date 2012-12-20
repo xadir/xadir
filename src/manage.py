@@ -302,7 +302,7 @@ class Manager:
 		self.class_index = 0
 
 		self.races = RACE_SPRITES.keys()
-		self.classes = ['warrior', 'healer', 'mage']
+		self.classes = ['warrior', 'wizard', 'rogue']
 		self.current_race = self.races[self.race_index]
 		self.current_class = self.classes[self.class_index]
 		print self.current_class
