@@ -57,15 +57,16 @@ class MapSelection:
 
 		self.ip_input = eztext.Input(x=self.sidebar_container.x + 16, y=12, maxlength=15, color=COLOR_FONT, prompt='IP: ')
 		self.port_input = eztext.Input(x=self.sidebar_container.x + 16, y=78, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
-		self.port_input.value = '33333'
+		if network_host:
+			self.ip_input.value = ip
+		if network:
+			self.port_input.value = '33333'
 
 		self.play_btn = FuncButton(self.sidebar_container, 10, 240, 218, 30, [["Play map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.mapname), True, False, True)
 		#if self.network_host:
 		#	self.ip_btn = FuncButton(self.sidebar_container, 10, 10, 218, 30, [["127.0.0.1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "ip"), True, False, True)
 		#else:
 		self.ip_btn = FuncButton(self.sidebar_container, 10, 10, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "ip"), True, False, True)
-		if network_host:
-			self.ip_input.value += ip
 		self.port_btn = FuncButton(self.sidebar_container, 10, 75, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "port"), True, False, True)
 
 		self.buttons = []
