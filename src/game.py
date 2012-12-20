@@ -16,6 +16,7 @@ from weapon import weapons, Weapon, default as default_weapon
 from charclass import classes, CharacterClass
 from character import Character
 from terrain import terrains
+from taunts import taunts
 
 from tiles import *
 from bgmap import BackgroundMap
@@ -447,7 +448,8 @@ class XadirMain:
 		target_position = target.grid_pos
 		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
 		if attacker.mp > 0:
-			text = draw_speech_bubble('Prepare to die!')
+			texts = taunts[None] + taunts.get(attacker.race.name, [])
+			text = draw_speech_bubble(random.choice(texts))
 			rect = text.get_rect()
 			rect.topleft = attacker.pos
 			rect.top -= rect.height
