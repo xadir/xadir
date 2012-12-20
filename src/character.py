@@ -48,7 +48,7 @@ class Character(object):
 		dex = rndstats.count('dex')
 		con = rndstats.count('con')
 		int = rndstats.count('int')
-		armor = Armor.random()
+		armor = random.choice(armors.values())#Armor.random()
 		weapon = random.choice(weapons.values())#Weapon.random()
 		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon)
 

@@ -149,7 +149,7 @@ class XadirMain:
 		self.clock = pygame.time.Clock()
 		self.fps = FPS
 		self.showhealth = False
-		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.next_turn))
+		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.do_next_turn))
 
 		self.disabled_chartypes = {}
 
