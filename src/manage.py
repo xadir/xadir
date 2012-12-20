@@ -502,7 +502,7 @@ class Manager:
 		text_y = 0
 
 		font = pygame.font.Font(FONT, int(20*FONTSCALE))
-		text = font.render(string.capitalize(self.current_race), True, COLOR_FONT, COLOR_BG)
+		text = font.render(string.capitalize(self.selected_char.race.name), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		rect.centerx = 70
 		rect.y = text_y
