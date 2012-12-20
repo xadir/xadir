@@ -56,7 +56,8 @@ class MapSelection:
 		self.sidebar_container = UIContainer(None, (957, 0), (238, 715), self.screen)
 
 		self.ip_input = eztext.Input(x=self.sidebar_container.x + 16, y=12, maxlength=15, color=COLOR_FONT, prompt='IP: ')
-		self.port_input = eztext.Input(x=self.sidebar_container.x + 16, y=78, maxlength=4, color=COLOR_FONT, prompt='Port: ')
+		self.port_input = eztext.Input(x=self.sidebar_container.x + 16, y=78, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
+		self.port_input.value = '33333'
 
 		self.play_btn = FuncButton(self.sidebar_container, 10, 240, 218, 30, [["Play map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.mapname), True, False, True)
 		#if self.network_host:
