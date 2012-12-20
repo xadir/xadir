@@ -354,13 +354,13 @@ class Manager:
 		container.spritegroup.add(self.next_char)
 
 		
-		self.prev_class = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
-		self.next_class = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
+		self.prev_class_ = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
+		self.next_class_ = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(self.prev_class)
-		container.spritegroup.add(self.prev_class)
-		self.manager_buttons.append(self.next_class)
-		container.spritegroup.add(self.next_class)
+		self.manager_buttons.append(self.prev_class_)
+		container.spritegroup.add(self.prev_class_)
+		self.manager_buttons.append(self.next_class_)
+		container.spritegroup.add(self.next_class_)
 		
 
 		self.inc_str = FuncButton(self.manage, 15, 135, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
@@ -490,8 +490,8 @@ class Manager:
 
 		container.spritegroup.add(self.prev_char)
 		container.spritegroup.add(self.next_char)
-		container.spritegroup.add(self.prev_class)
-		container.spritegroup.add(self.next_class)
+		container.spritegroup.add(self.prev_class_)
+		container.spritegroup.add(self.next_class_)
 		container.spritegroup.add(self.inc_str)
 		container.spritegroup.add(self.inc_dex)
 		container.spritegroup.add(self.inc_con)
