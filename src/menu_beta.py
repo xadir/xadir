@@ -82,8 +82,6 @@ class Menu:
 	def loop(self):
 		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
 
-		IpResolver1().start()
-
 		title_alpha = 0
 		load_finished = False
 		title_image = load_image("Xadir.png", None, 3)
@@ -113,12 +111,6 @@ class Menu:
 					sys.exit()
 
 			self.clock.tick(self.fps)
-
-import threading
-import urllib
-class IpResolver1(threading.Thread):
-	def run(self):
-		ip = urllib.urlopen('http://whatismyip.xadir.net/plain1').read()
 
 if __name__ == "__main__":
 	screen = init_pygame()

@@ -39,7 +39,7 @@ class Manager:
 		"""
 
 		self.ip = ''
-		IpResolver2(self).start()
+		IpResolver(self).start()
 
 		self.team = []
 		self.team1 = []
@@ -756,13 +756,13 @@ class Manager:
 import threading
 import urllib
 import re
-class IpResolver2(threading.Thread):
+class IpResolver(threading.Thread):
 	def __init__(self, win):
 		threading.Thread.__init__(self)
 		self.win = win
 
 	def run(self):
-		data = urllib.urlopen('http://whatismyip.xadir.net/plain2').read()
+		data = urllib.urlopen('http://whatismyip.xadir.net/plain').read()
 		data = data.strip()
 		if re.match('^\\d+[.]\\d+[.]\\d+[.]\\d+$', data):
 			self.win.ip = data
