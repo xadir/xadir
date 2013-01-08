@@ -66,6 +66,7 @@ class Manager:
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
 		self.manager_buttons = []
+		self.new_char_buttons = []
 		self.manager_texts = []
 
 		for i in range(3):
@@ -288,9 +289,13 @@ class Manager:
 		container.children.append(tmp)
 
 	def new_character(self, container):
+	
+		for b in self.new_char_buttons:
+			print b.function
 
 		self.manage.clear()
 		self.char_inventory_con.clear()
+		self.new_char_buttons = []
 
 		self.manage.spritegroup.add(self.save_btn)
 		self.team_con.spritegroup.add(self.play_btn)
@@ -348,18 +353,18 @@ class Manager:
 		self.prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
 		self.next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
 
-		self.manager_buttons.append(self.prev_char)
+		self.new_char_buttons.append(self.prev_char)
 		container.spritegroup.add(self.prev_char)
-		self.manager_buttons.append(self.next_char)
+		self.new_char_buttons.append(self.next_char)
 		container.spritegroup.add(self.next_char)
 
 		
 		self.prev_class_ = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
 		self.next_class_ = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(self.prev_class_)
+		self.new_char_buttons.append(self.prev_class_)
 		container.spritegroup.add(self.prev_class_)
-		self.manager_buttons.append(self.next_class_)
+		self.new_char_buttons.append(self.next_class_)
 		container.spritegroup.add(self.next_class_)
 		
 
@@ -368,13 +373,13 @@ class Manager:
 		self.inc_con = FuncButton(self.manage, 15, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
 		self.inc_int = FuncButton(self.manage, 180, 166, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
 
-		self.manager_buttons.append(self.inc_str)
+		self.new_char_buttons.append(self.inc_str)
 		container.spritegroup.add(self.inc_str)
-		self.manager_buttons.append(self.inc_dex)
+		self.new_char_buttons.append(self.inc_dex)
 		container.spritegroup.add(self.inc_dex)
-		self.manager_buttons.append(self.inc_con)
+		self.new_char_buttons.append(self.inc_con)
 		container.spritegroup.add(self.inc_con)
-		self.manager_buttons.append(self.inc_int)
+		self.new_char_buttons.append(self.inc_int)
 		container.spritegroup.add(self.inc_int)
 
 		texts = pygame.Surface((140,150))
@@ -704,6 +709,10 @@ class Manager:
 
 	def click(self, event):
 		for b in self.manager_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+		for b in self.new_char_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
