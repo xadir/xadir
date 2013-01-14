@@ -26,6 +26,8 @@ from messager import Messager
 import socket
 import asyncore
 
+from resolver import *
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -164,6 +166,8 @@ class XadirMain:
 
 		self.players = []
 		self.remote = None
+
+		log_stats('game')
 
 	current_player = property(lambda self: self.players[self.turn])
 	live_players = property(lambda self: [player for player in self.players if player.is_alive()])

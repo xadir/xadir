@@ -14,6 +14,8 @@ from mapedit import MapEditor
 import game
 import eztext
 
+from resolver import *
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -50,8 +52,8 @@ class Menu:
 		quit.update()
 		self.menu.spritegroup.add(quit)
 
+		log_stats('mainmenu')
 
-		
 		#new_game = Button(self.menu, self.screen, 0, 0, 400, 60, [["New Game", (4,4)]], None)
 		#self.menu.children.append(new_game)
 		#load_game = Button(self.menu, self.screen, 0, 80, 400, 60, [["Load Game", (4,4)]], None)
@@ -67,6 +69,7 @@ class Menu:
 		manage_win.loop()
 
 	def map_edit(self, param):
+		log_stats('mapeditor')
 		win = MapEditor(self.screen, None)
 		win.loop()
 

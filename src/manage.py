@@ -12,6 +12,7 @@ from armor import Armor, armors
 import random
 
 from mapselection import MapSelection
+from resolver import *
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -39,7 +40,7 @@ class Manager:
 		"""
 
 		self.ip = ''
-		IpResolver(self).start()
+		IpResolver('manager', self).start()
 
 		self.team = []
 		self.team1 = []
@@ -687,6 +688,7 @@ class Manager:
 			self.update_char_panels()
 
 	def start_game(self, team):
+		log_stats('play')
 		print self.team1, self.team2
 		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
 		mapsel = MapSelection(self.screen, 'map_new.txt')
@@ -694,11 +696,13 @@ class Manager:
 		start_game(self.screen, mapsel.mapname, teams)
 
 	def join_game(self, team):
+		log_stats('join')
 		mapsel = MapSelection(self.screen, network=True)
 		mapsel.loop()
 		join_game(self.screen, mapsel.ip_input.value, int(mapsel.port_input.value), team)
 
 	def host_game(self, team):
+		log_stats('host')
 		mapsel = MapSelection(self.screen, 'map_new.txt', network=True, network_host=True, ip = self.ip)
 		mapsel.loop()
 		host_game(self.screen, int(mapsel.port_input.value), mapsel.mapname, team)
@@ -761,20 +765,6 @@ class Manager:
 					sys.exit()
 
 			time.sleep(0.05)
-
-import threading
-import urllib
-import re
-class IpResolver(threading.Thread):
-	def __init__(self, win):
-		threading.Thread.__init__(self)
-		self.win = win
-
-	def run(self):
-		data = urllib.urlopen('http://whatismyip.xadir.net/plain').read()
-		data = data.strip()
-		if re.match('^\\d+[.]\\d+[.]\\d+[.]\\d+$', data):
-			self.win.ip = data
 
 if __name__ == "__main__":
 	screen = init_pygame()
