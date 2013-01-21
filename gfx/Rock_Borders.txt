@@ -1,0 +1,4 @@
+RB-t_l RB-t RB-t_r  RC-br RC-bl  RS-tl RS-tr
+RB-l   ?    RB-r    RC-tr RC-tl  RS-lt RS-rt
+RB-b_l RB-b RB-b_r  ?     ?      RS-lb RS-rb
+?      ?    ?       ?     ?      RS-bl RS-br
