@@ -6,7 +6,7 @@ from UI import UIGridObject
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
 	def __init__(self, player, character, coords, heading, map, res):
-		UIGridObject.__init__(self, self.map, coords)
+		UIGridObject.__init__(self, map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player

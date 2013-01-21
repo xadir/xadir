@@ -472,7 +472,7 @@ class XadirMain:
 
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
-			self.animate_hp_change(self, -damage)
+			self.animate_hp_change(target, -damage)
 			target.take_hit(damage)
 			attacker.mp = 0
 
