@@ -52,23 +52,6 @@ L_CHAR_OVERLAY = lambda y: (2, y, 0)
 L_CHAR_EFFECT =  lambda y: (2, y, 1)
 L_GAMEOVER =     (3, )
 
-"""
-RACE_SPRITES = {"Human": ("races.png", 1)
-	,"Human2": ("races.png", 2)
-	,"Devil": ("races.png", 3)
-	,"Human3": ("races.png", 4)
-	,"Elf": ("races.png", 5)
-	,"Alien": ("races.png", 6)
-	,"WhiteGuy": ("races.png", 7)
-	,"Medusa": ("races.png", 8)
-	,"Dragon": ("races.png", 9)
-	,"Taurus": ("races.png", 10)
-	,"Squid": ("races.png", 11)
-	,"GreyGuy": ("races.png", 12)
-	,"Imhotep": ("races.png", 13)
-	,"Wolf": ("races.png", 14)}
-"""
-
 RACE_SPRITES = {"dwarf": ("races.png", 1)
 	,"human": ("races.png", 2)
 	,"thiefling": ("races.png", 3)
