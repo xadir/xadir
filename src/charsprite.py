@@ -43,7 +43,6 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 	def take_hit(self, attack_points):
 		print 'Took', attack_points, 'of damage'
-		self.main.animate_hp_change(self, -attack_points)
 		self.hp -= attack_points
 		if self.hp < 1:
 			self.hp = 0
@@ -77,11 +76,4 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 				self.grid_y += steps
 			elif self.heading == 270:
 				self.grid_x -= steps
-
-	def is_attack_move(self, coords):
-		for p in self.main.get_other_players():
-			for c in p.get_characters_coords():
-				if c == coords:
-					return True
-		return False
 

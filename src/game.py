@@ -313,12 +313,19 @@ class XadirMain:
 				self.set_grid_sprites(pygame.sprite.Group())
 				character.unselect()
 				if mouse_grid_pos in self.get_action_area_for(character):
-					if character.is_attack_move(mouse_grid_pos):
+					if self.is_attack_move(mouse_grid_pos):
 						self.do_attack(character, mouse_grid_pos)
 					else:
 						self.do_move(character, mouse_grid_pos)
 			if character.grid_pos != mouse_grid_pos:
 				character.unselect()
+
+	def is_attack_move(self, coords):
+		for p in self.get_other_players():
+			for c in p.get_characters_coords():
+				if c == coords:
+					return True
+		return False
 
 	def handle_remote(self, type, data):
 		if type == 'TURN':
@@ -465,6 +472,7 @@ class XadirMain:
 
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
+			self.animate_hp_change(target, -damage)
 			target.take_hit(damage)
 			attacker.mp = 0
 
