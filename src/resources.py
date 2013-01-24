@@ -21,6 +21,14 @@ class Resources:
 		for name, images in zip(racenames, raceimages):
 			self.races[name] = {270: images[0], 180: images[1], 0: images[2], 90: images[3]}
 
+	def load_hairs(self):
+		hairimages = load_tiles('hairs.png', HAIR_SIZE, (255, 0, 255), SCALE)
+		hairnames = file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')
+
+		self.hairs = {}
+		for name, images in zip(hairnames, hairimages):
+			self.hairs[name] = {270: images[0], 180: images[1], 0: images[2], 90: images[1]}
+
 	def load_selections(self):
 		self.selections = {}
 		for name, color in [('red', (255, 0, 0)), ('green', (10, 212, 0))]:
