@@ -2,6 +2,7 @@
 import Image
 import sys
 
+# A collection of points and some stats ({min,max}{x,y} + {x,y}set)
 class Item(set):
 	pass
 
@@ -9,6 +10,7 @@ im = Image.open(sys.argv[1])
 
 pixels = im.load()
 
+# Find all background pixels (connected pixels of same color from top left)
 queued = set()
 queue = set([(0, 0)])
 color = pixels[0, 0]
@@ -31,10 +33,13 @@ while queue:
 
 del queued, queue
 
+# Invert pixels background pixels to get foreground pixels
 foreground = set((x, y) for y in range(im.size[1]) for x in range(im.size[0])) - background
 
 del background
 
+# Separate the images
+# Finding one image is done by popping a random pixel and finding all connected pixels
 items = []
 
 while foreground:
@@ -63,6 +68,7 @@ while foreground:
 
 	items.append(item)
 
+# Partition images to a grid
 rows = []
 while items:
 	# Find topmost point
@@ -118,6 +124,7 @@ while items:
 
 import ImageDraw
 
+# Align images inside the grid (this could be done by a separate tool...)
 out = Image.new('RGB', (max(map(len, rows))*24, len(rows)*24))
 draw=ImageDraw.Draw(out)
 draw.rectangle((0, 0, out.size[0], out.size[1]), fill=(255, 255, 255))
