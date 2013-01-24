@@ -4,8 +4,8 @@ from UI import UIGridObject
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	"""Universal class for any character in the game"""
-	def __init__(self, player, character, coords, heading, main):
-		UIGridObject.__init__(self, main.map, coords)
+	def __init__(self, player, character, coords, heading, map, res):
+		UIGridObject.__init__(self, map, coords)
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.player = player
@@ -21,7 +21,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 
-		self.main = main
+		self.res = res
 
 	def __getattr__(self, name):
 		return getattr(self.char, name)
@@ -32,7 +32,7 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
 
 	def update(self):
-		self.image = self.main.chartypes[self.race.name][self.heading]
+		self.image = self.res.races[self.race.name][self.heading]
 		self.dirty = 1
 
 	def is_selected(self):

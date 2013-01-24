@@ -761,7 +761,7 @@ class Player:
 		self.name = name
 		self.main = main
 		self.remote = remote
-		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main) for character, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main.map, main.res) for character, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
