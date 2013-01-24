@@ -22,9 +22,6 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
 
 		self.main = main
-		self.background_map = self.main.map
-		self.walkable_tiles = self.main.walkable
-		self.players = self.main.get_all_players()
 
 	def __getattr__(self, name):
 		return getattr(self.char, name)
