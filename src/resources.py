@@ -37,10 +37,10 @@ class Resources:
 			surf.set_alpha(120)
 			self.selections[name] = surf
 
-def init_pygame():
+def init_pygame(mode = (1200, 720)):
 	pygame.mixer.pre_init(48000)
 	pygame.init()
-	screen = pygame.display.set_mode((1200, 720))
+	screen = pygame.display.set_mode(mode)
 	pygame.mixer.set_reserved(1)
 	return screen
 

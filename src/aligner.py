@@ -25,6 +25,8 @@ class FakeGrid:
 		self.x, self.y = (0, 0)
 		self.cell_size = size
 
+GRID_SIZE = (CHAR_SIZE[0], CHAR_SIZE[1] + 8 * SCALE)
+
 class Window:
 	def __init__(self, screen):
 		pygame.display.set_caption('Xadir')
@@ -45,7 +47,7 @@ class Window:
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.set_clip()
 
-		grid = FakeGrid(CHAR_SIZE)
+		grid = FakeGrid(GRID_SIZE)
 		class_ = classes.keys()[0]
 
 		races_ = races.keys()
@@ -61,12 +63,12 @@ class Window:
 					self.chars.append(char)
 
 		for x, (hairname, hair) in enumerate(hairs.items()):
-			ht = HairXY(hair, (int((x + 1.5) * CHAR_SIZE[0]), 30))
+			ht = HairXY(hair, (int((x + 1.5) * GRID_SIZE[0]), 30))
 			self.sprites.add(ht)
 
 		for r, races_ in enumerate(raceses):
 			for y, race in enumerate(races_):
-				ht = HairL(races[race], ((r * (len(hairs) + 1) + 0.5) * CHAR_SIZE[0], (y + 1.5) * CHAR_SIZE[1]))
+				ht = HairL(races[race], ((r * (len(hairs) + 1) + 0.5) * GRID_SIZE[0], (y + 1.5) * GRID_SIZE[1]))
 				self.sprites.add(ht)
 
 		self.selected = None
@@ -153,7 +155,7 @@ class HairL(StateTrackingSprite):
 		self.rect.center = self.center
 
 if __name__ == "__main__":
-	screen = init_pygame()
+	screen = init_pygame((1200, 960))
 
 	win = Window(screen)
 	win.loop()
