@@ -3,6 +3,7 @@ from race import races, Race
 from charclass import classes, CharacterClass
 from armor import armors, Armor
 from weapon import weapons, Weapon
+from hair import hairs
 import binascii
 
 _character_id = 0
@@ -51,6 +52,6 @@ class Character(object):
 		int = rndstats.count('int')
 		armor = random.choice(armors.values())#Armor.random()
 		weapon = random.choice(weapons.values())#Weapon.random()
-		hair_name = None
+		hair_name = random.choice(hairs.keys())
 		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon, hair_name)
 
