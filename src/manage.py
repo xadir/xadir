@@ -33,6 +33,7 @@ class Manager:
 
 		self.res = Resources(None)
 		self.res.load_races()
+		self.res.load_hairs()
 
 		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
 		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
@@ -143,12 +144,23 @@ class Manager:
 		self.manager_texts = []
 		print self.selected_char
 		if self.selected_char != None:
+			"""
 			self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
 			self.race = race_tile(self.selected_char.race.name)
 			self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
 			self.manage.spritegroup.add(self.race_sprite)
-			self.race_tile = self.race.get_tile()
-			sprite_rect = self.race_tile.rect
+			"""
+			
+			self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
+			
+			self.selected_charsprite.x = self.race_sprite_x
+			self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
+
+			self.race_sprite = self.selected_charsprite
+			self.manage.spritegroup.add(self.race_sprite)
+
+			#self.race_tile = self.race.get_tile()
+			#sprite_rect = self.race_tile.rect
 
 			self.char_inventory = [self.selected_char.weapon, self.selected_char.armor]
 			self.update_inventories()
@@ -220,7 +232,12 @@ class Manager:
 			self.manage.spritegroup.add(text_sprite)
 
 	def add_char(self, race, container, character, in_team=False):
-		race_image = race_tile(race).get_tile(0, 0, '270').image
+		#race_image = race_tile(race).get_tile(0, 0, '270').image
+		
+		charsprite = CharacterSprite(None, character, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
+		charsprite.update()
+		race_image = charsprite.image
+		
 		cropped = pygame.Surface((36, 40))
 		cropped.fill(COLOR_BG)
 		cropped.blit(race_image, (0, 0), (6, 12, 36, 40))
@@ -341,13 +358,19 @@ class Manager:
 		img_height = self.race_tile.rect.height
 		"""
 
+		self.selected_charsprite.x = self.race_sprite_x
+		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
+
+		self.race_sprite = self.selected_charsprite
+		container.spritegroup.add(self.race_sprite)
+		"""
 		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
 
 		self.race = race_tile(self.selected_char.race.name)
 		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
 
 		container.spritegroup.add(self.race_sprite)
-
+		"""
 		self.prev_hair_btn = FuncButton(self.manage, 50, 20, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_hair, self.selected_char), True, False, True)
 		self.next_hair_btn = FuncButton(self.manage, 155, 20, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_hair, self.selected_char), True, False, True)
 

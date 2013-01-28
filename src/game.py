@@ -401,6 +401,15 @@ class XadirMain:
 			character.grid_pos = path[i]
 			self.draw(frames)
 
+	def animate_damage(self, character, damage):
+		text = DamageNotification(character, damage)
+		self.sprites.add(text)
+
+		while text.visible:
+			self.draw()
+
+		self.sprites.remove(text)
+
 	def animate_hit(self, character, file_path):
 		anim = AnimatedEffect(character, file_path, FPS / HIT_FPS)
 
@@ -475,6 +484,7 @@ class XadirMain:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
 			self.animate_hp_change(target, -damage)
+			self.animate_damage(target, -damage)
 			target.take_hit(damage)
 			attacker.mp = 0
 
@@ -631,6 +641,45 @@ class AnimatedEffect(AnimatedSprite):
 
 		if self.pos == 0 and self.count == 0:
 			self.visible = 0
+
+class DamageNotification(pygame.sprite.DirtySprite):
+	def __init__(self, character, number, step=1):
+		pygame.sprite.DirtySprite.__init__(self)
+
+		self.character = character
+		self.number = number
+		self.step = SCALE
+		self.size = (15,15)
+
+		image = draw_pixel_text(str(self.number))
+		rect = image.get_rect()
+		self.image = pygame.transform.scale(image, (SCALE * rect.width, SCALE * rect.height))
+		self.rect = self.image.get_rect()
+		self.rect.topleft = character.pos
+		self.rect.top -= 5
+		self.rect.left += 24
+		self.max_height = 30
+		self.opaque_height = 15
+		self._layer = L_CHAR_EFFECT(character.grid_y)
+
+		self.image.set_alpha(255)
+		self.pos = 0
+
+	def update(self):
+		print self.rect
+		if self.pos >= self.max_height:
+			self.visible = 0
+		elif self.pos <= self.opaque_height:
+			self.pos += 1
+			self.rect.top -= self.step
+		else:
+			self.pos += 1
+			self.rect.top -= self.step
+			next_alpha = 255 - ((255 * (self.pos)) / self.max_height)
+			print next_alpha
+			self.image.set_alpha(next_alpha)
+
+		self.dirty = 1
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
