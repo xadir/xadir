@@ -32,7 +32,8 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
 
 	def update(self):
-		self.image = self.res.races[self.race.name][self.heading]
+		self.image = self.res.races[self.race.name][self.heading].copy()
+		self.image.blit(self.res.hairs[self.char.hair_name][self.heading], (0, 0))
 		self.dirty = 1
 
 	def is_selected(self):
