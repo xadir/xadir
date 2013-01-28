@@ -412,10 +412,12 @@ class XadirMain:
 		self.sprites.remove(anim)
 
 	def animate_hp_change(self, character, change):
+		# Set up damage notification
 		text = DamageNotification(character, change)
 
 		self.sprites.add(text)
 
+		# Animate hp change (and damage notification)
 		change_sign = sign(change)
 		change_amount = abs(change)
 		orig_hp = character.hp
@@ -425,11 +427,14 @@ class XadirMain:
 			if character.hp <= 0:
 				break
 
+		# Finish damage notification animation
 		while text.visible:
 			self.draw()
 
+		# Clean up damage notification
 		self.sprites.remove(text)
 
+		# Clean up hp change
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
