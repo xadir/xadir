@@ -27,7 +27,7 @@ class Resources:
 
 		self.hairs = {}
 		for name, images in zip(hairnames, hairimages):
-			self.hairs[name] = {270: images[0], 180: images[1], 0: images[2], 90: images[1]}
+			self.hairs[name] = {270: images[0], 0: images[1], 90: images[2], 180: pygame.transform.flip(images[1], True, False)}
 
 	def load_selections(self):
 		self.selections = {}
