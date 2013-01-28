@@ -53,7 +53,7 @@ class Window:
 				for y, race in enumerate(races_):
 					pos = (r * 10 + x, 1 + y)
 					armor = None
-					self.sprites.add(CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None), pos, 270, grid, self.res))
+					self.sprites.add(CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res))
 
 	def draw(self, frames = 1):
 		for i in range(frames):
