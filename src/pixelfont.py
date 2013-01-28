@@ -3,14 +3,19 @@ import pygame
 import Image, ImageDraw, ImageFont
 from config import *
 
-def draw_pixel_text(text, scale = 1):
+def draw_pixel_text(text, scale = 1, color = (0, 0, 0)):
 	font = ImageFont.FreeTypeFont(os.path.join(FONTDIR, 'pf_tempesta_five_condensed.ttf'), 8)
 	width = font.getsize(text)[0]
 	im = Image.new('1', (width, 15))
 	draw = ImageDraw.Draw(im)
 	draw.rectangle(((0, 0), (width, 15)), fill=1)
 	draw.text((0, 0), text, font=font, fill=0)
-	im = im.crop((0, 3, width, 10)).convert('RGB')
+	bw = im.crop((0, 3, width, 10))
+	im = bw.convert('RGB')
+
+	if color != (0, 0, 0):
+		mask = bw.point(lambda v: 1 - v, '1')
+		im.paste(color, (0, 0) + mask.size, mask)
 
 	text = pygame.image.fromstring(im.tostring(), im.size, im.mode)
 	text.set_colorkey((255, 255, 255))
