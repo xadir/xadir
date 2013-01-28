@@ -59,6 +59,8 @@ class Window:
 					self.sprites.add(char)
 					self.chars.append(char)
 
+		self.selected = None
+
 	def draw(self, frames = 1):
 		for i in range(frames):
 			self.clock.tick(self.fps)
@@ -76,6 +78,21 @@ class Window:
 				if event.type == pygame.QUIT:
 					self.done = True
 				if event.type == pygame.MOUSEBUTTONDOWN:
+					grid_pos = event.pos[0] / CHAR_SIZE[0], event.pos[1] / CHAR_SIZE[1]
+					if event.button == 1:
+						for char in self.chars:
+							if char.grid_pos == grid_pos:
+								self.selected = char
+								break
+						else:
+							self.selected = None
+					if event.button in (4, 5):
+						delta = {4: -1, 5: 1}[event.button]
+						if self.selected:
+							if self.selected.race.hairline is None:
+								self.selected.race.hairline = 0
+							self.selected.race.hairline += delta
+				if event.type == pygame.KEYUP and event.key == K_SPACE:
 					for char in self.chars:
 						char.heading = (char.heading + 90) % 360
 
