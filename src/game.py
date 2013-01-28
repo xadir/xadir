@@ -421,9 +421,9 @@ class XadirMain:
 		orig_hp = character.hp
 		for i in range(1, FPS):
 			character.hp = orig_hp + change_sign * scale(i, FPS, change_amount)
-			if character.hp < 1:
-				break
 			self.draw()
+			if character.hp <= 0:
+				break
 
 		while text.visible:
 			self.draw()
