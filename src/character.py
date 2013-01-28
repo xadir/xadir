@@ -28,6 +28,7 @@ class Character(object):
 
 	race = property(lambda self: races[self.race_name])
 	class_ = property(lambda self: classes[self.class_name])
+	hair = property(lambda self: hairs[self.hair_name])
 
 	str = property(lambda self: 1 + self.race.base_str + self.var_str)
 	dex = property(lambda self: 1 + self.race.base_dex + self.var_dex)
