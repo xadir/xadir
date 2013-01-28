@@ -651,9 +651,7 @@ class DamageNotification(pygame.sprite.DirtySprite):
 		self.step = SCALE
 		self.size = (15,15)
 
-		image = draw_pixel_text(str(self.number))
-		rect = image.get_rect()
-		self.image = pygame.transform.scale(image, (SCALE * rect.width, SCALE * rect.height))
+		self.image = draw_pixel_text(str(self.number), SCALE)
 		self.rect = self.image.get_rect()
 		self.rect.topleft = character.pos
 		self.rect.top -= 5
@@ -876,9 +874,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 
 		#font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
 		#image = font.render(text, True, (0, 0, 0), bgcolor)
-		image = draw_pixel_text(text)
-		rect = image.get_rect()
-		image = pygame.transform.scale(image, (SCALE * rect.width, SCALE * rect.height))
+		image = draw_pixel_text(text, SCALE)
 		rect = image.get_rect()
 
 		self.image.fill(bgcolor)

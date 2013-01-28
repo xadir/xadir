@@ -3,7 +3,7 @@ import pygame
 import Image, ImageDraw, ImageFont
 from config import *
 
-def draw_pixel_text(text):
+def draw_pixel_text(text, scale = 1):
 	font = ImageFont.FreeTypeFont(os.path.join(FONTDIR, 'pf_tempesta_five_condensed.ttf'), 8)
 	width = font.getsize(text)[0]
 	im = Image.new('1', (width, 15))
@@ -14,6 +14,10 @@ def draw_pixel_text(text):
 
 	text = pygame.image.fromstring(im.tostring(), im.size, im.mode)
 	text.set_colorkey((255, 255, 255))
+
+	if scale != 1:
+		rect = text.get_rect()
+		text = pygame.transform.scale(text, (scale * rect.width, scale * rect.height))
 
 	return text
 
