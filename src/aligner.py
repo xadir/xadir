@@ -13,6 +13,7 @@ from character import Character
 from charsprite import CharacterSprite
 
 from tiles import *
+from pixelfont import *
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -32,7 +33,7 @@ class Window:
 		self.width, self.height = self.screen.get_size()
 
 		self.background = pygame.Surface((self.width, self.height))
-		self.background.fill((0, 0, 0))
+		self.background.fill((127, 127, 127))
 
 		self.fps = 30
 		self.clock = pygame.time.Clock()
@@ -58,6 +59,10 @@ class Window:
 					char = CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res)
 					self.sprites.add(char)
 					self.chars.append(char)
+
+		for x, (hairname, hair) in enumerate(hairs.items()):
+			ht = HairXY(hair, (int((x + 1.5) * CHAR_SIZE[0]), 30))
+			self.sprites.add(ht)
 
 		self.selected = None
 
@@ -113,6 +118,20 @@ class Window:
 						char.heading = (char.heading + 90) % 360
 
 			self.draw()
+
+class HairXY(StateTrackingSprite):
+	def __init__(self, hair, center):
+		StateTrackingSprite.__init__(self)
+		self.hair = hair
+		self.center = center
+
+	def get_state(self):
+		return self.hair.xoffset, self.hair.yoffset
+
+	def redraw(self):
+		self.image = draw_pixel_text(str(self.state), SCALE)
+		self.rect = self.image.get_rect()
+		self.rect.center = self.center
 
 if __name__ == "__main__":
 	screen = init_pygame()
