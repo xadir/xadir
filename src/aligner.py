@@ -72,6 +72,8 @@ class Window:
 			pygame.display.flip()
 
 	def loop(self):
+		xhair = yhair = False
+
 		self.done = False
 		while not self.done:
 			for event in pygame.event.get():
@@ -79,19 +81,33 @@ class Window:
 					self.done = True
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					grid_pos = event.pos[0] / CHAR_SIZE[0], event.pos[1] / CHAR_SIZE[1]
-					if event.button == 1:
+					if event.button in (1, 3):
 						for char in self.chars:
 							if char.grid_pos == grid_pos:
 								self.selected = char
 								break
 						else:
 							self.selected = None
+					if event.button == 1:
+						xhair = True
+					if event.button == 3:
+						yhair = True
 					if event.button in (4, 5):
 						delta = {4: -1, 5: 1}[event.button]
 						if self.selected:
-							if self.selected.race.hairline is None:
-								self.selected.race.hairline = 0
-							self.selected.race.hairline += delta
+							if yhair:
+								self.selected.hair.yoffset += delta
+							elif xhair:
+								self.selected.hair.xoffset += delta
+							else:
+								if self.selected.race.hairline is None:
+									self.selected.race.hairline = 0
+								self.selected.race.hairline += delta
+				if event.type == pygame.MOUSEBUTTONUP:
+					if event.button == 1:
+						xhair = False
+					if event.button == 3:
+						yhair = False
 				if event.type == pygame.KEYUP and event.key == K_SPACE:
 					for char in self.chars:
 						char.heading = (char.heading + 90) % 360
