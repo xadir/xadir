@@ -7,6 +7,7 @@ from UI import *
 
 from race import races, Race
 from armor import armors, Armor, default as default_armor
+from hair import hairs
 from charclass import classes, CharacterClass
 from character import Character
 from charsprite import CharacterSprite
@@ -46,7 +47,6 @@ class Window:
 		grid = FakeGrid(CHAR_SIZE)
 		class_ = classes.keys()[0]
 
-		hairs = dict((char, None) for char in 'abcdefghij')
 		races_ = races.keys()
 		raceses = [races_[:len(races_)/2], races_[len(races_)/2:]]
 		self.chars = []
