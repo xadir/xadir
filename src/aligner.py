@@ -53,7 +53,7 @@ class Window:
 		for r, races_ in enumerate(raceses):
 			for x, hair in enumerate(hairs):
 				for y, race in enumerate(races_):
-					pos = (r * 10 + x, 1 + y)
+					pos = (1 + r * 10 + x, 1 + y)
 					armor = None
 					char = CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res)
 					self.sprites.add(char)
