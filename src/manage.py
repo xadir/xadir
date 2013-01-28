@@ -348,13 +348,13 @@ class Manager:
 
 		container.spritegroup.add(self.race_sprite)
 
-		self.prev_hair = FuncButton(self.manage, 50, 20, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_hair, self.selected_char), True, False, True)
-		self.next_hair = FuncButton(self.manage, 155, 20, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_hair, self.selected_char), True, False, True)
+		self.prev_hair_btn = FuncButton(self.manage, 50, 20, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_hair, self.selected_char), True, False, True)
+		self.next_hair_btn = FuncButton(self.manage, 155, 20, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_hair, self.selected_char), True, False, True)
 
-		self.new_char_buttons.append(self.prev_hair)
-		container.spritegroup.add(self.prev_hair)
-		self.new_char_buttons.append(self.next_hair)
-		container.spritegroup.add(self.next_hair)
+		self.new_char_buttons.append(self.prev_hair_btn)
+		container.spritegroup.add(self.prev_hair_btn)
+		self.new_char_buttons.append(self.next_hair_btn)
+		container.spritegroup.add(self.next_hair_btn)
 
 		self.prev_char = FuncButton(self.manage, 50, 55, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
 		self.next_char = FuncButton(self.manage, 155, 55, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
@@ -500,13 +500,20 @@ class Manager:
 		container.clear()
 
 		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
-
+		"""
 		self.race = race_tile(self.selected_char.race.name)
 		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
+		"""
 
+		self.selected_charsprite.x = self.race_sprite_x
+		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
+
+		self.race_sprite = self.selected_charsprite
 		container.spritegroup.add(self.race_sprite)
 		self.manage.spritegroup.add(self.save_btn)
 
+		container.spritegroup.add(self.prev_hair_btn)
+		container.spritegroup.add(self.next_hair_btn)
 		container.spritegroup.add(self.prev_char)
 		container.spritegroup.add(self.next_char)
 		container.spritegroup.add(self.prev_class_)
@@ -612,9 +619,18 @@ class Manager:
 
 	def prev_hair(self, char):
 		print "Previous hair"
-	
+		self.hair_index = (self.hair_index - 1) % len(self.hairs)
+		self.selected_char.hair_name = self.hairs[self.hair_index]
+		print self.selected_charsprite.hair_name
+		self.selected_charsprite.update() #XXX hack
+		self.update_new_character(self.manage)
+
 	def next_hair(self, char):
 		print "Next hair"
+		self.hair_index = (self.hair_index + 1) % len(self.hairs)
+		self.selected_char.hair_name = self.hairs[self.hair_index]
+		self.selected_charsprite.update() #XXX hack
+		self.update_new_character(self.manage)
 
 	def prev_race(self, race_sprite):
 		print "Previous race"
