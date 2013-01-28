@@ -401,15 +401,6 @@ class XadirMain:
 			character.grid_pos = path[i]
 			self.draw(frames)
 
-	def animate_damage(self, character, damage):
-		text = DamageNotification(character, damage)
-		self.sprites.add(text)
-
-		while text.visible:
-			self.draw()
-
-		self.sprites.remove(text)
-
 	def animate_hit(self, character, file_path):
 		anim = AnimatedEffect(character, file_path, FPS / HIT_FPS)
 
@@ -421,6 +412,10 @@ class XadirMain:
 		self.sprites.remove(anim)
 
 	def animate_hp_change(self, character, change):
+		text = DamageNotification(character, change)
+
+		self.sprites.add(text)
+
 		change_sign = sign(change)
 		change_amount = abs(change)
 		orig_hp = character.hp
@@ -429,6 +424,12 @@ class XadirMain:
 			if character.hp < 1:
 				break
 			self.draw()
+
+		while text.visible:
+			self.draw()
+
+		self.sprites.remove(text)
+
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
@@ -484,7 +485,6 @@ class XadirMain:
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
 			self.animate_hp_change(target, -damage)
-			self.animate_damage(target, -damage)
 			target.take_hit(damage)
 			attacker.mp = 0
 
