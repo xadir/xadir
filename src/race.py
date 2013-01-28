@@ -2,12 +2,12 @@
 race_data = [
 	# name         str dex con int hairline shoulderline
 	('human',      1,  1,  1,  1,  1,       5),
-	('minotaur',   3,  0,  0,  0,  1,       5),
-	('imp',        0,  3,  0,  0,  1,       5),
+	('minotaur',   3,  0,  0,  0,  3,       5),
+	('imp',        0,  3,  0,  0,  5,       5),
 	#('treant',     0,  0,  3,  0,  None,    None),
-	('mindflayer', 0,  0,  0,  3,  None,    None),
-	('orc',        2,  1,  0,  0,  None,    None),
-	('ogre',       2,  0,  1,  0,  None,    None),
+	('mindflayer', 0,  0,  0,  3,  7,    None),
+	('orc',        2,  1,  0,  0,  -2,    None),
+	('ogre',       2,  0,  1,  0,  -3,    None),
 	('djinn',      2,  0,  0,  1,  None,    None),
 	('thiefling',  0,  2,  1,  0,  None,    None),
 	('elf',        0,  2,  0,  1,  None,    None),
