@@ -555,29 +555,6 @@ class XadirMain:
 				#	draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
-class StateTrackingSprite(pygame.sprite.DirtySprite):
-	def __init__(self):
-		pygame.sprite.DirtySprite.__init__(self)
-		self.state = None
-
-	def get_state(self):
-		raise NotImplemented, 'This method must be implemented by base classes'
-
-	def redraw(self):
-		raise NotImplemented, 'This method must be implemented by base classes'
-
-	def update(self):
-		if not self.visible:
-			return
-
-		state = self.get_state()
-		if state == self.state:
-			return
-		self.state = state
-
-		self.redraw()
-		self.dirty = 1
-
 class Messages(StateTrackingSprite):
 	def __init__(self, x, y, width, height):
 		StateTrackingSprite.__init__(self)
