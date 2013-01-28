@@ -10,7 +10,7 @@ def draw_pixel_text(text, scale = 1):
 	draw = ImageDraw.Draw(im)
 	draw.rectangle(((0, 0), (width, 15)), fill=1)
 	draw.text((0, 0), text, font=font, fill=0)
-	im = im.crop((0, 4, width, 10)).convert('RGB')
+	im = im.crop((0, 3, width, 10)).convert('RGB')
 
 	text = pygame.image.fromstring(im.tostring(), im.size, im.mode)
 	text.set_colorkey((255, 255, 255))
