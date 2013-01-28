@@ -4,6 +4,7 @@ import string
 from resources import *
 from UI import *
 from character import Character
+from charsprite import CharacterSprite
 from race import races
 from charclass import classes
 from game import start_game, host_game, join_game
@@ -19,25 +20,28 @@ if not pygame.font:
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
 
+class FakeGrid:
+	def __init__(self, size):
+		self.x, self.y = (0, 0)
+		self.cell_size = size
+
 class Manager:
 	def __init__(self, screen):
 		self.screen = screen
 		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
 		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
+		self.res = Resources(None)
+		self.res.load_races()
+
+		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
+		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
+		self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
+
 		self.party = []
 		for i in range(5):
 			char = Character.random()
 			self.party.append(char)
-		"""
-		self.party.append(Character("test0", "human", "warrior", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test1", "minotaur", "healer", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test2", "imp", "mage", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test4", "ogre", "warrior", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test5", "djinn", "warrior", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test6", "elf", "warrior", 10, 10, 10, 10, None, None))
-		self.party.append(Character("test7", "goblin", "warrior", 10, 10, 10, 10, None, None))
-		"""
 
 		self.ip = ''
 		IpResolver('manager', self).start()
@@ -79,17 +83,7 @@ class Manager:
 			self.inventory.append(armor)
 			self.add_item(self.armor_icon, armor.name.capitalize(), self.inventory_con, armor)
 
-		#self.add_icon(race_tile("Human").get_tile(0, 0, '270').image, self.party)
-		#self.add_icon(race_tile("Human2").get_tile(0, 0, '270').image, self.party)
-		#self.add_icon(race_tile("Human3").get_tile(0, 0, '270').image, self.party)
-		#self.add_icon(race_tile("Alien").get_tile(0, 0, '270').image, self.party)
-		#self.add_char("Medusa", self.party)
-		#self.add_char("Human3", self.party)
-		#self.add_char("Alien", self.party)
-		#self.add_char("Dragon", self.party)
-		#self.add_char("Taurus", self.party)
-		#self.add_char("Wolf", self.party)
-		
+
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
 		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
 		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
@@ -306,26 +300,28 @@ class Manager:
 
 		self.race_index = 0
 		self.class_index = 0
+		self.hair_index = 0
 
-		self.races = RACE_SPRITES.keys()
 		self.classes = ['warrior', 'wizard', 'rogue']
+
+		self.races = self.race_sprites.keys()
+		self.hairs = self.hair_sprites.keys()
+
+		print "Races form races.txt", self.races
+		print "Hairs form hairs.txt", self.hairs
+
 		self.current_race = self.races[self.race_index]
 		self.current_class = self.classes[self.class_index]
+		self.current_hair = self.hairs[self.hair_index]
 		print self.current_class
 		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, None, None)
-	
+		self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
+
 		self.points_left = 2
 
 		"""
-		all_hairs = RACE_HAIRS.keys()
-		compatible_hairs = [(None, 0)]
-		for hair in all_hairs:
-			tmp = RACE_HAIRS[hair]
-			for i in tmp:
-				if i[0] == current_race:
-					compatible_hairs.append(hair, i[1])
-		print compatible_hairs
-		current_hair = compatible_hairs[hair_index][0]
+		self.hairs = RACE_HAIRS.keys()
+		current_hair = self.hairs[self.hair_index]
 		current_hairline = compatible_hairs[hair_index][1]
 		
 		if current_hair != None:
@@ -337,28 +333,45 @@ class Manager:
 		"""
 
 		"""
-		self.images = [[self.race_tile, None]]		
+		self.images = [[self.race_tile, None]]
 
 		print self.race_tile.rect.x, self.race_tile.rect.y
 
 		img_width = self.race_tile.rect.width
 		img_height = self.race_tile.rect.height
 		"""
-		self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
+
+		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
 
 		self.race = race_tile(self.selected_char.race.name)
 		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
 
 		container.spritegroup.add(self.race_sprite)
 
-		self.prev_char = FuncButton(self.manage, 50, 50, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
-		self.next_char = FuncButton(self.manage, 155, 50, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
+		self.prev_hair_btn = FuncButton(self.manage, 50, 20, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_hair, self.selected_char), True, False, True)
+		self.next_hair_btn = FuncButton(self.manage, 155, 20, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_hair, self.selected_char), True, False, True)
+
+		self.new_char_buttons.append(self.prev_hair_btn)
+		container.spritegroup.add(self.prev_hair_btn)
+		self.new_char_buttons.append(self.next_hair_btn)
+		container.spritegroup.add(self.next_hair_btn)
+
+		self.prev_char = FuncButton(self.manage, 50, 55, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
+		self.next_char = FuncButton(self.manage, 155, 55, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
 
 		self.new_char_buttons.append(self.prev_char)
 		container.spritegroup.add(self.prev_char)
 		self.new_char_buttons.append(self.next_char)
 		container.spritegroup.add(self.next_char)
+		"""
+		self.prev_armour = FuncButton(self.manage, 50, 70, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_armour, self.selected_char), True, False, True)
+		self.next_armour = FuncButton(self.manage, 155, 70, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_armour, self.selected_char), True, False, True)
 
+		self.new_char_buttons.append(self.prev_armour)
+		container.spritegroup.add(self.prev_armour)
+		self.new_char_buttons.append(self.next_armour)
+		container.spritegroup.add(self.next_armour)
+		"""
 		
 		self.prev_class_ = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
 		self.next_class_ = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
@@ -486,14 +499,21 @@ class Manager:
 
 		container.clear()
 
-		self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
-
+		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
+		"""
 		self.race = race_tile(self.selected_char.race.name)
 		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
+		"""
 
+		self.selected_charsprite.x = self.race_sprite_x
+		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
+
+		self.race_sprite = self.selected_charsprite
 		container.spritegroup.add(self.race_sprite)
 		self.manage.spritegroup.add(self.save_btn)
 
+		container.spritegroup.add(self.prev_hair_btn)
+		container.spritegroup.add(self.next_hair_btn)
 		container.spritegroup.add(self.prev_char)
 		container.spritegroup.add(self.next_char)
 		container.spritegroup.add(self.prev_class_)
@@ -597,14 +617,24 @@ class Manager:
 				self.inventory.append(item)
 		self.update_inventories()
 
-	def prev_hair(self):
+	def prev_hair(self, char):
 		print "Previous hair"
-	
-	def next_hair(self):
+		self.hair_index = (self.hair_index - 1) % len(self.hairs)
+		self.selected_char.hair_name = self.hairs[self.hair_index]
+		print self.selected_charsprite.hair_name
+		self.selected_charsprite.update() #XXX hack
+		self.update_new_character(self.manage)
+
+	def next_hair(self, char):
 		print "Next hair"
+		self.hair_index = (self.hair_index + 1) % len(self.hairs)
+		self.selected_char.hair_name = self.hairs[self.hair_index]
+		self.selected_charsprite.update() #XXX hack
+		self.update_new_character(self.manage)
 
 	def prev_race(self, race_sprite):
 		print "Previous race"
+		print self.races
 		self.race_index = (self.race_index - 1) % len(self.races)
 		self.selected_char.race_name = races[self.races[self.race_index]].name
 		self.update_new_character(self.manage)
@@ -614,6 +644,12 @@ class Manager:
 		self.race_index = (self.race_index + 1) % len(self.races)
 		self.selected_char.race_name = races[self.races[self.race_index]].name
 		self.update_new_character(self.manage)
+
+	def prev_armour(self, char):
+		print "Previous armour"
+	
+	def next_armour(self, char):
+		print "Next armour"
 
 	def prev_class(self, *param):
 		print "Previous class"
