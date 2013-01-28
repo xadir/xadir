@@ -38,6 +38,7 @@ class Window:
 
 		self.res = Resources(None)
 		self.res.load_races()
+		self.res.load_hairs()
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.set_clip()
@@ -48,12 +49,15 @@ class Window:
 		hairs = dict((char, None) for char in 'abcdefghij')
 		races_ = races.keys()
 		raceses = [races_[:len(races_)/2], races_[len(races_)/2:]]
+		self.chars = []
 		for r, races_ in enumerate(raceses):
 			for x, hair in enumerate(hairs):
 				for y, race in enumerate(races_):
 					pos = (r * 10 + x, 1 + y)
 					armor = None
-					self.sprites.add(CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res))
+					char = CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res)
+					self.sprites.add(char)
+					self.chars.append(char)
 
 	def draw(self, frames = 1):
 		for i in range(frames):
@@ -71,6 +75,9 @@ class Window:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.done = True
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					for char in self.chars:
+						char.heading = (char.heading + 90) % 360
 
 			self.draw()
 
