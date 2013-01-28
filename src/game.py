@@ -651,7 +651,7 @@ class DamageNotification(pygame.sprite.DirtySprite):
 		self.step = SCALE
 		self.size = (15,15)
 
-		self.image = draw_pixel_text(str(self.number), SCALE)
+		self.image = draw_pixel_text(str(self.number), SCALE, (255, 0, 0) if number < 0 else (0, 255, 0))
 		self.rect = self.image.get_rect()
 		self.rect.topleft = character.pos
 		self.rect.top -= 5
