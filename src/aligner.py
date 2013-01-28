@@ -54,7 +54,7 @@ class Window:
 		for r, races_ in enumerate(raceses):
 			for x, hair in enumerate(hairs):
 				for y, race in enumerate(races_):
-					pos = (1 + r * 10 + x, 1 + y)
+					pos = (1 + r * (len(hairs) + 1) + x, 1 + y)
 					armor = None
 					char = CharacterSprite(None, Character(None, race, class_, 0, 0, 0, 0, armor, None, hair), pos, 270, grid, self.res)
 					self.sprites.add(char)
@@ -63,6 +63,11 @@ class Window:
 		for x, (hairname, hair) in enumerate(hairs.items()):
 			ht = HairXY(hair, (int((x + 1.5) * CHAR_SIZE[0]), 30))
 			self.sprites.add(ht)
+
+		for r, races_ in enumerate(raceses):
+			for y, race in enumerate(races_):
+				ht = HairL(races[race], ((r * (len(hairs) + 1) + 0.5) * CHAR_SIZE[0], (y + 1.5) * CHAR_SIZE[1]))
+				self.sprites.add(ht)
 
 		self.selected = None
 
@@ -127,6 +132,20 @@ class HairXY(StateTrackingSprite):
 
 	def get_state(self):
 		return self.hair.xoffset, self.hair.yoffset
+
+	def redraw(self):
+		self.image = draw_pixel_text(str(self.state), SCALE)
+		self.rect = self.image.get_rect()
+		self.rect.center = self.center
+
+class HairL(StateTrackingSprite):
+	def __init__(self, race, center):
+		StateTrackingSprite.__init__(self)
+		self.race = race
+		self.center = center
+
+	def get_state(self):
+		return self.race.hairline
 
 	def redraw(self):
 		self.image = draw_pixel_text(str(self.state), SCALE)
