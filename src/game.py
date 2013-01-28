@@ -861,7 +861,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 def draw_pixel_text(text):
 	import Image, ImageDraw, ImageFont
 
-	font = ImageFont.FreeTypeFont('font/pf_tempesta_five_condensed.ttf', 8)
+	font = ImageFont.FreeTypeFont(os.path.join(FONTDIR, 'pf_tempesta_five_condensed.ttf'), 8)
 	width = font.getsize(text)[0]
 	im = Image.new('1', (width, 15))
 	draw = ImageDraw.Draw(im)

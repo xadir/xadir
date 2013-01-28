@@ -1,4 +1,5 @@
 import os, sys, time
+sys.path.insert(0, '../src/')
 import pygame
 from pygame.locals import *
 from resources import *

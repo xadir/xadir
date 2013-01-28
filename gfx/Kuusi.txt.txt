@@ -1,0 +1,3 @@
+Ku-t_l KuB-t_l KuB-t_r Ku-t_r
+Ku-l   KuB-l   KuB-r   Ku-r
+Ku-b_l KuB-b_l KuB-b_r Ku-b_r

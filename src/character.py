@@ -8,11 +8,12 @@ import binascii
 _character_id = 0
 class Character(object):
 	fields = 'name:str race_name:str class_name:str var_str:int var_dex:int var_con:int var_int:int armor:armor weapon:weapon'
-	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None):
+	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None, hair_name = None):
 		self.name = name
 
 		self.race_name = race_name
 		self.class_name = class_name
+		self.hair_name = hair_name
 
 		self.var_str = str
 		self.var_dex = dex
@@ -50,5 +51,6 @@ class Character(object):
 		int = rndstats.count('int')
 		armor = random.choice(armors.values())#Armor.random()
 		weapon = random.choice(weapons.values())#Weapon.random()
-		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon)
+		hair_name = None
+		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon, hair_name)
 
