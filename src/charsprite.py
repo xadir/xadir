@@ -33,7 +33,8 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 	def update(self):
 		self.image = self.res.races[self.race.name][self.heading].copy()
-		self.image.blit(self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2, (self.race.hairline or 0) * SCALE))
+		if self.char.hair_name:
+			self.image.blit(self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2, (self.race.hairline or 0) * SCALE))
 		self.dirty = 1
 
 	def is_selected(self):
