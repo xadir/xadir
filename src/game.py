@@ -660,7 +660,7 @@ class DamageNotification(pygame.sprite.DirtySprite):
 		self.rect = self.image.get_rect()
 		self.rect.topleft = character.pos
 		self.rect.top -= 5
-		self.rect.left += 24
+		self.rect.left += (CHAR_SIZE[0] - self.rect.width) / 2
 
 		self._layer = L_CHAR_EFFECT(character.grid_y)
 
