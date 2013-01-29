@@ -655,22 +655,22 @@ class DamageNotification(pygame.sprite.DirtySprite):
 		self.character = character
 		self.number = number
 		self.step = SCALE
-		self.size = (15,15)
 
 		self.image = draw_pixel_text(str(self.number), SCALE, (255, 0, 0) if number < 0 else (0, 255, 0))
 		self.rect = self.image.get_rect()
 		self.rect.topleft = character.pos
 		self.rect.top -= 5
 		self.rect.left += 24
-		self.max_height = 30
-		self.opaque_height = 15
+
 		self._layer = L_CHAR_EFFECT(character.grid_y)
 
 		self.image.set_alpha(255)
+
 		self.pos = 0
+		self.opaque_height = 15
+		self.max_height = 30
 
 	def update(self):
-		print self.rect
 		if self.pos >= self.max_height:
 			self.visible = 0
 		elif self.pos <= self.opaque_height:
@@ -680,7 +680,6 @@ class DamageNotification(pygame.sprite.DirtySprite):
 			self.pos += 1
 			self.rect.top -= self.step
 			next_alpha = 255 - ((255 * (self.pos)) / self.max_height)
-			print next_alpha
 			self.image.set_alpha(next_alpha)
 
 		self.dirty = 1
