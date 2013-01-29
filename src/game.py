@@ -649,7 +649,7 @@ class AnimatedEffect(AnimatedSprite):
 			self.visible = 0
 
 class DamageNotification(pygame.sprite.DirtySprite):
-	def __init__(self, character, number, step=1, interval=1):
+	def __init__(self, character, number, step=1, interval=2):
 		pygame.sprite.DirtySprite.__init__(self)
 
 		self.character = character
@@ -668,7 +668,7 @@ class DamageNotification(pygame.sprite.DirtySprite):
 
 		self.pos = 0
 		self.opaque_height = 15
-		self.max_height = 30
+		self.max_height = 20
 
 		self.count = 0
 		self.interval = interval
@@ -686,8 +686,8 @@ class DamageNotification(pygame.sprite.DirtySprite):
 
 			self.rect.top -= self.step
 
-			if self.pos >= self.opaque_height:
-				next_alpha = 255 - ((255 * (self.pos)) / self.max_height)
+			if self.pos >= self.opaque_height and self.opaque_height != self.max_height:
+				next_alpha = 255 - ((255 * (self.pos - self.opaque_height)) / (self.max_height - self.opaque_height))
 				self.image.set_alpha(next_alpha)
 
 			self.dirty = 1
