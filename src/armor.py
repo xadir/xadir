@@ -23,12 +23,13 @@ _armor_id = 0
 class Armor:
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	fields = 'name:str miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:damage'
-	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
+	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type, price):
 		self.name = name
 		self.miss_chance = miss_chance
 		self.damage_reduction = damage_reduction
 		self.enchanted_damage_reduction = enchanted_damage_reduction
 		self.enchanted_damage_reduction_type = enchanted_damage_reduction_type
+		self.price = price
 
 	@classmethod
 	def random(cls):
@@ -39,11 +40,11 @@ class Armor:
 		damage_reduction = random.randrange(6)
 		enchanted_damage_reduction = random.randrange(3)
 		enchanted_damage_reduction_type = set([random.choice(cls.damage_types)])
-		return cls(name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type)
+		return cls(name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type, 10)
 
 armors = {}
 for name, type, miss_chance, resilience, dmg_reduct, price in armor_data:
-	armors[name] = Armor(name, miss_chance, dmg_reduct, 0, set())
+	armors[name] = Armor(name, miss_chance, dmg_reduct, 0, set(), price)
 
-default = Armor('skin', 0, 0, 0, set())
+default = Armor('skin', 0, 0, 0, set(), 0)
 
