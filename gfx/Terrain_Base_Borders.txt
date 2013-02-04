@@ -1,0 +1,3 @@
+W-t_l W-t W-t_r W-br W-bl W-tn
+W-l   ?   W-r   W-tr W-tl W-bn
+W-b_l W-b W-b_r W-ln W-rn ?
