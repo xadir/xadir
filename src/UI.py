@@ -396,15 +396,17 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 			else: self.visible = True
 			
 class CascadeButton(UIComponent):
-	def __init__(self, parent, surface, x, y, width, height, texts, images, name=None):
+	def __init__(self, parent, surface, x, y, width, height, texts, images, name = None, function = None):
 		self.parent = parent
 		self.surface = surface
 		#self.buttons = pygame.sprite.LayeredUpdates()
 		self.child_buttons = []
-		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, 0, self.enable_buttons, True, False, False)
+		self.function = function
+		self.parent_button = FuncButton(self.parent, x, y, width, height, texts, images, ICON_FONTSIZE, self.surface, 0, self.function, True, False, False)
 		#self.buttons.add(self.parent_button)
 		self.parent.spritegroup.add(self.parent_button)
 		self.name = name
+		self.childs_visible = False
 		
 	def add_button(self, coords, size, text, image, function, visible=False, static=False, align=None):
 		if align == "centerx":
@@ -431,7 +433,13 @@ class CascadeButton(UIComponent):
 		for b in self.child_buttons:
 			if b.static == False:
 				b.toggle_visibility()
+		self.childs_visible = True
 			
+	def hide_buttons(self):
+		for b in self.child_buttons:
+			if b.static == False:
+				b.visible = False
+		self.childs_visible = False
 	"""
 	def draw(self):
 		print self.buttons.layers
