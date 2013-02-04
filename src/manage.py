@@ -56,6 +56,7 @@ class Manager:
 		self.char_inventory = []
 
 		self.selected_char = None
+		self.selected_item = None
 
 		# Array of party, each character-entity consists the race, class and equipped items
 		#party = [["Medusa", "Warrior", [None]],["Human3", "Warrior", [None]],["Alien", "Warrior", [None]],["Dragon", "Warrior", [None]],["Taurus", "Warrior", [None]],["Wolf", "Warrior", [None]]]
@@ -72,6 +73,7 @@ class Manager:
 		self.char_inventory_con = UIContainer(None, (240, 20), (152, 250), self.screen)
 		self.team_con = UIContainer(None, (20, 290), (371, 120), self.screen)
 		self.store_con = UIContainer(None, (650, 120), (446, 550), self.screen)
+		self.item_con = UIContainer(None, (20, 450), (371, 220), self.screen)
 		self.text_con = UIContainer(None, (650, 20), (446, 80), self.screen)
 
 		self.race_sprite_x = self.manage.x + 90
@@ -137,7 +139,16 @@ class Manager:
 		texts.blit(text, rect)
 		text_y += 15
 
-	  	text_sprite = pygame.sprite.Sprite()
+		if self.selected_item != None:
+			font = pygame.font.Font(FONT, int(20*FONTSCALE))
+			text = font.render("Selected item: " + str(self.selected_item), True, COLOR_FONT, COLOR_BG)
+			rect = text.get_rect()
+			rect.x = 0
+			rect.y = text_y
+			texts.blit(text, rect)
+			text_y += 15
+
+		text_sprite = pygame.sprite.Sprite()
 		text_sprite.image = texts
 		rect = texts.get_rect()
 		rect.x = 655
@@ -897,6 +908,7 @@ class Manager:
 			self.team_con.draw()
 			self.char_inventory_con.draw()
 			self.store_con.draw()
+			self.item_con.draw()
 			pygame.display.flip()
 
 			for event in pygame.event.get():
@@ -909,6 +921,7 @@ class Manager:
 						self.container_click(event, self.team_con)
 						self.container_click(event, self.char_inventory_con)
 						self.container_click(event, self.store_con)
+						self.container_click(event, self.item_con)
 						self.container_click(event, self.text_con)
 				elif event.type == pygame.QUIT:
 					sys.exit()
