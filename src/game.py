@@ -15,11 +15,13 @@ from armor import armors, Armor, default as default_armor
 from weapon import weapons, Weapon, default as default_weapon
 from charclass import classes, CharacterClass
 from character import Character
+from charsprite import CharacterSprite
 from terrain import terrains
 from taunts import taunts
 
 from tiles import *
 from bgmap import BackgroundMap
+from pixelfont import *
 
 from wire import *
 from messager import Messager
@@ -176,6 +178,7 @@ class XadirMain:
 		self.res = Resources(None)
 		self.res.load_terrain()
 		self.res.load_races()
+		self.res.load_hairs()
 		self.res.load_selections()
 
 		self.chartypes = self.res.races
@@ -312,12 +315,19 @@ class XadirMain:
 				self.set_grid_sprites(pygame.sprite.Group())
 				character.unselect()
 				if mouse_grid_pos in self.get_action_area_for(character):
-					if character.is_attack_move(mouse_grid_pos):
+					if self.is_attack_move(mouse_grid_pos):
 						self.do_attack(character, mouse_grid_pos)
 					else:
 						self.do_move(character, mouse_grid_pos)
 			if character.grid_pos != mouse_grid_pos:
 				character.unselect()
+
+	def is_attack_move(self, coords):
+		for p in self.get_other_players():
+			for c in p.get_characters_coords():
+				if c == coords:
+					return True
+		return False
 
 	def handle_remote(self, type, data):
 		if type == 'TURN':
@@ -402,14 +412,29 @@ class XadirMain:
 		self.sprites.remove(anim)
 
 	def animate_hp_change(self, character, change):
+		# Set up damage notification
+		text = DamageNotification(character, change)
+
+		self.sprites.add(text)
+
+		# Animate hp change (and damage notification)
 		change_sign = sign(change)
 		change_amount = abs(change)
 		orig_hp = character.hp
 		for i in range(1, FPS):
 			character.hp = orig_hp + change_sign * scale(i, FPS, change_amount)
-			if character.hp < 1:
-				break
 			self.draw()
+			if character.hp <= 0:
+				break
+
+		# Finish damage notification animation
+		while text.visible:
+			self.draw()
+
+		# Clean up damage notification
+		self.sprites.remove(text)
+
+		# Clean up hp change
 		character.hp = orig_hp
 
 	def get_heading(self, a, b):
@@ -464,6 +489,8 @@ class XadirMain:
 
 			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
 			self.messages.messages.append(' '.join(messages))
+			if damage:
+				self.animate_hp_change(target, -damage)
 			target.take_hit(damage)
 			attacker.mp = 0
 
@@ -544,29 +571,6 @@ class XadirMain:
 				#	draw_char_hp_bar(self.screen, pygame.Rect((character.x + 2, character.y - (CHAR_SIZE[1] - TILE_SIZE[1])), (48-4, 8)), character.max_hp, character.hp)
 				coords[1] += (bar_height + margin)
 
-class StateTrackingSprite(pygame.sprite.DirtySprite):
-	def __init__(self):
-		pygame.sprite.DirtySprite.__init__(self)
-		self.state = None
-
-	def get_state(self):
-		raise NotImplemented, 'This method must be implemented by base classes'
-
-	def redraw(self):
-		raise NotImplemented, 'This method must be implemented by base classes'
-
-	def update(self):
-		if not self.visible:
-			return
-
-		state = self.get_state()
-		if state == self.state:
-			return
-		self.state = state
-
-		self.redraw()
-		self.dirty = 1
-
 class Messages(StateTrackingSprite):
 	def __init__(self, x, y, width, height):
 		StateTrackingSprite.__init__(self)
@@ -643,6 +647,50 @@ class AnimatedEffect(AnimatedSprite):
 
 		if self.pos == 0 and self.count == 0:
 			self.visible = 0
+
+class DamageNotification(pygame.sprite.DirtySprite):
+	def __init__(self, character, number, step=1, interval=2):
+		pygame.sprite.DirtySprite.__init__(self)
+
+		self.character = character
+		self.number = number
+		self.step = SCALE
+
+		self.image = draw_pixel_text(str(self.number), SCALE, (255, 0, 0) if number < 0 else (0, 255, 0))
+		self.rect = self.image.get_rect()
+		self.rect.topleft = character.pos
+		self.rect.top -= 5
+		self.rect.left += (CHAR_SIZE[0] - self.rect.width) / 2
+
+		self._layer = L_CHAR_EFFECT(character.grid_y)
+
+		self.image.set_alpha(255)
+
+		self.pos = 0
+		self.opaque_height = 15
+		self.max_height = 20
+
+		self.count = 0
+		self.interval = interval
+
+	def update(self):
+		if not self.visible:
+			return
+
+		self.count += 1
+		if self.count >= self.interval:
+			self.count = 0
+			self.pos += 1
+			if self.pos >= self.max_height:
+				self.visible = 0
+
+			self.rect.top -= self.step
+
+			if self.pos >= self.opaque_height and self.opaque_height != self.max_height:
+				next_alpha = 255 - ((255 * (self.pos - self.opaque_height)) / (self.max_height - self.opaque_height))
+				self.image.set_alpha(next_alpha)
+
+			self.dirty = 1
 
 class MainHealthBar(StateTrackingSprite):
 	def __init__(self, character, rect):
@@ -752,7 +800,7 @@ class Player:
 		self.name = name
 		self.main = main
 		self.remote = remote
-		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main) for character, x, y, heading in chardata]
+		self.all_characters = [CharacterSprite(self, character, (x, y), heading, main.map, main.res) for character, x, y, heading in chardata]
 
 	characters = property(lambda self: [character for character in self.all_characters if character.is_alive()])
 	dead_characters = property(lambda self: [character for character in self.all_characters if not character.is_alive()])
@@ -829,89 +877,6 @@ def roll_attack_damage(map_, attacker, defender):
 
 	return damage, messages
 
-class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
-	"""Universal class for any character in the game"""
-	def __init__(self, player, character, coords, heading, main):
-		UIGridObject.__init__(self, main.map, coords)
-		pygame.sprite.DirtySprite.__init__(self)
-
-		self.player = player
-		self.char = character
-		# Movement points
-		self.mp = self.max_mp
-		# Health points
-		self.hp = self.max_hp
-		# Status
-		self.heading = heading   # Angle from right to counter-clockwise in degrees, possible values are: 0, 45, 90, 135, 180, 225, 270 and 315
-		self.selected = False
-		self.alive = True
-
-		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
-
-		self.main = main
-		self.background_map = self.main.map
-		self.walkable_tiles = self.main.walkable
-		self.players = self.main.get_all_players()
-
-	def __getattr__(self, name):
-		return getattr(self.char, name)
-
-	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
-	rect = property(_get_rect)
-
-	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
-
-	def update(self):
-		self.image = self.main.chartypes[self.race.name][self.heading]
-		self.dirty = 1
-
-	def is_selected(self):
-		return self.selected
-
-	def take_hit(self, attack_points):
-		print 'Took', attack_points, 'of damage'
-		self.main.animate_hp_change(self, -attack_points)
-		self.hp -= attack_points
-		if self.hp < 1:
-			self.hp = 0
-			self.kill()
-
-	def select(self):
-		self.selected = True
-
-	def unselect(self):
-		self.selected = False
-
-	def is_alive(self):
-		return self.alive
-
-	def revive(self):
-		self.alive = True
-		self.visible = True
-
-	def kill(self):
-		self.alive = False
-		self.visible = False
-
-	def move_forward(self, steps):
-		"""Moves to headed direction given amount of steps"""
-		if self.movement <= steps:
-			if self.heading == 0:
-				self.grid_y -= steps
-			elif self.heading == 90:
-				self.grid_x += steps
-			elif self.heading == 180:
-				self.grid_y += steps
-			elif self.heading == 270:
-				self.grid_x -= steps
-
-	def is_attack_move(self, coords):
-		for p in self.main.get_other_players():
-			for c in p.get_characters_coords():
-				if c == coords:
-					return True
-		return False
-
 # Following classes define the graphical elements, or Sprites.
 class Button(UIComponent, pygame.sprite.DirtySprite):
 	def __init__(self, x, y, width, height, text, fontsize, function, bgcolor = (139, 162, 185)):
@@ -922,66 +887,13 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 
 		#font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
 		#image = font.render(text, True, (0, 0, 0), bgcolor)
-		image = draw_pixel_text(text)
-		rect = image.get_rect()
-		image = pygame.transform.scale(image, (SCALE * rect.width, SCALE * rect.height))
+		image = draw_pixel_text(text, SCALE)
 		rect = image.get_rect()
 
 		self.image.fill(bgcolor)
 		self.image.blit(image, (self.width/2 - rect.centerx, self.height/2 - rect.centery))
 
 		self.function = function
-
-def draw_pixel_text(text):
-	import Image, ImageDraw, ImageFont
-
-	font = ImageFont.FreeTypeFont('font/pf_tempesta_five_condensed.ttf', 8)
-	width = font.getsize(text)[0]
-	im = Image.new('1', (width, 15))
-	draw = ImageDraw.Draw(im)
-	draw.rectangle(((0, 0), (width, 15)), fill=1)
-	draw.text((0, 0), text, font=font, fill=0)
-	im = im.crop((0, 4, width, 10)).convert('RGB')
-
-	text = pygame.image.fromstring(im.tostring(), im.size, im.mode)
-	text.set_colorkey((255, 255, 255))
-
-	return text
-
-def draw_speech_bubble(text):
-	text = draw_pixel_text(text)
-	rect = text.get_rect()
-	rect.topleft = (3, 2)
-	width, height = size = max(3 + rect.width + 2, 13), max(2 + rect.height + 2 + 4, 10)
-	bubble = pygame.Surface(size)
-	# Transparency
-	bubble.set_colorkey((255, 0, 255))
-	bubble.fill((255, 0, 255))
-	# Inside of the bubble
-	bubble.fill((255, 255, 255), (1, 1, width - 2, height - 6))
-	# Borders of the bubble
-	bubble.fill((0, 0, 0), (0, 2, 1, height - 8))
-	bubble.fill((0, 0, 0), (width - 1, 2, 1, height - 8))
-	bubble.fill((0, 0, 0), (2, 0, width - 4, 1))
-	bubble.fill((0, 0, 0), (2, height - 5, width - 4, 1))
-	# Corners of the bubble
-	bubble.fill((0, 0, 0), (1, 1, 1, 1))
-	bubble.fill((0, 0, 0), (width - 2, 1, 1, 1))
-	bubble.fill((0, 0, 0), (1, height - 6, 1, 1))
-	bubble.fill((0, 0, 0), (width - 2, height - 6, 1, 1))
-	# Inside of the jag
-	bubble.fill((255, 255, 255), (5, height - 5, 3, 3))
-	bubble.fill((255, 0, 255), (7, height - 3, 1, 1))
-	# Border of the jag
-	bubble.fill((0, 0, 0), (4, height - 5, 1, 4))
-	bubble.fill((0, 0, 0), (5, height - 2, 1, 1))
-	bubble.fill((0, 0, 0), (6, height - 3, 1, 1))
-	bubble.fill((0, 0, 0), (7, height - 4, 1, 1))
-	# Text
-	bubble.blit(text, rect)
-	rect = bubble.get_rect()
-	bubble = pygame.transform.scale(bubble, (SCALE * rect.width, SCALE * rect.height))
-	return bubble
 
 def get_random_teams(player_count = 2, character_count = 3):
 	player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)

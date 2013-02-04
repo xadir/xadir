@@ -58,6 +58,29 @@ class AnimatedSprite(pygame.sprite.DirtySprite):
 			self.image = self.images[self.pos]
 			self.dirty = 1
 
+class StateTrackingSprite(pygame.sprite.DirtySprite):
+	def __init__(self):
+		pygame.sprite.DirtySprite.__init__(self)
+		self.state = None
+
+	def get_state(self):
+		raise NotImplemented, 'This method must be implemented by base classes'
+
+	def redraw(self):
+		raise NotImplemented, 'This method must be implemented by base classes'
+
+	def update(self):
+		if not self.visible:
+			return
+
+		state = self.get_state()
+		if state == self.state:
+			return
+		self.state = state
+
+		self.redraw()
+		self.dirty = 1
+
 Tile = StaticSprite
 Textile = TextSprite
 AnimatedTile = AnimatedSprite
