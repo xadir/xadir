@@ -272,6 +272,7 @@ class FuncButton(UIObject, pygame.sprite.Sprite):
 			self.border = self.add_round_rect(pygame.Rect(0, 0, self.width + (ICON_BORDER * 2), self.height + (ICON_BORDER * 2)), COLOR_BORDER, ICON_RADIUS)
 			self.background = self.add_round_rect(pygame.Rect(ICON_BORDER, ICON_BORDER, self.width, self.height), COLOR_BG, ICON_RADIUS)
 		
+		self.image = self.border[0].copy()
 		self._layer = layer
 
 		self.texts = []
