@@ -7,6 +7,7 @@ from character import Character
 from charsprite import CharacterSprite
 from race import races
 from charclass import classes
+from store import *
 from game import start_game, host_game, join_game
 from weapon import Weapon, weapons
 from armor import Armor, armors
@@ -56,6 +57,7 @@ class Manager:
 		self.char_inventory = []
 
 		self.selected_char = None
+		self.selected_item = None
 
 		# Array of party, each character-entity consists the race, class and equipped items
 		#party = [["Medusa", "Warrior", [None]],["Human3", "Warrior", [None]],["Alien", "Warrior", [None]],["Dragon", "Warrior", [None]],["Taurus", "Warrior", [None]],["Wolf", "Warrior", [None]]]
@@ -63,12 +65,17 @@ class Manager:
 		# Array of items that player has
 		#inventory = [(icon)]
 
+		self.money = 10000
+		self.store = Store(10, 3000)
+
 		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
 		self.party_con = UIContainer(None, (410, 20), (152, 250), self.screen)
 		self.inventory_con = UIContainer(None, (410, 290), (152, 380), self.screen)
 		self.char_inventory_con = UIContainer(None, (240, 20), (152, 250), self.screen)
 		self.team_con = UIContainer(None, (20, 290), (371, 120), self.screen)
-		self.store_con = UIContainer(None, (650, 20), (500, 660), self.screen)
+		self.store_con = UIContainer(None, (650, 120), (446, 550), self.screen)
+		self.item_con = UIContainer(None, (20, 450), (371, 220), self.screen)
+		self.text_con = UIContainer(None, (650, 20), (446, 80), self.screen)
 
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
@@ -79,11 +86,11 @@ class Manager:
 		for i in range(3):
 			sword = random.choice(weapons.values())
 			self.inventory.append(sword)
-			self.add_item(self.sword_icon, sword.name.capitalize(), self.inventory_con, sword)
+			self.add_item(self.sword_icon, sword.name.capitalize(), self.inventory_con, sword, "player")
 		for i in range(1):
 			armor = random.choice(armors.values())
 			self.inventory.append(armor)
-			self.add_item(self.armor_icon, armor.name.capitalize(), self.inventory_con, armor)
+			self.add_item(self.armor_icon, armor.name.capitalize(), self.inventory_con, armor, "player")
 
 
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
@@ -106,22 +113,75 @@ class Manager:
 		self.manager_buttons.append(self.team2_btn)
 
 		self.update_char_panels()
+		self.update_store()
+		self.update_general_texts()
+
+	def update_general_texts(self):
+
+		self.text_con.clear()
+
+		texts = pygame.Surface((436,60))
+		texts.fill(COLOR_BG)
+		text_y = 0
+		
+		font = pygame.font.Font(FONT, int(20*FONTSCALE))
+		text = font.render("Player: " + str(self.money) + "c", True, COLOR_FONT, COLOR_BG)
+		rect = text.get_rect()
+		rect.x = 0
+		rect.y = text_y
+		texts.blit(text, rect)
+		text_y += 15
+
+		font = pygame.font.Font(FONT, int(20*FONTSCALE))
+		text = font.render("Store: " + str(self.store.money) + "c", True, COLOR_FONT, COLOR_BG)
+		rect = text.get_rect()
+		rect.x = 0
+		rect.y = text_y
+		texts.blit(text, rect)
+		text_y += 15
+
+		if self.selected_item != None:
+			font = pygame.font.Font(FONT, int(20*FONTSCALE))
+			text = font.render("Selected item: " + str(self.selected_item), True, COLOR_FONT, COLOR_BG)
+			rect = text.get_rect()
+			rect.x = 0
+			rect.y = text_y
+			texts.blit(text, rect)
+			text_y += 15
+
+		text_sprite = pygame.sprite.Sprite()
+		text_sprite.image = texts
+		rect = texts.get_rect()
+		rect.x = 655
+		rect.y = 25
+		text_sprite.rect = rect
+		print texts, texts.get_rect()
+		self.text_con.spritegroup.add(text_sprite)
 
 	def update_inventories(self):
 		print self.inventory, self.char_inventory
 		self.inventory_con.clear()
 		for item in self.inventory:
 			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.inventory_con, item, False)
+				self.add_item(self.sword_icon, item.name.capitalize(), self.inventory_con, item, "player")
 			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.inventory_con, item, False)
+				self.add_item(self.armor_icon, item.name.capitalize(), self.inventory_con, item, "player")
 
 		self.char_inventory_con.clear()
 		for item in self.char_inventory:
 			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.char_inventory_con, item, True)
+				self.add_item(self.sword_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
 			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.char_inventory_con, item, True)
+				self.add_item(self.armor_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
+
+	def update_store(self):
+		print "Store inventory: ", self.store.items, "Store balance: ", self.store.money
+		self.store_con.clear()
+		for item in self.store.items:
+			if isinstance(item, Weapon):
+				self.add_item(self.sword_icon, item.name.capitalize(), self.store_con, item, "store")
+			elif isinstance(item, Armor):
+				self.add_item(self.armor_icon, item.name.capitalize(), self.store_con, item, "store")
 
 	def update_char_panels(self):
 		self.party_con.clear()
@@ -281,7 +341,7 @@ class Manager:
 		tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Equip", None]], None, (self.equip, [icon, item]), False, False, None)
 		container.children.append(tmp)
 
-	def add_item(self, icon, text, container, item=None, char_inventory=False):
+	def add_item(self, icon, text, container, item=None, inventory_type=None):
 		img_width = 134
 		img_height = 40
 		icon_width = (ICON_BORDER + ICON_PADDING + img_width + ICON_PADDING + ICON_BORDER) # To clarify to layout
@@ -293,12 +353,15 @@ class Manager:
 		x = (ICON_MARGIN * 2) + (icon_place[0] * (ICON_MARGIN + icon_width))
 		y = (ICON_MARGIN * 2) + (icon_place[1] * (ICON_MARGIN + icon_height))
 		
-		tmp = CascadeButton(container, self.screen, x, y, img_width + (ICON_PADDING * 2), img_height + (ICON_PADDING * 2), [[text, None]], [[icon, (2, 2)]])
-		tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Sell", None]], None, (self.sell, item), False, False, None)
-		if char_inventory:
+		tmp = CascadeButton(container, self.screen, x, y, img_width + (ICON_PADDING * 2), img_height + (ICON_PADDING * 2), [[text, None]], [[icon, (2, 2)]], None, [self.inspect_item, item])
+		if inventory_type == "char":
+			tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Sell", None]], None, (self.sell, [item, self.char_inventory]), False, False, None)
 			tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Yield", None]], None, (self.unequip, item), False, False, None)
-		else:
+		elif inventory_type == "player":
+			tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Sell", None]], None, (self.sell, [item, self.inventory]), False, False, None)
 			tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Equip", None]], None, (self.equip, item), False, False, None)
+		elif inventory_type == "store":
+			tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Buy", None]], None, (self.buy, item), False, False, None)
 		container.children.append(tmp)
 
 	def new_character(self, container):
@@ -610,8 +673,34 @@ class Manager:
 	def button_click(self):
 		print "Clicked button"
 
-	def sell(self, item):
+	def sell(self, params):
+		item = params[0]
+		inventory = params[1]
 		print "Item sold"
+		if inventory == self.char_inventory:
+			if self.selected_char.weapon == item:
+				self.selected_char.weapon = None
+			elif self.selected_char.armor == item:
+				self.selected_char.armor = None
+		inventory.remove(item)
+		self.money += item.price
+		self.store.sell_item_to_store(item)
+		self.update_store()
+		self.update_inventories()
+		self.update_general_texts()
+
+	def buy(self, item):
+		if self.money >= item.price:
+			self.inventory.append(item)
+			self.money -= item.price
+			self.store.buy_item_from_store(item)
+			self.update_store()
+			self.update_inventories()
+			self.update_general_texts()
+
+	def inspect_item(self, item):
+		self.selected_item = item
+		self.update_general_texts()
 
 	def equip(self, item):
 		print "Item equipped", item, self.selected_char
@@ -794,8 +883,18 @@ class Manager:
 		if i == 0:
 			for b in container.children:
 				if b.parent_button.contains(*event.pos):
-					b.parent_button.toggle()
-					b.enable_buttons()
+					if b.childs_visible:
+						for tmp_b in container.children:
+							tmp_b.hide_buttons()
+					else:
+						for tmp_b in container.children:
+							tmp_b.hide_buttons()
+						b.enable_buttons()
+						b.parent_button.visibility = True
+					print "Button function:", b.function
+					if b.function != None:
+						f = b.function[0]
+						f(b.function[1])
 					break
 
 	def loop(self):
@@ -803,12 +902,14 @@ class Manager:
 
 		while 1:
 			self.screen.fill((127, 127, 127))
+			self.text_con.draw()
 			self.manage.draw()
 			self.party_con.draw()
 			self.inventory_con.draw()
 			self.team_con.draw()
 			self.char_inventory_con.draw()
 			self.store_con.draw()
+			self.item_con.draw()
 			pygame.display.flip()
 
 			for event in pygame.event.get():
@@ -821,6 +922,8 @@ class Manager:
 						self.container_click(event, self.team_con)
 						self.container_click(event, self.char_inventory_con)
 						self.container_click(event, self.store_con)
+						self.container_click(event, self.item_con)
+						self.container_click(event, self.text_con)
 				elif event.type == pygame.QUIT:
 					sys.exit()
 

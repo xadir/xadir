@@ -59,7 +59,7 @@ class Weapon:
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	classes = ['sword', 'dagger', 'spear', 'axe', 'bow', 'crossbow', 'wand']
 	fields = 'name:str size:str type:str class_:str damage:dice damage_type:damage magic_enchantment:int critical_multiplier:float critical_chance:int'
-	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment, critical_multiplier = None, critical_chance = None):
+	def __init__(self, name, size, type, class_, damage, damage_type, magic_enchantment, critical_multiplier = None, critical_chance = None, price = 0):
 		self.name = name
 		self.size = size
 		self.type = type
@@ -69,6 +69,7 @@ class Weapon:
 		self.magic_enchantment = magic_enchantment
 		self.critical_multiplier = critical_multiplier or {'light': 1.5, 'medium': 2.0, 'heavy': 3.0}[size]
 		self.critical_chance = critical_chance or {'light': 15, 'medium': 10, 'heavy': 5}[size]
+		self.price = price
 
 	@classmethod
 	def random(cls):
@@ -81,7 +82,7 @@ class Weapon:
 		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
 		damage_type = set([random.choice(cls.damage_types)])
 		magic_enchantment = random.randrange(11)
-		return cls(name, size, type, class_, damage, damage_type, magic_enchantment)
+		return cls(name, size, type, class_, damage, damage_type, magic_enchantment, 10)
 
 	def __repr__(self):
 		return 'Weapon(%r, %r, %r, %r, %r, %r, %r)' % (self.name, self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
@@ -92,7 +93,7 @@ class Weapon:
 weapons = {}
 for name, type, size, dmg_type, dmg_roll, crit_mult, crit_chance, min_range, max_range, price in weapon_data:
 	dmg_roll = Dice(*map(int, dmg_roll.split('d')))
-	weapons[name] = Weapon(name, size, type, None, dmg_roll, set(dmg_type), 0, crit_mult, crit_chance)
+	weapons[name] = Weapon(name, size, type, None, dmg_roll, set(dmg_type), 0, crit_mult, crit_chance, price)
 
-default = Weapon('fist', 'light', 'melee', None, Dice(0, 0), set(['bludgeoning']), 0, 1, 0)
+default = Weapon('fist', 'light', 'melee', None, Dice(0, 0), set(['bludgeoning']), 0, 1, 0, 0)
 
