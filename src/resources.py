@@ -29,6 +29,21 @@ class Resources:
 		for name, images in zip(hairnames, hairimages):
 			self.hairs[name] = {270: images[0], 0: images[1], 90: images[2], 180: pygame.transform.flip(images[1], True, False)}
 
+	def load_armors(self):
+		armorimages = load_tiles('Collections/Heavy_Armor_Collection.png', ARMOR_SIZE, (255, 255, 255), SCALE)
+		armornames = file(os.path.join(GFXDIR, 'Collections/Heavy_Armor_Collection.txt')).read().split('\n')[:-1]
+
+		self.armors = {}
+		for namerow, names in enumerate(armornames):
+			for namecol, name in enumerate(names.split(' ')):
+				sizes = {}
+				for sizeidx, size in enumerate('dwarf human gnome elf'.split()):
+					print name, namerow, sizeidx, namerow*4 + sizeidx, len(armorimages)
+					images = armorimages[namerow*4 + sizeidx][namecol*3:(namecol+1)*3]
+					print namerow, namecol, sizeidx, images
+					sizes[size] = {270: images[0], 180: images[1], 90: images[2], 0: pygame.transform.flip(images[1], True, False)}
+				self.armors[name] = sizes
+
 	def load_selections(self):
 		self.selections = {}
 		for name, color in [('red', (255, 0, 0)), ('green', (10, 212, 0))]:
