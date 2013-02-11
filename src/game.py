@@ -466,7 +466,7 @@ class XadirMain:
 		return [self.players[self.turn], self.get_other_players()]
 
 	def add_player(self, name, remote, characters):
-		self.players.append(Player(name, characters, self, remote))
+		self.players.append(GamePlayer(name, characters, self, remote))
 
 	def attack(self, attacker, target, damage, messages):
 		attacker_position = attacker.grid_pos
@@ -790,7 +790,7 @@ class SpriteGrid:
 		for i in range(len(grid)):
 			self.sprites.add(Tile(tile, pygame.Rect(grid[i][0]*TILE_SIZE[0], grid[i][1]*TILE_SIZE[1], *TILE_SIZE), layer = L_SEL(grid[i][1])))
 
-class Player:
+class GamePlayer:
 	"""Class to create player or team in the game. One player may have many characters."""
 	def __init__(self, name, chardata, main, remote):
 		self.name = name
@@ -892,7 +892,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def get_random_teams(player_count = 2, character_count = 3):
-	player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
+	player_names = random.sample('Alexer Zokol brenon Ren IronBear'.split(), player_count)
 	teams = []
 	for name in player_names:
 		characters = []
