@@ -949,6 +949,9 @@ def deserialize_attack(data):
 	charno, path = deserialize_path(pathdata)
 	return charno, path, int(damage), map(binascii.unhexlify, messages.split(' '))
 
+def compatible_protocol(version):
+	return version == PROTOCOL_VERSION
+
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
 	game = XadirMain(screen, mapname = mapname)
@@ -956,7 +959,16 @@ def start_game(screen, mapname, teams):
 	game.init_teams(teams, game.get_spawnpoints(teams))
 	game.main_loop()
 
+from screen_message import MessageWin
+def show_message(screen, text, loop = False, color = (0, 255, 0)):
+	win = MessageWin(screen, text, color)
+	if loop:
+		win.loop()
+	else:
+		win.draw()
+
 def host_game(screen, port, mapname, team):
+	show_message(screen, 'Waiting for connection...')
 	try:
 		serv = socket.socket()
 		serv.bind(('0.0.0.0', port))
@@ -964,21 +976,31 @@ def host_game(screen, port, mapname, team):
 		sock, addr = serv.accept()
 		serv.close()
 
+		show_message(screen, 'Connection established')
+		show_message(screen, 'Synchronizing game data...')
+
+		proto = [False]
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
+			if type == 'PROTOCOL':
+				if compatible_protocol(data):
+					proto[0] = True
+			assert proto[0], 'Incompatible protocol version'
 			if type == 'TEAM':
 				other_team[0] = deserialize_team(data)
 
 		conn = Messager(handler, sock)
+		conn.push_message('PROTOCOL', PROTOCOL_VERSION)
 		conn.push_message('MAP', mapname)
 		conn.push_message('TEAM', serialize_team(team))
 
 		while other_team[0] is None:
 			asyncore.loop(count=1, timeout=0.1)
-
-	except:
+			assert asyncore.socket_map, 'Protocol error or disconnection'
+	except Exception, e:
 		sys.excepthook(*sys.exc_info())
+		show_message(screen, 'Link failed! (%s: %s)' % (e.__class__.__name__, e.message), True, (255, 0, 0))
 		return
 
 	teams = [('Player 1', None, team), ('Player 2', conn, other_team[0])]
@@ -993,14 +1015,23 @@ def host_game(screen, port, mapname, team):
 	game.main_loop()
 
 def join_game(screen, host, port, team):
+	show_message(screen, 'Connecting...')
 	try:
 		sock = socket.socket()
 		sock.connect((host, port))
 
+		show_message(screen, 'Connection established')
+		show_message(screen, 'Synchronizing game data...')
+
+		proto = [False]
 		mapname = [None]
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
+			if type == 'PROTOCOL':
+				if compatible_protocol(data):
+					proto[0] = True
+			assert proto[0], 'Incompatible protocol version'
 			if type == 'MAP':
 				mapname[0] = data
 			if type == 'TEAM':
@@ -1009,12 +1040,15 @@ def join_game(screen, host, port, team):
 				spawns[0] = deserialize_spawns(data)
 
 		conn = Messager(handler, sock)
+		conn.push_message('PROTOCOL', PROTOCOL_VERSION)
 		conn.push_message('TEAM', serialize_team(team))
 
 		while mapname[0] is None or other_team[0] is None or spawns[0] is None:
 			asyncore.loop(count=1, timeout=0.1)
-	except:
+			assert asyncore.socket_map, 'Protocol error or disconnection'
+	except Exception, e:
 		sys.excepthook(*sys.exc_info())
+		show_message(screen, 'Link failed! (%s: %s)' % (e.__class__.__name__, e.message), True, (255, 0, 0))
 		return
 
 	teams = [('Player 1', conn, other_team[0]), ('Player 2', None, team)]
