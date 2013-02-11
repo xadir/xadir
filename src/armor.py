@@ -1,4 +1,5 @@
-import random
+import random, os
+from config import *
 
 L = 'Light'
 M = 'Medium'
@@ -32,7 +33,7 @@ class Armor:
 		self.enchanted_damage_reduction = enchanted_damage_reduction
 		self.enchanted_damage_reduction_type = enchanted_damage_reduction_type
 		self.price = price
-		self.style = style or random.choice('11 12 13 14 22 21 22 23 24 31 32 33 34 41 42 43 44 51 52 53 54 61 62'.split())
+		self.style = style or random.choice(file(os.path.join(GFXDIR, 'Collections/Heavy_Armor_Collection.txt')).read().replace('\n', ' ').split())
 
 	@classmethod
 	def random(cls):

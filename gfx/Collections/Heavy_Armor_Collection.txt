@@ -1,6 +1,6 @@
-11 12 13 14
-21 22 23 24
-31 32 33 34
-41 42 43 44
-51 52 53 54
-61 62
+red-classic red-modern grey-green-classic grey-green-modern
+grey-classic grey-modern brown-classic brown-modern
+blue-classic blue-modern violet-classic violet-modern
+green-classic green-modern black-classic black-modern
+cyan-classic cyan-modern dark-red-classic dark-red-modern
+yellow-classic yellow-modern
