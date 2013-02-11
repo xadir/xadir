@@ -34,7 +34,6 @@ class MapEditor:
 		size = max(size[0], 4), size[1] + 1
 
 		self.res = Resources(None)
-		self.res.load_terrain()
 		self.res.terrain[None] = [pygame.Surface(TILE_SIZE)]
 		self.tiles = {}
 		for name, image in self.res.terrain.iteritems():

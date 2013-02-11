@@ -41,8 +41,6 @@ class Window:
 		self.clock = pygame.time.Clock()
 
 		self.res = Resources(None)
-		self.res.load_races()
-		self.res.load_hairs()
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.set_clip()

@@ -7,10 +7,23 @@ class Resources:
 	def __init__(self, screen):
 		self.screen = screen
 
+	def __getattr__(self, name):
+		"""Autoload resources as they are accessed"""
+		load_name = 'load_' + name
+		assert hasattr(self, load_name)
+		loader = getattr(self, load_name)
+		loader()
+		assert hasattr(self, name)
+		return getattr(self, name)
+
 	def load_terrain(self):
 		self.terrain = load_named_tiles('tilemap_terrain', TILE_SIZE, (255, 0, 255), SCALE)
 		self.terrain = {'G': [self.terrain['G']], 'D': [self.terrain['D']], 'F': [self.terrain['G']], 'W': [self.terrain['W[1]'], self.terrain['W[2]']]}
+
+	def load_borders(self):
 		self.borders = load_named_tiles('tilemap_borders', BORDER_SIZE, (255, 0, 255), SCALE)
+
+	def load_overlay(self):
 		self.overlay = load_named_tiles('tilemap_overlay', OVERLAY_SIZE, (255, 0, 255), SCALE)
 
 	def load_races(self):

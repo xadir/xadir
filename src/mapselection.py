@@ -36,7 +36,6 @@ class MapSelection:
 		size = 4
 
 		self.res = Resources(None)
-		self.res.load_terrain()
 		self.res.terrain[None] = [pygame.Surface(TILE_SIZE)]
 		self.tiles = {}
 		for name, image in self.res.terrain.iteritems():

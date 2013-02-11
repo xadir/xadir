@@ -176,11 +176,6 @@ class XadirMain:
 
 	def load_resources(self):
 		self.res = Resources(None)
-		self.res.load_terrain()
-		self.res.load_races()
-		self.res.load_hairs()
-		self.res.load_armors()
-		self.res.load_selections()
 
 		self.chartypes = self.res.races
 		self.imgs = self.res.selections
