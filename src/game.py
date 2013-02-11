@@ -942,13 +942,25 @@ def start_game(screen, mapname, teams):
 	game.init_teams(teams, game.get_spawnpoints(teams))
 	game.main_loop()
 
+from screen_message import MessageWin
+def show_message(screen, text, loop = False, color = (0, 255, 0)):
+	win = MessageWin(screen, text, color)
+	if loop:
+		win.loop()
+	else:
+		win.draw()
+
 def host_game(screen, port, mapname, team):
+	show_message(screen, 'Waiting for connection...')
 	try:
 		serv = socket.socket()
 		serv.bind(('0.0.0.0', port))
 		serv.listen(1)
 		sock, addr = serv.accept()
 		serv.close()
+
+		show_message(screen, 'Connection established')
+		show_message(screen, 'Synchronizing game data...')
 
 		proto = [False]
 		other_team = [None]
@@ -968,9 +980,10 @@ def host_game(screen, port, mapname, team):
 
 		while other_team[0] is None:
 			asyncore.loop(count=1, timeout=0.1)
-
-	except:
+			assert asyncore.socket_map, 'Protocol error or disconnection'
+	except Exception, e:
 		sys.excepthook(*sys.exc_info())
+		show_message(screen, 'Link failed! (%s: %s)' % (e.__class__.__name__, e.message), True, (255, 0, 0))
 		return
 
 	teams = [('Player 1', None, team), ('Player 2', conn, other_team[0])]
@@ -985,9 +998,13 @@ def host_game(screen, port, mapname, team):
 	game.main_loop()
 
 def join_game(screen, host, port, team):
+	show_message(screen, 'Connecting...')
 	try:
 		sock = socket.socket()
 		sock.connect((host, port))
+
+		show_message(screen, 'Connection established')
+		show_message(screen, 'Synchronizing game data...')
 
 		proto = [False]
 		mapname = [None]
@@ -1011,8 +1028,10 @@ def join_game(screen, host, port, team):
 
 		while mapname[0] is None or other_team[0] is None or spawns[0] is None:
 			asyncore.loop(count=1, timeout=0.1)
-	except:
+			assert asyncore.socket_map, 'Protocol error or disconnection'
+	except Exception, e:
 		sys.excepthook(*sys.exc_info())
+		show_message(screen, 'Link failed! (%s: %s)' % (e.__class__.__name__, e.message), True, (255, 0, 0))
 		return
 
 	teams = [('Player 1', conn, other_team[0]), ('Player 2', None, team)]
