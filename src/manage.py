@@ -34,10 +34,11 @@ class Manager:
 		self.res = Resources(None)
 		self.res.load_races()
 		self.res.load_hairs()
+		self.res.load_armors()
 
 		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
 		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
-		self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
+		#self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
 
 		self.party = []
 		for i in range(5):

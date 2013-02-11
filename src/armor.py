@@ -19,16 +19,19 @@ armor_data = [
 	('Full-Plate',        H, -10,  3,  4,  200),
 ]
 
+# Graphics attributes: heading, size, style, color, type
+
 _armor_id = 0
 class Armor:
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	fields = 'name:str miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:damage'
-	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type):
+	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type, style = None):
 		self.name = name
 		self.miss_chance = miss_chance
 		self.damage_reduction = damage_reduction
 		self.enchanted_damage_reduction = enchanted_damage_reduction
 		self.enchanted_damage_reduction_type = enchanted_damage_reduction_type
+		self.style = style or random.choice('11 12 13 14 22 21 22 23 24 31 32 33 34 41 42 43 44 51 52 53 54 61 62'.split())
 
 	@classmethod
 	def random(cls):
