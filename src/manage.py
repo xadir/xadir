@@ -64,7 +64,7 @@ class Manager:
 		# Array of items that player has
 		#inventory = [(icon)]
 
-		self.money = 10000
+		self.money = 1000
 		self.store = Store(10, 3000)
 
 		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
