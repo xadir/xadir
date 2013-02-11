@@ -1,7 +1,30 @@
 import binascii
+from character import Character
 from weapon import Weapon
 from armor import Armor
 from dice import Dice
+
+def serialize_list(items):
+	result = []
+	for item in items:
+		type = item.__class__.__name__
+		item = serialize(item)
+		value = '%s:%s' % (type, binascii.hexlify(item))
+		result.append(value)
+	return ' '.join(result)
+
+def deserialize_list(clss, data):
+	cls_map = dict((cls.__name__, cls) for cls in clss)
+	parts = data.split(' ')
+	result = []
+
+	for part in parts:
+		type, name = part.split(':')
+		name = binascii.unhexlify(name)
+		value = deserialize(cls_map[type], name)
+		result.append(value)
+
+	return result
 
 def serialize(self):
 	result = []
@@ -14,6 +37,8 @@ def serialize(self):
 			value = str(item)
 		elif type == 'damage':
 			value = '/'.join(item)
+		elif type.endswith('_list'):
+			value = serialize_list(item)
 		else:
 			value = serialize(item)
 		result.append('%s=%s' % (name, binascii.hexlify(value)))
@@ -47,6 +72,12 @@ def deserialize(cls, data):
 			item = deserialize(Weapon, value)
 		elif type == 'armor':
 			item = deserialize(Armor, value)
+		elif type == 'character':
+			item = deserialize(Character, value)
+		elif type == 'char_list':
+			item = deserialize_list([Character], value)
+		elif type == 'item_list':
+			item = deserialize_list([Weapon, Armor], value)
 		setattr(new, name, item)
 
 	return new
