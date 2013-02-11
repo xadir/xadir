@@ -932,6 +932,9 @@ def deserialize_attack(data):
 	charno, path = deserialize_path(pathdata)
 	return charno, path, int(damage), map(binascii.unhexlify, messages.split(' '))
 
+def compatible_protocol(version):
+	return version == PROTOCOL_VERSION
+
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
 	game = XadirMain(screen, mapname = mapname)
@@ -947,13 +950,19 @@ def host_game(screen, port, mapname, team):
 		sock, addr = serv.accept()
 		serv.close()
 
+		proto = [False]
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
+			if type == 'PROTOCOL':
+				if compatible_protocol(data):
+					proto[0] = True
+			assert proto[0], 'Incompatible protocol version'
 			if type == 'TEAM':
 				other_team[0] = deserialize_team(data)
 
 		conn = Messager(handler, sock)
+		conn.push_message('PROTOCOL', PROTOCOL_VERSION)
 		conn.push_message('MAP', mapname)
 		conn.push_message('TEAM', serialize_team(team))
 
@@ -980,10 +989,15 @@ def join_game(screen, host, port, team):
 		sock = socket.socket()
 		sock.connect((host, port))
 
+		proto = [False]
 		mapname = [None]
 		other_team = [None]
 		spawns = [None]
 		def handler(type, data):
+			if type == 'PROTOCOL':
+				if compatible_protocol(data):
+					proto[0] = True
+			assert proto[0], 'Incompatible protocol version'
 			if type == 'MAP':
 				mapname[0] = data
 			if type == 'TEAM':
@@ -992,6 +1006,7 @@ def join_game(screen, host, port, team):
 				spawns[0] = deserialize_spawns(data)
 
 		conn = Messager(handler, sock)
+		conn.push_message('PROTOCOL', PROTOCOL_VERSION)
 		conn.push_message('TEAM', serialize_team(team))
 
 		while mapname[0] is None or other_team[0] is None or spawns[0] is None:
