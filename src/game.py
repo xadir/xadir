@@ -897,7 +897,7 @@ class Button(UIComponent, pygame.sprite.DirtySprite):
 		self.function = function
 
 def get_random_teams(player_count = 2, character_count = 3):
-	player_names = random.sample('Alexer Zokol brenon Prototailz Ren'.split(), player_count)
+	player_names = random.sample('Alexer Zokol brenon Ren IronBear'.split(), player_count)
 	teams = []
 	for name in player_names:
 		characters = []
