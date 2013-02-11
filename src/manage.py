@@ -80,7 +80,7 @@ class Manager:
 		# Array of items that player has
 		#inventory = [(icon)]
 
-		self.money = self.player.money
+		self.player.money
 		self.store = Store(10, 3000)
 
 		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
@@ -140,7 +140,7 @@ class Manager:
 		text_y = 0
 		
 		font = pygame.font.Font(FONT, int(20*FONTSCALE))
-		text = font.render("Player: " + str(self.money) + "c", True, COLOR_FONT, COLOR_BG)
+		text = font.render("Player: " + str(self.player.money) + "c", True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		rect.x = 0
 		rect.y = text_y
@@ -698,16 +698,16 @@ class Manager:
 			elif self.selected_char.armor == item:
 				self.selected_char.armor = None
 		inventory.remove(item)
-		self.money += item.price
+		self.player.money += item.price
 		self.store.sell_item_to_store(item)
 		self.update_store()
 		self.update_inventories()
 		self.update_general_texts()
 
 	def buy(self, item):
-		if self.money >= item.price:
+		if self.player.money >= item.price:
 			self.inventory.append(item)
-			self.money -= item.price
+			self.player.money -= item.price
 			self.store.buy_item_from_store(item)
 			self.update_store()
 			self.update_inventories()
