@@ -11,6 +11,7 @@ from store import *
 from game import start_game, host_game, join_game
 from weapon import Weapon, weapons
 from armor import Armor, armors
+from player import Player
 import random
 
 from mapselection import MapSelection
@@ -28,6 +29,24 @@ class FakeGrid:
 
 class Manager:
 	def __init__(self, screen):
+
+		### Objects to implement multi-round game
+
+		player_name = random.sample('Alexer Zokol brenon Ren IronBear'.split(), 1)
+
+		player_party = []
+		for i in range(5):
+			char = Character.random()
+			player_party.append(char)
+
+		player_inventory = []
+
+		player_money = 1000
+
+		self.player = Player(player_name, player_party, player_inventory, player_money)
+
+		self.party = self.player.characters
+
 		self.screen = screen
 		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
 		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
@@ -41,10 +60,6 @@ class Manager:
 		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
 		#self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
 
-		self.party = []
-		for i in range(5):
-			char = Character.random()
-			self.party.append(char)
 
 		self.ip = ''
 		IpResolver('manager', self).start()
@@ -53,7 +68,7 @@ class Manager:
 		self.team1 = []
 		self.team2 = []
 
-		self.inventory = []
+		self.inventory = self.player.inventory
 		self.char_inventory = []
 
 		self.selected_char = None
@@ -65,7 +80,7 @@ class Manager:
 		# Array of items that player has
 		#inventory = [(icon)]
 
-		self.money = 1000
+		self.money = self.player.money
 		self.store = Store(10, 3000)
 
 		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
