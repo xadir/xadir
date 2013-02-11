@@ -1,6 +1,6 @@
 import random
 from race import races, Race
-from charclass import classes, CharacterClass
+from charclass import classes, level_up, CharacterClass
 from armor import armors, Armor
 from weapon import weapons, Weapon
 from hair import hairs
@@ -9,7 +9,7 @@ import binascii
 _character_id = 0
 class Character(object):
 	fields = 'name:str race_name:str class_name:str var_str:int var_dex:int var_con:int var_int:int armor:armor weapon:weapon'
-	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, armor = None, weapon = None, hair_name = None):
+	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, xp = 0, armor = None, weapon = None, hair_name = None):
 		self.name = name
 
 		self.race_name = race_name
@@ -20,6 +20,10 @@ class Character(object):
 		self.var_dex = dex
 		self.var_con = con
 		self.var_int = int
+
+		self.xp = xp
+		self.level = 0
+		self.upgrade_points = 0
 
 		self.per_wc_miss_chance = {}
 
@@ -39,6 +43,14 @@ class Character(object):
 	max_sp = property(lambda self: self.int)
 	max_mp = property(lambda self: self.dex)
 
+	def check_lvl(self):
+		print "inside level up check"
+		for row in level_up:
+			if row[0] == self.class_name:
+				if row[2] <= self.xp:
+					self.level = row[1]
+					self.upgrade_points += 2
+
 	@classmethod
 	def random(cls):
 		global _character_id
@@ -51,8 +63,9 @@ class Character(object):
 		dex = rndstats.count('dex')
 		con = rndstats.count('con')
 		int = rndstats.count('int')
+		xp = random.randrange(0,50)
 		armor = random.choice(armors.values())#Armor.random()
 		weapon = random.choice(weapons.values())#Weapon.random()
 		hair_name = random.choice(hairs.keys())
-		return cls(name, race_name, class_name, str, dex, con, int, armor, weapon, hair_name)
+		return cls(name, race_name, class_name, str, dex, con, int, xp, armor, weapon, hair_name)
 

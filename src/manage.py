@@ -52,6 +52,9 @@ class Manager:
 		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
 		self.res = Resources(None)
+		self.res.load_races()
+		self.res.load_hairs()
+		self.res.load_armors()
 
 		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
 		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
@@ -294,6 +297,19 @@ class Manager:
 			rect.left = 80
 			rect.y = text_y
 			texts.blit(text, rect)
+			text_y += 15
+
+			text = font.render("XP: " + str(self.selected_char.xp), True, COLOR_FONT, COLOR_BG)
+			rect = text.get_rect()
+			rect.left = 0
+			rect.y = text_y
+			texts.blit(text, rect)
+
+			text = font.render("Level: " + str(self.selected_char.level), True, COLOR_FONT, COLOR_BG)
+			rect = text.get_rect()
+			rect.left = 80
+			rect.y = text_y
+			texts.blit(text, rect)
 
 			text_sprite = pygame.sprite.Sprite()
 			text_sprite.image = texts
@@ -407,7 +423,7 @@ class Manager:
 		self.current_class = self.classes[self.class_index]
 		self.current_hair = self.hairs[self.hair_index]
 		print self.current_class
-		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, None, None)
+		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, 0, None, None)
 		self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 
 		self.points_left = 2

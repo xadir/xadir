@@ -13,7 +13,7 @@ from dice import Dice
 from race import races, Race
 from armor import armors, Armor, default as default_armor
 from weapon import weapons, Weapon, default as default_weapon
-from charclass import classes, CharacterClass
+from charclass import classes, win_xp, defeat_xp, CharacterClass
 from character import Character
 from charsprite import CharacterSprite
 from terrain import terrains
@@ -173,6 +173,7 @@ class XadirMain:
 
 	current_player = property(lambda self: self.players[self.turn])
 	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
+	dead_players = property(lambda self: [player for player in self.players if not player.is_alive()])
 
 	def load_resources(self):
 		self.res = Resources(None)
@@ -228,16 +229,29 @@ class XadirMain:
 		self.done = True
 
 	def gameover(self):
+		print "gameover"
 		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
 		if len(self.live_players) < 1:
 			text = 'Draw!'
+			for p in self.players:
+				for c in p.characters:
+					c.xp += win_xp
+					c.check_lvl()
 		else:
 			text = '%s wins!' % self.live_players[0].name
+			for c in self.live_players[0].all_characters:
+				c.char.xp += win_xp
+				c.check_lvl()
+			for p in self.dead_players:
+				for c in p.all_characters:
+					c.char.xp += defeat_xp
+					c.check_lvl()
 		sprite = Textile(text, pygame.Rect((0, 0, 960, 720)), layer = L_GAMEOVER)
 		self.sprites.add(sprite)
 		self.sprites.remove(self.buttons)
 		self.buttons = [Button(980, 600, 200, 100, "End game", 40, self.end_game, (185, 139, 139))]
 		self.sprites.add(self.buttons)
+		
 		while not self.done:
 			self.draw()
 			for event in pygame.event.get():
@@ -488,6 +502,9 @@ class XadirMain:
 			if damage:
 				self.animate_hp_change(target, -damage)
 			target.take_hit(damage)
+			#XXX Attack XP implementation
+			#attacker.xp += damage_xp * damage
+			#if attacker.lvl_up(): self.animate_lvl_up(attacker, attacker.level)
 			attacker.mp = 0
 
 	def is_walkable(self, coords):
