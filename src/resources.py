@@ -38,9 +38,7 @@ class Resources:
 			for namecol, name in enumerate(names.split(' ')):
 				sizes = {}
 				for sizeidx, size in enumerate('dwarf human gnome elf'.split()):
-					print name, namerow, sizeidx, namerow*4 + sizeidx, len(armorimages)
 					images = armorimages[namerow*4 + sizeidx][namecol*3:(namecol+1)*3]
-					print namerow, namecol, sizeidx, images
 					sizes[size] = {270: images[0], 180: images[1], 90: images[2], 0: pygame.transform.flip(images[1], True, False)}
 				self.armors[name] = sizes
 
