@@ -1,0 +1,4 @@
+Ru-t_l Ru-t   Ru-t_r Ru-t_e Lp1 Lk1 F1 F2 Tl1   Tl2
+Ru-l   Ru-c   Ru-r   Ru-v   Lp2 Lk2 F3 F4 Ll1_1 Rl1_1
+Ru-b_l Ru-b   Ru-b_r Ru-b_e Lp3 ?   F5 F6 Ll1_2 Rl1_2
+Ru-l_e Ru-h1  Ru-h2  Ru-r_e Lp4 ?   F7 F8 Ll2   Rl2
