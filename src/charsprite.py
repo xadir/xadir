@@ -19,8 +19,6 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.selected = False
 		self.alive = True
 
-		self.terrain_miss_chance = 0 # XXX Alexer: lolfixthis :D
-
 		self.res = res
 
 	def __getattr__(self, name):
