@@ -64,15 +64,3 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		self.alive = False
 		self.visible = False
 
-	def move_forward(self, steps):
-		"""Moves to headed direction given amount of steps"""
-		if self.movement <= steps:
-			if self.heading == 0:
-				self.grid_y -= steps
-			elif self.heading == 90:
-				self.grid_x += steps
-			elif self.heading == 180:
-				self.grid_y += steps
-			elif self.heading == 270:
-				self.grid_x -= steps
-
