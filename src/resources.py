@@ -93,13 +93,18 @@ def blitteds(dst, srcs, copy = True):
 	return dst, (left, top)
 
 def init_pygame(mode = (1200, 720)):
-	pygame.mixer.pre_init(48000)
+	if pygame.mixer:
+		pygame.mixer.pre_init(48000)
 	pygame.init()
 	screen = pygame.display.set_mode(mode)
-	pygame.mixer.set_reserved(1)
+	if pygame.mixer:
+		pygame.mixer.set_reserved(1)
 	return screen
 
 def change_sound(channel, new_sound, fade_ms, loops = -1):
+	if not pygame.mixer:
+		return
+	channel = pygame.mixer.Channel(channel)
 	if channel.get_sound():
 		channel.set_endevent(USEREVENT)
 		channel.fadeout(fade_ms)

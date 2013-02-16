@@ -209,7 +209,7 @@ class XadirMain:
 	def main_loop(self):
 		self.init_sidebar()
 
-		change_sound(pygame.mixer.Channel(0), load_sound('battle.ogg'), BGM_FADE_MS)
+		change_sound(0, load_sound('battle.ogg'), BGM_FADE_MS)
 
 		self.done = False
 		while not self.done:
@@ -230,7 +230,7 @@ class XadirMain:
 
 	def gameover(self):
 		print "gameover"
-		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
+		change_sound(0, load_sound('menu.ogg'), BGM_FADE_MS)
 		if len(self.live_players) < 1:
 			text = 'Draw!'
 			for p in self.players:

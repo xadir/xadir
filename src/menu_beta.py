@@ -83,7 +83,7 @@ class Menu:
 				f(b.function[1])
 
 	def loop(self):
-		change_sound(pygame.mixer.Channel(0), load_sound('menu.ogg'), BGM_FADE_MS)
+		change_sound(0, load_sound('menu.ogg'), BGM_FADE_MS)
 
 		title_alpha = 0
 		load_finished = False
