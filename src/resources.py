@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from config import *
 import time
+import sys
 
 class Resources:
 	def __init__(self, screen):
@@ -93,6 +94,8 @@ def blitteds(dst, srcs, copy = True):
 	return dst, (left, top)
 
 def init_pygame(mode = (1200, 720)):
+	if '--no-sound' in sys.argv:
+		pygame.mixer = None
 	if pygame.mixer:
 		pygame.mixer.pre_init(48000)
 	pygame.init()
