@@ -63,6 +63,35 @@ class Resources:
 			surf.set_alpha(120)
 			self.selections[name] = surf
 
+def blitteds(dst, srcs, copy = True):
+	"""Blit multiple images on top of dst resizing it if needed"""
+	left = top = right = bottom = 0
+	dw, dh = dst.get_size()
+
+	# Calculate the needed extra size
+	for src, (x, y) in srcs:
+		sw, sh = src.get_size()
+		left = max(left, -x)
+		top = max(top, -y)
+		right = max(right, x + sw - dw)
+		bottom = max(bottom, y + sh - dh)
+
+	# Create a new surface if the old size is not enough
+	if top or left or bottom or right:
+		tmp = pygame.Surface((dw + left + right, dh + top + bottom))
+		tmp.set_colorkey(dst.get_colorkey())
+		tmp.fill(dst.get_colorkey())
+		tmp.blit(dst, (left, top))
+		dst = tmp
+	elif copy:
+		dst = dst.copy()
+
+	# Blit the images to the appropriate positions
+	for src, (x, y) in srcs:
+		dst.blit(src, (x + left, y + top))
+
+	return dst, (left, top)
+
 def init_pygame(mode = (1200, 720)):
 	pygame.mixer.pre_init(48000)
 	pygame.init()

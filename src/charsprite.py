@@ -1,5 +1,6 @@
 import pygame
 from config import *
+from resources import blitteds
 from UI import UIGridObject
 
 class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
@@ -21,10 +22,12 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.res = res
 
+		self.update()
+
 	def __getattr__(self, name):
 		return getattr(self.char, name)
 
-	def _get_rect(self): return pygame.Rect(self.x, self.y - (CHAR_SIZE[1] - TILE_SIZE[1]), *CHAR_SIZE)
+	def _get_rect(self): return pygame.Rect(self.x - self.offset[0], self.y - self.offset[1] - (CHAR_SIZE[1] - TILE_SIZE[1]), *self.image.get_size())
 	rect = property(_get_rect)
 
 	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
@@ -33,18 +36,21 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 		return (self.heading, self.race.name, self.char.hair_name, self.char.armor and self.char.armor.style)
 
 	def get_current_image(self):
-		image = self.res.races[self.race.name][self.heading].copy()
+		image = self.res.races[self.race.name][self.heading]
+		extras = []
 		if self.char.hair_name:
-			image.blit(self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2 + self.char.hair.xoffset * SCALE, ((self.race.hairline or 0) + self.char.hair.yoffset) * SCALE))
+			extras.append((self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2 + self.char.hair.xoffset * SCALE, ((self.race.hairline or 0) + self.char.hair.yoffset) * SCALE)))
 		if self.race.armorsize and self.char.armor and self.char.armor.style:
-			image.blit(self.res.armors[self.char.armor.style][self.race.armorsize][self.heading], (0, CHAR_SIZE[1] - ARMOR_SIZE[1]))
+			extras.append((self.res.armors[self.char.armor.style][self.race.armorsize][self.heading], (0, CHAR_SIZE[1] - ARMOR_SIZE[1])))
+		if extras:
+			image, topleft = blitteds(image, extras, copy = True)
 		# Image depends on:
 		# Primary: (self.heading, self.race.name, self.char.hair_name, self.char.armor and self.char.armor.style)
 		# Secondary: self.race.hairline, self.char.hair.xoffset, self.char.hair.yoffset, self.race.armorsize
-		return image
+		return image, topleft
 
 	def update(self):
-		self.image = self.get_current_image()
+		self.image, self.offset = self.get_current_image()
 		self.dirty = 1
 
 	def is_selected(self):

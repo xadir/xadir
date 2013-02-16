@@ -770,7 +770,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 		try:
 			image = self.main.disabled_chartypes[state]
 		except:
-			image = self.character.get_current_image().convert_alpha()
+			image = self.character.get_current_image()[0].convert_alpha()
 			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 			self.main.disabled_chartypes[state] = image
 
