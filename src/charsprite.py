@@ -29,12 +29,22 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 	_layer = property(lambda self: L_CHAR(self.grid_y), lambda self, value: None)
 
-	def update(self):
-		self.image = self.res.races[self.race.name][self.heading].copy()
+	def get_current_state(self):
+		return (self.heading, self.race.name, self.char.hair_name, self.char.armor and self.char.armor.style)
+
+	def get_current_image(self):
+		image = self.res.races[self.race.name][self.heading].copy()
 		if self.char.hair_name:
-			self.image.blit(self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2 + self.char.hair.xoffset * SCALE, ((self.race.hairline or 0) + self.char.hair.yoffset) * SCALE))
+			image.blit(self.res.hairs[self.char.hair_name][self.heading], ((CHAR_SIZE[0] - HAIR_SIZE[0]) / 2 + self.char.hair.xoffset * SCALE, ((self.race.hairline or 0) + self.char.hair.yoffset) * SCALE))
 		if self.race.armorsize and self.char.armor and self.char.armor.style:
-			self.image.blit(self.res.armors[self.char.armor.style][self.race.armorsize][self.heading], (0, CHAR_SIZE[1] - ARMOR_SIZE[1]))
+			image.blit(self.res.armors[self.char.armor.style][self.race.armorsize][self.heading], (0, CHAR_SIZE[1] - ARMOR_SIZE[1]))
+		# Image depends on:
+		# Primary: (self.heading, self.race.name, self.char.hair_name, self.char.armor and self.char.armor.style)
+		# Secondary: self.race.hairline, self.char.hair.xoffset, self.char.hair.yoffset, self.race.armorsize
+		return image
+
+	def update(self):
+		self.image = self.get_current_image()
 		self.dirty = 1
 
 	def is_selected(self):

@@ -766,12 +766,13 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 	_layer = property(lambda self: L_CHAR_OVERLAY(self.character.grid_y), lambda self, value: None)
 
 	def update(self):
+		state = self.character.get_current_state()
 		try:
-			image = self.main.disabled_chartypes[self.character.race.name][self.character.heading]
+			image = self.main.disabled_chartypes[state]
 		except:
-			image = self.main.chartypes[self.character.race.name][self.character.heading].convert_alpha()
+			image = self.character.get_current_image().convert_alpha()
 			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
-			self.main.disabled_chartypes.setdefault(self.character.race.name, {})[self.character.heading] = image
+			self.main.disabled_chartypes[state] = image
 
 		self.visible = self.character.visible and self.character.player != self.main.current_player
 		if image != self.image or self.character.rect != self.rect:
