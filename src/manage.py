@@ -96,6 +96,7 @@ class Manager:
 		self.race_sprite_y = self.manage.y + 20
 		self.manager_buttons = []
 		self.new_char_buttons = []
+		self.manager_char_buttons = []
 		self.manager_texts = []
 
 		for i in range(3):
@@ -218,8 +219,10 @@ class Manager:
 		self.team_con.spritegroup.add(self.team2_btn)
 
 		self.manager_texts = []
-		print self.selected_char
+		self.manager_char_buttons = []
+		#int self.selected_char
 		if self.selected_char != None:
+			self.char_new = False
 			"""
 			self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
 			self.race = race_tile(self.selected_char.race.name)
@@ -246,7 +249,7 @@ class Manager:
 			print "Str: " + str(self.selected_char.str), "Dex: " + str(self.selected_char.dex)
 			print  "Con: " + str(self.selected_char.con), "Int: " + str(self.selected_char.int)
 
-			texts = pygame.Surface((140,100))
+			texts = pygame.Surface((140,150))
 			texts.fill(COLOR_BG)
 			text_y = 0
 
@@ -284,7 +287,7 @@ class Manager:
 			rect.left = 80
 			rect.y = text_y
 			texts.blit(text, rect)
-			text_y += 15
+			text_y += 30
 
 			text = font.render("Con: " + str(self.selected_char.con), True, COLOR_FONT, COLOR_BG)
 			rect = text.get_rect()
@@ -297,7 +300,7 @@ class Manager:
 			rect.left = 80
 			rect.y = text_y
 			texts.blit(text, rect)
-			text_y += 15
+			text_y += 25
 
 			text = font.render("XP: " + str(self.selected_char.xp), True, COLOR_FONT, COLOR_BG)
 			rect = text.get_rect()
@@ -310,6 +313,14 @@ class Manager:
 			rect.left = 80
 			rect.y = text_y
 			texts.blit(text, rect)
+			text_y += 25
+
+			if self.selected_char.upgrade_points > 0:
+				text = font.render("Points left: " + str(self.selected_char.upgrade_points), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
 
 			text_sprite = pygame.sprite.Sprite()
 			text_sprite.image = texts
@@ -319,6 +330,21 @@ class Manager:
 			text_sprite.rect = rect
 			print texts, texts.get_rect()
 			self.manage.spritegroup.add(text_sprite)
+
+			if self.selected_char.upgrade_points > 0:
+				self.inc_str = FuncButton(self.manage, 15, 130, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_str, self.selected_char), True, False, True)
+				self.inc_dex = FuncButton(self.manage, 180, 130, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_dex, self.selected_char), True, False, True)
+				self.inc_con = FuncButton(self.manage, 15, 160, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_con, self.selected_char), True, False, True)
+				self.inc_int = FuncButton(self.manage, 180, 160, 20, 20, [["+", None]], None, ICON_FONTSIZE, self.screen, 1, (self.increase_int, self.selected_char), True, False, True)
+
+				self.manager_char_buttons.append(self.inc_str)
+				self.manage.spritegroup.add(self.inc_str)
+				self.manager_char_buttons.append(self.inc_dex)
+				self.manage.spritegroup.add(self.inc_dex)
+				self.manager_char_buttons.append(self.inc_con)
+				self.manage.spritegroup.add(self.inc_con)
+				self.manager_char_buttons.append(self.inc_int)
+				self.manage.spritegroup.add(self.inc_int)
 
 	def add_char(self, race, container, character, in_team=False):
 		#race_image = race_tile(race).get_tile(0, 0, '270').image
@@ -393,7 +419,7 @@ class Manager:
 		container.children.append(tmp)
 
 	def new_character(self, container):
-	
+		self.char_new = True
 		for b in self.new_char_buttons:
 			print b.function
 
@@ -426,43 +452,12 @@ class Manager:
 		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, 0, None, None)
 		self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 
-		self.points_left = 2
-
-		"""
-		self.hairs = RACE_HAIRS.keys()
-		current_hair = self.hairs[self.hair_index]
-		current_hairline = compatible_hairs[hair_index][1]
-		
-		if current_hair != None:
-			hair_sprite_path = HAIR_SPRITES[current_hair]
-		if current_hair != None:
-			self.hair_tile = hair_tile(self.races[current_race], self.hairs[current_hair]).get_tile(x, y, '270')
-			self.images = [[self.race_tile, None], [self.hair_tile, None]]
-		else: self.images = [[self.race_tile, None]]
-		"""
-
-		"""
-		self.images = [[self.race_tile, None]]
-
-		print self.race_tile.rect.x, self.race_tile.rect.y
-
-		img_width = self.race_tile.rect.width
-		img_height = self.race_tile.rect.height
-		"""
-
 		self.selected_charsprite.x = self.race_sprite_x
 		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
 
 		self.race_sprite = self.selected_charsprite
 		container.spritegroup.add(self.race_sprite)
-		"""
-		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
 
-		self.race = race_tile(self.selected_char.race.name)
-		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
-
-		container.spritegroup.add(self.race_sprite)
-		"""
 		self.prev_hair_btn = FuncButton(self.manage, 50, 20, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_hair, self.selected_char), True, False, True)
 		self.next_hair_btn = FuncButton(self.manage, 155, 20, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_hair, self.selected_char), True, False, True)
 
@@ -478,16 +473,7 @@ class Manager:
 		container.spritegroup.add(self.prev_char)
 		self.new_char_buttons.append(self.next_char)
 		container.spritegroup.add(self.next_char)
-		"""
-		self.prev_armour = FuncButton(self.manage, 50, 70, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_armour, self.selected_char), True, False, True)
-		self.next_armour = FuncButton(self.manage, 155, 70, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_armour, self.selected_char), True, False, True)
 
-		self.new_char_buttons.append(self.prev_armour)
-		container.spritegroup.add(self.prev_armour)
-		self.new_char_buttons.append(self.next_armour)
-		container.spritegroup.add(self.next_armour)
-		"""
-		
 		self.prev_class_ = FuncButton(self.manage, 50, 105, 20, 20, [["<", None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, self.selected_char), True, False, True)
 		self.next_class_ = FuncButton(self.manage, 155, 105, 20, 20, [[">", None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, self.selected_char), True, False, True)
 
@@ -556,7 +542,7 @@ class Manager:
 		texts.blit(text, rect)
 		text_y += 25
 
-		text = font.render(string.capitalize("Points left: "+ str(self.points_left)), True, COLOR_FONT, COLOR_BG)
+		text = font.render(string.capitalize("Points left: "+ str(self.selected_char.upgrade_points)), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		rect.centerx = 70
 		rect.y = text_y
@@ -572,42 +558,6 @@ class Manager:
 		self.manage.spritegroup.add(text_sprite)
 		
 
-		#tmp = CascadeButton(container, self.screen, x, y, 90 + (ICON_PADDING * 2), 100 + (ICON_PADDING * 2), None, self.images)
-
-		#add_button(self, coords, size, text, image, function, visible=False, static=False, align=None)
-		#FuncButton(self, parent, x, y, width, height, text, image, fontsize, surface, layer, function, visible, selected, static):
-		
-		#tmp.add_button((5, 5), (20, 20), [["<", None]], None, self.prev_hair, True, True, None)
-		#tmp.add_button((img_width + 15 + (ICON_PADDING * 2), 5), (20, 20), [[">", None]], None, self.next_hair, True, True, None)
-
-		"""
-		prevRaceButton = FuncButton(container, 10, 40, 15, 15, [['<', None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_race, self.race_sprite), True, False, True)
-		nextRaceButton = FuncButton(container, 120, 40, 15, 15, [['>', None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_race, self.race_sprite), True, False, True)
-
-		self.manager_buttons.append(prevRaceButton)
-		container.spritegroup.add(prevRaceButton)
-
-		self.manager_buttons.append(nextRaceButton)
-		container.spritegroup.add(nextRaceButton)
-
-		prevClassButton = FuncButton(container, 10, 80, 15, 15, [['<', None]], None, ICON_FONTSIZE, self.screen, 1, (self.prev_class, None), True, False, True)
-		nextClassButton = FuncButton(container, 120, 80, 15, 15, [['>', None]], None, ICON_FONTSIZE, self.screen, 1, (self.next_class, None), True, False, True)
-
-		self.manager_buttons.append(prevClassButton)
-		container.spritegroup.add(prevClassButton)
-
-		self.manager_buttons.append(nextClassButton)
-		container.spritegroup.add(nextClassButton)
-		"""
-		#FuncButton(self.parent_button, x, y, size[0], size[1], text, image, ICON_FONTSIZE, self.surface, 1, function, visible, False, static)
-
-		"""
-		tmp.add_button((5, 30), (20, 20), [["<", None]], None, self.prev_char, True, True, None)
-		tmp.add_button((img_width + 15 + (ICON_PADDING * 2), 30), (20, 20), [[">", None]], None, self.next_char, True, True, None)
-		tmp.add_button((5, 60), (20, 20), [["<", None]], None, self.prev_class, True, True, None)
-		tmp.add_button((img_width + 15 + (ICON_PADDING * 2), 60), (20, 20), [[">", None]], None, self.next_class, True, True, None)
-		container.children.append(tmp)
-		"""
 
 	def update_new_character(self, container):
 		print "Update", self.selected_char.class_
@@ -615,10 +565,6 @@ class Manager:
 		container.clear()
 
 		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
-		"""
-		self.race = race_tile(self.selected_char.race.name)
-		self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
-		"""
 
 		self.selected_charsprite.x = self.race_sprite_x
 		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
@@ -683,7 +629,7 @@ class Manager:
 		texts.blit(text, rect)
 		text_y += 25
 
-		text = font.render(string.capitalize("Points left: "+ str(self.points_left)), True, COLOR_FONT, COLOR_BG)
+		text = font.render(string.capitalize("Points left: "+ str(self.selected_char.upgrade_points)), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		rect.centerx = 70
 		rect.y = text_y
@@ -830,23 +776,35 @@ class Manager:
 
 	def increase_str(self, character):
 		character.var_str += 1
-		self.points_left -= 1
-		self.update_new_character(self.manage)
+		character.upgrade_points -= 1
+		if self.char_new:
+			self.update_new_character(self.manage)
+		else:
+			self.update_char_panels()
 
 	def increase_dex(self, character):
 		character.var_dex += 1	
-		self.points_left -= 1
-		self.update_new_character(self.manage)
+		character.upgrade_points -= 1
+		if self.char_new:
+			self.update_new_character(self.manage)
+		else:
+			self.update_char_panels()
 
 	def increase_con(self, character):
 		character.var_con += 1
-		self.points_left -= 1
-		self.update_new_character(self.manage)
+		character.upgrade_points -= 1
+		if self.char_new:
+			self.update_new_character(self.manage)
+		else:
+			self.update_char_panels()
 
 	def increase_int(self, character):
 		character.var_int += 1
-		self.points_left -= 1
-		self.update_new_character(self.manage)
+		character.upgrade_points -= 1
+		if self.char_new:
+			self.update_new_character(self.manage)
+		else:
+			self.update_char_panels()
 
 	def save_team1(self, team):
 		if self.team1_btn.selected:
@@ -894,6 +852,10 @@ class Manager:
 				f = b.function[0]
 				f(b.function[1])
 		for b in self.new_char_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+		for b in self.manager_char_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])

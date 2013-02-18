@@ -23,7 +23,7 @@ class Character(object):
 
 		self.xp = xp
 		self.level = 0
-		self.upgrade_points = 0
+		self.upgrade_points = 2
 
 		self.per_wc_miss_chance = {}
 
