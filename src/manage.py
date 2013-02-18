@@ -32,7 +32,7 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-		player_name = random.sample('Alexer Zokol brenon Ren IronBear'.split(), 1)
+		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
 
 		player_party = []
 		for i in range(5):
