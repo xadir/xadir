@@ -223,12 +223,6 @@ class Manager:
 		#int self.selected_char
 		if self.selected_char != None:
 			self.char_new = False
-			"""
-			self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
-			self.race = race_tile(self.selected_char.race.name)
-			self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
-			self.manage.spritegroup.add(self.race_sprite)
-			"""
 			
 			self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 			
@@ -237,9 +231,6 @@ class Manager:
 
 			self.race_sprite = self.selected_charsprite
 			self.manage.spritegroup.add(self.race_sprite)
-
-			#self.race_tile = self.race.get_tile()
-			#sprite_rect = self.race_tile.rect
 
 			self.char_inventory = [self.selected_char.weapon, self.selected_char.armor]
 			self.update_inventories()
@@ -347,8 +338,6 @@ class Manager:
 				self.manage.spritegroup.add(self.inc_int)
 
 	def add_char(self, race, container, character, in_team=False):
-		#race_image = race_tile(race).get_tile(0, 0, '270').image
-		
 		charsprite = CharacterSprite(None, character, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 		charsprite.update()
 		race_image = charsprite.image
