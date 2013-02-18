@@ -82,7 +82,7 @@ class Weapon(object):
 		damage = Dice(random.randrange(1, 4), random.randrange(4, 11, 2))
 		damage_type = set([random.choice(cls.damage_types)])
 		magic_enchantment = random.randrange(11)
-		return cls(name, size, type, class_, damage, damage_type, magic_enchantment, 10)
+		return cls(name, size, type, class_, damage, damage_type, magic_enchantment, price = 10)
 
 	def __repr__(self):
 		return 'Weapon(%r, %r, %r, %r, %r, %r, %r)' % (self.name, self.size, self.type, self.class_, self.damage, self.damage_type, self.magic_enchantment)
