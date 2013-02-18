@@ -1,84 +1,105 @@
 import binascii
+from player import Player
 from character import Character
 from weapon import Weapon
 from armor import Armor
 from dice import Dice
 
-def serialize_list(items):
-	result = []
-	for item in items:
-		type = item.__class__.__name__
-		item = serialize(item)
-		value = '%s:%s' % (type, binascii.hexlify(item))
-		result.append(value)
-	return ' '.join(result)
+def serialize_basic(kind, value):
+	return str(value)
 
-def deserialize_list(clss, data):
-	cls_map = dict((cls.__name__, cls) for cls in clss)
-	parts = data.split(' ')
-	result = []
+def deserialize_basic(kind, value):
+	return allowed[kind][0](value)
 
-	for part in parts:
-		type, name = part.split(':')
-		name = binascii.unhexlify(name)
-		value = deserialize(cls_map[type], name)
-		result.append(value)
+def serialize_iter(kind, value, *itemkinds):
+	if itemkinds and isinstance(itemkinds[0], list):
+		assert len(itemkinds) == 1, 'Further specifications will be ignored'
+		assert len(value) == len(itemkinds[0])
+		return ' '.join(serialize_value(item, itemkind) for itemkind, item in zip(itemkinds[0], value))
+	else:
+		return ' '.join(serialize_value(item, *itemkinds) for item in value)
 
-	return result
+def deserialize_iter(kind, data, *itemkinds):
+	if itemkinds and isinstance(itemkinds[0], list):
+		assert len(itemkinds) == 1, 'Further specifications will be ignored'
+		items = data.split(' ')
+		assert len(items) == len(itemkinds[0])
+		return allowed[kind][0](deserialize_value(item, itemkind) for itemkind, item in zip(itemkinds[0], items))
+	else:
+		return allowed[kind][0](deserialize_value(item, *itemkinds) for item in data.split())
 
-def serialize(self):
-	result = []
-	for desc in self.fields.split():
-		name, type = desc.split(':')
-		item = getattr(self, name)
-		if item == None:
-			value = '@NULL/NONE@'
-		elif type in 'str int float dice':
-			value = str(item)
-		elif type == 'damage':
-			value = '/'.join(item)
-		elif type.endswith('_list'):
-			value = serialize_list(item)
-		else:
-			value = serialize(item)
-		result.append('%s=%s' % (name, binascii.hexlify(value)))
-	return ' '.join(result)
+def serialize_dict(kind, value, *itemkinds):
+	return serialize_iter(kind, value.items(), *itemkinds)
 
-def deserialize(cls, data):
-	parts = data.split(' ')
-	result = {}
-	for part in parts:
-		name, value = part.split('=')
-		value = binascii.unhexlify(value)
-		result[name] = value
+def get_obj_spec(kind):
+	spec = {}
+	cls = allowed[kind][0]
+	for field in cls.fields.split():
+		types = field.split(':')
+		name = types.pop(0)
+		types = [(list if kind.startswith('#') else tuple)(kind.split(',')) for kind in types]
+		spec[name] = types
+	return spec
 
-	new = cls.random()
-	for desc in cls.fields.split():
-		name, type = desc.split(':')
-		value = result[name]
-		if value == '@NULL/NONE@':
-			item = None
-		elif type == 'str':
-			item = str(value)
-		elif type == 'int':
-			item = int(value)
-		elif type == 'float':
-			item = float(value)
-		elif type == 'dice':
-			item = Dice(*map(int, value.split('d')))
-		elif type == 'damage':
-			item = set(value.split('/'))
-		elif type == 'weapon':
-			item = deserialize(Weapon, value)
-		elif type == 'armor':
-			item = deserialize(Armor, value)
-		elif type == 'character':
-			item = deserialize(Character, value)
-		elif type == 'char_list':
-			item = deserialize_list([Character], value)
-		elif type == 'item_list':
-			item = deserialize_list([Weapon, Armor], value)
-		setattr(new, name, item)
+def serialize_obj(kind, value):
+	spec = get_obj_spec(kind)
+	return ' '.join('='.join([serialize_value(name, 'str'), serialize_value(getattr(value, name), *types)]) for name, types in spec.items())
 
+def deserialize_obj(kind, data):
+	class tmp(object): pass
+	new = tmp()
+	new.__class__ = allowed[kind][0]
+	spec = get_obj_spec(kind)
+	for item in data.split():
+		name, value = item.split('=')
+		name = deserialize_value(name, 'str')
+		types = spec.pop(name)
+		value = deserialize_value(value, *types)
+		setattr(new, name, value)
+	assert not spec, 'Some values missing: %r' % (spec, )
 	return new
+
+NoneType = type(None)
+
+allowed = {
+	'NoneType':  (NoneType,  lambda kind, value: '',              lambda kind, value: None),
+	'bool':      (bool,      lambda kind, value: str(int(value)), lambda kind, value: bool(int(value))),
+	'int':       (int,       serialize_basic,                     deserialize_basic),
+	'str':       (str,       serialize_basic,                     deserialize_basic),
+	'float':     (float,     serialize_basic,                     deserialize_basic),
+	'tuple':     (tuple,     serialize_iter,                      deserialize_iter),
+	'list':      (list,      serialize_iter,                      deserialize_iter),
+	'set':       (set,       serialize_iter,                      deserialize_iter),
+	'dict':      (dict,      serialize_dict,                      deserialize_iter),
+	'Dice':      (Dice,      serialize_obj,                       deserialize_obj),
+	'Weapon':    (Weapon,    serialize_obj,                       deserialize_obj),
+	'Armor':     (Armor,     serialize_obj,                       deserialize_obj),
+	'Character': (Character, serialize_obj,                       deserialize_obj),
+	'Player':    (Player,    serialize_obj,                       deserialize_obj),
+}
+
+def assert_kind(kind_, kind = None, *future_kinds):
+	if kind is not None:
+		if isinstance(kind, tuple):
+			assert kind_ in kind, '%r not in %r' % (kind_, kind)
+		else:
+			assert kind_ == kind, '%r != %r' % (kind_, kind)
+
+def serialize_value(value, *types):
+	kind = value.__class__.__name__
+	assert_kind(kind, *types)
+	data = allowed[kind][1](kind, value, *types[1:])
+	return ':'.join(map(binascii.hexlify, [kind, data]))
+
+def deserialize_value(kind_data, *types):
+	kind, data = map(binascii.unhexlify, kind_data.split(':'))
+	assert_kind(kind, *types)
+	value = allowed[kind][2](kind, data, *types[1:])
+	return value
+
+def serialize(value):
+	return serialize_value(value)
+
+def deserialize(cls, value):
+	return deserialize_value(value, cls.__name__)
 

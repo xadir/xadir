@@ -8,7 +8,7 @@ import binascii
 
 _character_id = 0
 class Character(object):
-	fields = 'name:str race_name:str class_name:str hair_name:str var_str:int var_dex:int var_con:int var_int:int armor:armor weapon:weapon'
+	fields = 'name:str,NoneType race_name:str class_name:str hair_name:str var_str:int var_dex:int var_con:int var_int:int armor:Armor weapon:Weapon'
 	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, xp = 0, armor = None, weapon = None, hair_name = None):
 		self.name = name
 

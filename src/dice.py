@@ -1,6 +1,7 @@
 import random
 
 class Dice(object):
+	fields = 'count:int sides:int'
 	def __init__(self, count, sides):
 		self.count = count
 		self.sides = sides
