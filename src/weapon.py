@@ -53,7 +53,7 @@ weapon_data = [
 ]
 
 _weapon_id = 0
-class Weapon:
+class Weapon(object):
 	sizes = ['light', 'medium', 'heavy']
 	types = ['melee', 'ranged', 'magic']
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']

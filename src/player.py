@@ -1,5 +1,5 @@
 
-class Player:
+class Player(object):
 	fields = 'name:str characters:char_list inventory:item_list money:int'
 	def __init__(self, name, characters, inventory, money):
 		self.name = name

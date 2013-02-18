@@ -1,6 +1,6 @@
 import random
 
-class Dice:
+class Dice(object):
 	def __init__(self, count, sides):
 		self.count = count
 		self.sides = sides

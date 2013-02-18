@@ -23,7 +23,7 @@ armor_data = [
 # Graphics attributes: heading, size, style, color, type
 
 _armor_id = 0
-class Armor:
+class Armor(object):
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
 	fields = 'name:str miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:damage style:str'
 	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type, price, style = None):
