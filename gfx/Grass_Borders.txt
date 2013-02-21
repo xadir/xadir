@@ -1,0 +1,3 @@
+G-t_l G-t G-t_r G-tn
+G-l   ?   G-r   G-bn G-cn
+G-b_l G-b G-b_r G-ln G-rn
