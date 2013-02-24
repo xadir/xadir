@@ -32,7 +32,7 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
+		player_name = random.sample('Alexer Zokol brenon Ren IronBear'.split(), 1)
 
 		player_party = []
 		for i in range(5):
@@ -223,6 +223,12 @@ class Manager:
 		#int self.selected_char
 		if self.selected_char != None:
 			self.char_new = False
+			"""
+			self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
+			self.race = race_tile(self.selected_char.race.name)
+			self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
+			self.manage.spritegroup.add(self.race_sprite)
+			"""
 			
 			self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 			
@@ -231,6 +237,9 @@ class Manager:
 
 			self.race_sprite = self.selected_charsprite
 			self.manage.spritegroup.add(self.race_sprite)
+
+			#self.race_tile = self.race.get_tile()
+			#sprite_rect = self.race_tile.rect
 
 			self.char_inventory = [self.selected_char.weapon, self.selected_char.armor]
 			self.update_inventories()
@@ -337,7 +346,165 @@ class Manager:
 				self.manager_char_buttons.append(self.inc_int)
 				self.manage.spritegroup.add(self.inc_int)
 
+	def update_item_panel(self):
+		self.item_con.clear()
+		
+		if self.selected_item != None:
+
+			texts = pygame.Surface((360,200))
+			texts.fill(COLOR_BG)
+			text_y = 0
+
+			if isinstance(self.selected_item, Weapon):
+				# Get printable variables of the selected weapon
+				print "Weapon name: ", self.selected_item.name, " size: ", self.selected_item.size, " type: ", self.selected_item.type
+				print "class: ", self.selected_item.class_, "damage: ", self.selected_item.damage, "damage_type: ", self.selected_item.damage_type
+				print "Magic encharment", self.selected_item.magic_enchantment, "Critical multiplier", self.selected_item.critical_multiplier
+				print "Critical chance", self.selected_item.critical_chance, "Price", self.selected_item.price
+
+
+				font = pygame.font.Font(FONT, int(20*FONTSCALE))
+				text = font.render(string.capitalize(self.selected_item.name), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 30
+
+				text = font.render("Size: " + string.capitalize(self.selected_item.size), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+
+				text = font.render("Type: " + string.capitalize(self.selected_item.type), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 120
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+#				text = font.render("Class: " + string.capitalize(self.selected_item.class_), True, COLOR_FONT, COLOR_BG)
+#				rect = text.get_rect()
+#				rect.left = 80
+#				rect.y = text_y
+#				texts.blit(text, rect)
+#				text_y += 15
+
+				text = font.render("Damage: " + str(self.selected_item.damage), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+
+				for t in self.selected_item.damage_type:
+					text = font.render("Damage type: " + str(t), True, COLOR_FONT, COLOR_BG)
+					rect = text.get_rect()
+					rect.left = 120
+					rect.y = text_y
+					texts.blit(text, rect)
+					text_y += 16
+
+				text_y += 10
+
+				text = font.render("Magic enchantment: " + str(self.selected_item.magic_enchantment), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Critical multiplier: " + str(self.selected_item.critical_multiplier), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Critical chance: " + str(self.selected_item.critical_chance), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Price: " + str(self.selected_item.price), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+
+			if isinstance(self.selected_item, Armor):
+				# Get printable variables of the selected weapon
+				print "Armor name: ", self.selected_item.name, " miss chance: ", str(self.selected_item.miss_chance), " damage reduction: ", self.selected_item.damage_reduction
+				print "enchanted damage reduction: ", self.selected_item.enchanted_damage_reduction, "enchantd damage reduction type: ", self.selected_item.enchanted_damage_reduction_type
+				print "Price", self.selected_item.price, "style", self.selected_item.style
+
+				font = pygame.font.Font(FONT, int(20*FONTSCALE))
+				text = font.render(string.capitalize(self.selected_item.name), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 30
+
+				text = font.render("Style: " + string.capitalize(self.selected_item.style), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Miss chance: " + string.capitalize(str(self.selected_item.miss_chance)), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 0
+
+				text = font.render("Damage reduction: " + string.capitalize(str(self.selected_item.damage_reduction)), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 120
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 25
+
+				text = font.render("Enchanted damage reduction: " + string.capitalize(str(self.selected_item.enchanted_damage_reduction)), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Enchanted damage reduction type: " + string.capitalize(str(self.selected_item.enchanted_damage_reduction_type)), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+				text = font.render("Price: " + string.capitalize(str(self.selected_item.price)), True, COLOR_FONT, COLOR_BG)
+				rect = text.get_rect()
+				rect.left = 0
+				rect.y = text_y
+				texts.blit(text, rect)
+				text_y += 15
+
+
+			text_sprite = pygame.sprite.Sprite()
+			text_sprite.image = texts
+			rect = texts.get_rect()
+			rect.left = self.item_con.x + 10
+			rect.top = self.item_con.y + 10
+			text_sprite.rect = rect
+			print texts, texts.get_rect()
+			self.item_con.spritegroup.add(text_sprite)
+
 	def add_char(self, race, container, character, in_team=False):
+		#race_image = race_tile(race).get_tile(0, 0, '270').image
+		
 		charsprite = CharacterSprite(None, character, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 		charsprite.update()
 		race_image = charsprite.image
@@ -364,24 +531,6 @@ class Manager:
 			tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Deselect", None]], None, (self.char_add, character), False, False, None)
 		else:
 			tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Select", None]], None, (self.char_add, character), False, False, None)
-		container.children.append(tmp)
-
-	def add_icon(self, icon, container, item=None):
-		icon_rect = icon.get_rect()
-		img_width = icon_rect.width
-		img_height = icon_rect.height
-		icon_width = (ICON_BORDER + ICON_PADDING + img_width + ICON_PADDING + ICON_BORDER) # To clarify to layout
-		icon_height = (ICON_BORDER + ICON_PADDING + img_height + ICON_PADDING + ICON_BORDER)
-		icon_num = len(container.children)
-		icon_place = [0,0]
-		icon_place[0] = (icon_num % (container.width / icon_width))
-		icon_place[1] = (icon_num / (container.width / icon_width))
-		x = (ICON_MARGIN * 2) + (icon_place[0] * (ICON_MARGIN + icon_width))
-		y = (ICON_MARGIN * 2) + (icon_place[1] * (ICON_MARGIN + icon_height))
-		
-		tmp = CascadeButton(container, self.screen, x, y, img_width + (ICON_PADDING * 2), img_height + (ICON_PADDING * 2), None, [[icon, None]])
-		tmp.add_button((0, img_height + (ICON_PADDING * 2)), (img_width+ (ICON_PADDING * 2), 30), [["Sell", None]], None, (self.sell, item), False, False, None)
-		tmp.add_button((0, -32), (img_width+ (ICON_PADDING * 2), 30), [["Equip", None]], None, (self.equip, [icon, item]), False, False, None)
 		container.children.append(tmp)
 
 	def add_item(self, icon, text, container, item=None, inventory_type=None):
@@ -663,7 +812,7 @@ class Manager:
 
 	def inspect_item(self, item):
 		self.selected_item = item
-		self.update_general_texts()
+		self.update_item_panel()
 
 	def equip(self, item):
 		print "Item equipped", item, self.selected_char
@@ -912,3 +1061,14 @@ if __name__ == "__main__":
 	screen = init_pygame()
 	win = Manager(screen)
 	win.loop()
+import sys, time
+import pygame
+import string
+from resources import *
+from UI import *
+from character import Character
+from charsprite import CharacterSprite
+from race import races
+from charclass import classes
+from store import *
+from game import start_game, host_game, join_game
