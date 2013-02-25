@@ -13,6 +13,7 @@ from weapon import Weapon, weapons
 from armor import Armor, armors
 from player import Player
 import random
+import eztext
 
 from mapselection import MapSelection
 from resolver import *
@@ -32,24 +33,30 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
 
-		player_party = []
-		for i in range(5):
-			char = Character.random()
-			player_party.append(char)
+		self.players = []
+		self.player = None
 
-		player_inventory = []
+#		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
 
-		player_money = 1000
+#		player_party = []
+#		for i in range(5):
+#			char = Character.random()
+#			player_party.append(char)
 
-		self.player = Player(player_name, player_party, player_inventory, player_money)
+#		player_inventory = []
 
-		self.party = self.player.characters
+#		player_money = 1000
+
+#		self.players.append(Player(player_name, player_party, player_inventory, player_money))
+
+#		self.player = self.players[0]
+
+#		self.party = self.player.characters
 
 		self.screen = screen
 		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
-		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
+#		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
 		self.res = Resources(None)
 
@@ -60,22 +67,16 @@ class Manager:
 		self.team1 = []
 		self.team2 = []
 
-		self.inventory = self.player.inventory
-		self.char_inventory = []
+#		self.inventory = self.player.inventory
+#		self.char_inventory = []
 
 		self.selected_char = None
 		self.selected_item = None
 
-		# Array of party, each character-entity consists the race, class and equipped items
-		#party = [["Medusa", "Warrior", [None]],["Human3", "Warrior", [None]],["Alien", "Warrior", [None]],["Dragon", "Warrior", [None]],["Taurus", "Warrior", [None]],["Wolf", "Warrior", [None]]]
-
-		# Array of items that player has
-		#inventory = [(icon)]
-
-		self.player.money
 		self.store = Store(10, 3000)
 
-		self.lobby_con = UIContainer(None, (20, 20), (270, 650), self.screen)
+		self.local_con = UIContainer(None, (20, 20), (270, 200), self.screen)
+		self.lobby_con = UIContainer(None, (20, 220), (270, 430), self.screen)
 		self.manage = UIContainer(None, (320, 20), (300, 250), self.screen)
 		self.party_con = UIContainer(None, (710, 20), (152, 250), self.screen)
 		self.inventory_con = UIContainer(None, (710, 290), (152, 380), self.screen)
@@ -91,15 +92,17 @@ class Manager:
 		self.new_char_buttons = []
 		self.manager_char_buttons = []
 		self.manager_texts = []
+		self.local_con_buttons = []
+		self.text_fields = []
 
-		for i in range(3):
-			sword = random.choice(weapons.values())
-			self.inventory.append(sword)
-			self.add_auto_item('player', self.inventory_con, sword)
-		for i in range(1):
-			armor = random.choice(armors.values())
-			self.inventory.append(armor)
-			self.add_auto_item('player', self.inventory_con, armor)
+#		for i in range(3):
+#			sword = random.choice(weapons.values())
+#			self.inventory.append(sword)
+#			self.add_auto_item('player', self.inventory_con, sword)
+#		for i in range(1):
+#			armor = random.choice(armors.values())
+#			self.inventory.append(armor)
+#			self.add_auto_item('player', self.inventory_con, armor)
 
 
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
@@ -121,9 +124,10 @@ class Manager:
 		self.manager_buttons.append(self.team1_btn)
 		self.manager_buttons.append(self.team2_btn)
 
-		self.update_char_panels()
+#		self.update_char_panels()
 		self.update_store()
-		self.update_general_texts()
+#		self.update_general_texts()
+		self.update_local_playerlist()
 
 	def update_general_texts(self):
 
@@ -189,6 +193,43 @@ class Manager:
 		elif isinstance(item, Armor):
 			armor_icon = self.res.armors[item.style]['human'][270]
 			self.add_item(armor_icon, item.name.capitalize(), container, item, container_type)
+
+	def update_local_playerlist(self):
+		print "Updating local player list"
+		
+		self.local_con.clear()
+		self.local_con_buttons = []
+
+		self.player_input = eztext.Input(x=self.local_con.x + 10, y=self.local_con.y + 10, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
+		self.text_fields.append(self.player_input)
+		
+		addplayer_btn = FuncButton(self.local_con, 10, 50, 200, 30, [["Add player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.add_player, None), True, False, True)
+
+		self.local_con_buttons.append(addplayer_btn)
+
+		self.local_con.spritegroup.add(addplayer_btn)
+
+		btn_y = 80
+		for p in self.players:
+#			print "Player: ", p, p.name, p.characters, p.inventory, p.money
+			if p == self.player:
+				tmp = FuncButton(self.local_con, self.local_con.x + 10, self.local_con.y + btn_y, 200, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, None, True, True, True)
+				tmp.function = (self.manage_player, p)
+				tmp.select()
+			else:
+				tmp = FuncButton(self.local_con, self.local_con.x + 10, self.local_con.y + btn_y, 200, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, None, True, False, True)
+				tmp.function = (self.manage_player, p)
+			#tmp.select()
+			print "Button: ", tmp
+			self.local_con.spritegroup.add(tmp)
+			self.local_con_buttons.append(tmp)
+			btn_y += 30
+
+	def show_network_panel(self):
+		print "Showing network panel"
+
+	def update_lobby(self):
+		print "Updating network lobby"
 
 	def update_char_panels(self):
 		self.party_con.clear()
@@ -700,6 +741,8 @@ class Manager:
 		rect.y = self.race_sprite_y + 70
 		text_sprite.rect = rect
 
+		return text_sprite
+
 	def button_click(self):
 		print "Clicked button"
 
@@ -898,6 +941,52 @@ class Manager:
 		mapsel.loop()
 		host_game(self.screen, int(mapsel.port_input.value), mapsel.mapname, team)
 
+	def add_player(self, none):
+		name = self.player_input.value
+		if name != "":
+#			print "Adding player: ", name
+			self.player_input.value = ""
+			player_party = []
+			player_inventory = []
+			for i in range(5):
+				char = Character.random()
+				player_party.append(char)
+			for i in range(3):
+				sword = random.choice(weapons.values())
+				player_inventory.append(sword)
+			for i in range(1):
+				armor = random.choice(armors.values())
+				player_inventory.append(armor)
+
+			self.players.append(Player(str(name), player_party, player_inventory, 1000))
+			self.update_local_playerlist()
+
+	def manage_player(self, player):
+#		print "Selected player, parameters: ", parm
+
+#		player = parm[0]
+#		btn = parm[1]
+
+#		for b in self.local_con_buttons:
+#			b.unselect()
+#		btn.select()
+
+#		print "Selected another player: ", player, player.name, player.characters, player.inventory, player.money
+
+		self.player = player
+
+		self.party = self.player.characters
+		self.inventory = self.player.inventory
+		self.char_inventory = []
+
+		self.selected_char = None
+		self.selected_item = None
+		self.update_char_panels()
+		self.update_store()
+		self.update_general_texts()
+		self.update_local_playerlist()
+		self.update_inventories()
+
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
 			self.parent_buttons[i][b].toggle_visibility()
@@ -915,6 +1004,11 @@ class Manager:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+		for b in self.local_con_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+
 	
 	def container_click(self, event, container):
 		i = 0
@@ -948,6 +1042,7 @@ class Manager:
 
 		while 1:
 			self.screen.fill((127, 127, 127))
+			self.local_con.draw()
 			self.lobby_con.draw()
 			self.text_con.draw()
 			self.manage.draw()
@@ -957,12 +1052,19 @@ class Manager:
 			self.char_inventory_con.draw()
 			self.store_con.draw()
 			self.item_con.draw()
+			for tf in self.text_fields:
+				tf.draw(self.screen)
 			pygame.display.flip()
 
-			for event in pygame.event.get():
+
+			events = pygame.event.get()
+			for tf in self.text_fields:
+				tf.update(events)
+			for event in events:
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
+						self.container_click(event, self.local_con)
 						self.container_click(event, self.lobby_con)
 						self.container_click(event, self.inventory_con)
 						self.container_click(event, self.party_con)
