@@ -1047,14 +1047,4 @@ if __name__ == "__main__":
 	screen = init_pygame()
 	win = Manager(screen)
 	win.loop()
-import sys, time
-import pygame
-import string
-from resources import *
-from UI import *
-from character import Character
-from charsprite import CharacterSprite
-from race import races
-from charclass import classes
-from store import *
-from game import start_game, host_game, join_game
+
