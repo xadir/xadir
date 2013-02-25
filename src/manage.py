@@ -613,67 +613,8 @@ class Manager:
 		self.new_char_buttons.append(self.inc_int)
 		container.spritegroup.add(self.inc_int)
 
-		texts = pygame.Surface((140,150))
-		texts.fill(COLOR_BG)
-		text_y = 0
-
-		font = pygame.font.Font(FONT, int(20*FONTSCALE))
-		text = font.render(string.capitalize(self.current_race), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 20
-
-		text = font.render(string.capitalize(self.selected_char.class_.name), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 30
-
-		text = font.render("Str: " + str(self.selected_char.str), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 0
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text = font.render("Dex: " + str(self.selected_char.dex), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 90
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 30
-
-		text = font.render("Con: " + str(self.selected_char.con), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 0
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text = font.render("Int: " + str(self.selected_char.int), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 90
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 25
-
-		text = font.render(string.capitalize("Points left: "+ str(self.selected_char.upgrade_points)), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text_sprite = pygame.sprite.Sprite()
-		text_sprite.image = texts
-		rect = texts.get_rect()
-		rect.centerx = self.race_sprite_x + 24
-		rect.y = self.race_sprite_y + 70
-		text_sprite.rect = rect
-		print texts, texts.get_rect()
+		text_sprite = self.generate_char_text_sprite()
 		self.manage.spritegroup.add(text_sprite)
-		
-
 
 	def update_new_character(self, container):
 		print "Update", self.selected_char.class_
@@ -698,6 +639,10 @@ class Manager:
 		container.spritegroup.add(self.inc_con)
 		container.spritegroup.add(self.inc_int)
 
+		text_sprite = self.generate_char_text_sprite()
+		self.manage.spritegroup.add(text_sprite)
+
+	def generate_char_text_sprite(self):
 		texts = pygame.Surface((140,150))
 		texts.fill(COLOR_BG)
 		text_y = 0
@@ -755,8 +700,6 @@ class Manager:
 		rect.centerx = self.race_sprite_x + 24
 		rect.y = self.race_sprite_y + 70
 		text_sprite.rect = rect
-		print texts, texts.get_rect()
-		self.manage.spritegroup.add(text_sprite)
 
 	def button_click(self):
 		print "Clicked button"
