@@ -78,23 +78,33 @@ allowed = {
 	'Player':    (Player,    serialize_obj,                       deserialize_obj),
 }
 
+aliases = {
+	'coord': ['tuple', ['int', 'int']],
+	'path': ['list', ':coord'],
+}
+
 def assert_kind(kind_, kind = None, *future_kinds):
 	if kind is not None:
+		if isinstance(kind, str) and kind.startswith(':'):
+			kinds = aliases[kind[1:]]
+			kind = kinds[0]
+			future_kinds = kinds[1:]
 		if isinstance(kind, tuple):
 			assert kind_ in kind, '%r not in %r' % (kind_, kind)
 		else:
 			assert kind_ == kind, '%r != %r' % (kind_, kind)
+	return future_kinds
 
 def serialize_value(value, *types):
 	kind = value.__class__.__name__
-	assert_kind(kind, *types)
-	data = allowed[kind][1](kind, value, *types[1:])
+	types = assert_kind(kind, *types)
+	data = allowed[kind][1](kind, value, *types)
 	return ':'.join(map(binascii.hexlify, [kind, data]))
 
 def deserialize_value(kind_data, *types):
 	kind, data = map(binascii.unhexlify, kind_data.split(':'))
-	assert_kind(kind, *types)
-	value = allowed[kind][2](kind, data, *types[1:])
+	types = assert_kind(kind, *types)
+	value = allowed[kind][2](kind, data, *types)
 	return value
 
 def serialize(value):
