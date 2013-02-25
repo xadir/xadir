@@ -32,7 +32,7 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-		player_name = random.sample('Alexer Zokol brenon Ren IronBear'.split(), 1)
+		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
 
 		player_party = []
 		for i in range(5):
@@ -52,14 +52,6 @@ class Manager:
 		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
 
 		self.res = Resources(None)
-		self.res.load_races()
-		self.res.load_hairs()
-		self.res.load_armors()
-
-		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
-		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
-		#self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
-
 
 		self.ip = ''
 		IpResolver('manager', self).start()
@@ -103,11 +95,11 @@ class Manager:
 		for i in range(3):
 			sword = random.choice(weapons.values())
 			self.inventory.append(sword)
-			self.add_item(self.sword_icon, sword.name.capitalize(), self.inventory_con, sword, "player")
+			self.add_auto_item('player', self.inventory_con, sword)
 		for i in range(1):
 			armor = random.choice(armors.values())
 			self.inventory.append(armor)
-			self.add_item(self.armor_icon, armor.name.capitalize(), self.inventory_con, armor, "player")
+			self.add_auto_item('player', self.inventory_con, armor)
 
 
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
@@ -179,26 +171,24 @@ class Manager:
 		print self.inventory, self.char_inventory
 		self.inventory_con.clear()
 		for item in self.inventory:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.inventory_con, item, "player")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.inventory_con, item, "player")
+			self.add_auto_item('player', self.inventory_con, item)
 
 		self.char_inventory_con.clear()
 		for item in self.char_inventory:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
+			self.add_auto_item('char', self.char_inventory_con, item)
 
 	def update_store(self):
 		print "Store inventory: ", self.store.items, "Store balance: ", self.store.money
 		self.store_con.clear()
 		for item in self.store.items:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.store_con, item, "store")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.store_con, item, "store")
+			self.add_auto_item('store', self.store_con, item)
+
+	def add_auto_item(self, container_type, container, item):
+		if isinstance(item, Weapon):
+			self.add_item(self.sword_icon, item.name.capitalize(), container, item, container_type)
+		elif isinstance(item, Armor):
+			armor_icon = self.res.armors[item.style]['human'][270]
+			self.add_item(armor_icon, item.name.capitalize(), container, item, container_type)
 
 	def update_char_panels(self):
 		self.party_con.clear()
@@ -224,12 +214,6 @@ class Manager:
 		#int self.selected_char
 		if self.selected_char != None:
 			self.char_new = False
-			"""
-			self.race_sprite_path = RACE_SPRITES[self.selected_char.race.name]
-			self.race = race_tile(self.selected_char.race.name)
-			self.race_sprite = self.race.get_sprite(self.race_sprite_x, self.race_sprite_y)
-			self.manage.spritegroup.add(self.race_sprite)
-			"""
 			
 			self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 			
@@ -238,9 +222,6 @@ class Manager:
 
 			self.race_sprite = self.selected_charsprite
 			self.manage.spritegroup.add(self.race_sprite)
-
-			#self.race_tile = self.race.get_tile()
-			#sprite_rect = self.race_tile.rect
 
 			self.char_inventory = [self.selected_char.weapon, self.selected_char.armor]
 			self.update_inventories()
@@ -504,8 +485,6 @@ class Manager:
 			self.item_con.spritegroup.add(text_sprite)
 
 	def add_char(self, race, container, character, in_team=False):
-		#race_image = race_tile(race).get_tile(0, 0, '270').image
-		
 		charsprite = CharacterSprite(None, character, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 		charsprite.update()
 		race_image = charsprite.image
@@ -578,11 +557,8 @@ class Manager:
 
 		self.classes = ['warrior', 'wizard', 'rogue']
 
-		self.races = self.race_sprites.keys()
-		self.hairs = self.hair_sprites.keys()
-
-		print "Races form races.txt", self.races
-		print "Hairs form hairs.txt", self.hairs
+		self.races = self.res.races.keys()
+		self.hairs = self.res.hairs.keys()
 
 		self.current_race = self.races[self.race_index]
 		self.current_class = self.classes[self.class_index]
@@ -636,74 +612,13 @@ class Manager:
 		self.new_char_buttons.append(self.inc_int)
 		container.spritegroup.add(self.inc_int)
 
-		texts = pygame.Surface((140,150))
-		texts.fill(COLOR_BG)
-		text_y = 0
-
-		font = pygame.font.Font(FONT, int(20*FONTSCALE))
-		text = font.render(string.capitalize(self.current_race), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 20
-
-		text = font.render(string.capitalize(self.selected_char.class_.name), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 30
-
-		text = font.render("Str: " + str(self.selected_char.str), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 0
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text = font.render("Dex: " + str(self.selected_char.dex), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 90
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 30
-
-		text = font.render("Con: " + str(self.selected_char.con), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 0
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text = font.render("Int: " + str(self.selected_char.int), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.left = 90
-		rect.y = text_y
-		texts.blit(text, rect)
-		text_y += 25
-
-		text = font.render(string.capitalize("Points left: "+ str(self.selected_char.upgrade_points)), True, COLOR_FONT, COLOR_BG)
-		rect = text.get_rect()
-		rect.centerx = 70
-		rect.y = text_y
-		texts.blit(text, rect)
-
-		text_sprite = pygame.sprite.Sprite()
-		text_sprite.image = texts
-		rect = texts.get_rect()
-		rect.centerx = self.race_sprite_x + 24
-		rect.y = self.race_sprite_y + 70
-		text_sprite.rect = rect
-		print texts, texts.get_rect()
+		text_sprite = self.generate_char_text_sprite()
 		self.manage.spritegroup.add(text_sprite)
-		
-
 
 	def update_new_character(self, container):
 		print "Update", self.selected_char.class_
 
 		container.clear()
-
-		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
 
 		self.selected_charsprite.x = self.race_sprite_x
 		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
@@ -723,6 +638,10 @@ class Manager:
 		container.spritegroup.add(self.inc_con)
 		container.spritegroup.add(self.inc_int)
 
+		text_sprite = self.generate_char_text_sprite()
+		self.manage.spritegroup.add(text_sprite)
+
+	def generate_char_text_sprite(self):
 		texts = pygame.Surface((140,150))
 		texts.fill(COLOR_BG)
 		text_y = 0
@@ -780,8 +699,6 @@ class Manager:
 		rect.centerx = self.race_sprite_x + 24
 		rect.y = self.race_sprite_y + 70
 		text_sprite.rect = rect
-		print texts, texts.get_rect()
-		self.manage.spritegroup.add(text_sprite)
 
 	def button_click(self):
 		print "Clicked button"
@@ -1064,14 +981,4 @@ if __name__ == "__main__":
 	screen = init_pygame()
 	win = Manager(screen)
 	win.loop()
-import sys, time
-import pygame
-import string
-from resources import *
-from UI import *
-from character import Character
-from charsprite import CharacterSprite
-from race import races
-from charclass import classes
-from store import *
-from game import start_game, host_game, join_game
+
