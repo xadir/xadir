@@ -921,28 +921,28 @@ def get_random_teams(player_count = 2, character_count = 3):
 	return teams
 
 def serialize_team(team):
-	return serialize_value(team, 'list', 'Character')
+	return serialize_value(team, ':act:team')
 
 def deserialize_team(team):
-	return deserialize_value(team, 'list', 'Character')
+	return deserialize_value(team, ':act:team')
 
 def serialize_spawns(players):
-	return serialize_value(players, 'list', 'list', ':coord')
+	return serialize_value(players, ':act:spawns')
 
 def deserialize_spawns(players):
-	return deserialize_value(players, 'list', 'list', ':coord')
+	return deserialize_value(players, ':act:spawns')
 
 def serialize_path(charno, path):
-	return serialize_value((charno, path), 'tuple', ['int', ':path'])
+	return serialize_value((charno, path), ':act:path')
 
 def deserialize_path(data):
-	return deserialize_value(data, 'tuple', ['int', ':path'])
+	return deserialize_value(data, ':act:path')
 
 def serialize_attack(charno, path, damage, messages):
-	return serialize_value((charno, path, damage, messages), 'tuple', ['int', ':path', 'int', ['list', 'str']])
+	return serialize_value((charno, path, damage, messages), ':act:attack')
 
 def deserialize_attack(data):
-	return deserialize_value(data, 'tuple', ['int', ':path', 'int', ['list', 'str']])
+	return deserialize_value(data, ':act:attack')
 
 def compatible_protocol(version):
 	return version == PROTOCOL_VERSION

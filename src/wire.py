@@ -81,6 +81,11 @@ allowed = {
 aliases = {
 	'coord': ['tuple', ['int', 'int']],
 	'path': ['list', ':coord'],
+
+	'act:team': ['list', 'Character'],
+	'act:spawns': ['list', 'list', ':coord'],
+	'act:path': ['tuple', ['int', ':path']],
+	'act:attack': ['tuple', ['int', ':path', 'int', ['list', 'str']]],
 }
 
 def assert_kind(kind_, kind = None, *future_kinds):
