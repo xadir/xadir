@@ -8,6 +8,7 @@ class Player(object):
 		self.money = money
 		self.rounds_played = 0
 		self.rounds_won = 0
+		self.team = []
 
 	@classmethod
 	def random(self):
