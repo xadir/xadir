@@ -44,6 +44,8 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 			extras.append((self.res.armors[self.char.armor.style][self.race.armorsize][self.heading], (0, CHAR_SIZE[1] - ARMOR_SIZE[1])))
 		if extras:
 			image, topleft = blitteds(image, extras, copy = True)
+		else:
+			topleft = (0, 0)
 		# Image depends on:
 		# Primary: (self.heading, self.race.name, self.char.hair_name, self.char.armor and self.char.armor.style)
 		# Secondary: self.race.hairline, self.char.hair.xoffset, self.char.hair.yoffset, self.race.armorsize
