@@ -186,7 +186,8 @@ class Manager:
 		if isinstance(item, Weapon):
 			self.add_item(self.sword_icon, item.name.capitalize(), container, item, container_type)
 		elif isinstance(item, Armor):
-			self.add_item(self.armor_icon, item.name.capitalize(), container, item, container_type)
+			armor_icon = self.res.armors[item.style]['human'][270]
+			self.add_item(armor_icon, item.name.capitalize(), container, item, container_type)
 
 	def update_char_panels(self):
 		self.party_con.clear()
