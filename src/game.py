@@ -921,34 +921,28 @@ def get_random_teams(player_count = 2, character_count = 3):
 	return teams
 
 def serialize_team(team):
-	return ' '.join(binascii.hexlify(serialize(char)) for char in team)
+	return serialize_value(team, 'list', 'Character')
 
 def deserialize_team(team):
-	return [deserialize(Character, binascii.unhexlify(char)) for char in team.split(' ')]
+	return deserialize_value(team, 'list', 'Character')
 
 def serialize_spawns(players):
-	return ' '.join(':'.join(','.join(map(str, spawn)) for spawn in player) for player in players)
+	return serialize_value(players, 'list', 'list', 'tuple', 'int')
 
 def deserialize_spawns(players):
-	return [[tuple(map(int, spawn.split(','))) for spawn in player.split(':')] for player in players.split(' ')]
+	return deserialize_value(players, 'list', 'list', 'tuple', 'int')
 
 def serialize_path(charno, path):
-	return str(charno) + ' ' + ':'.join(','.join(map(str, pos)) for pos in path)
+	return serialize_value((charno, path), 'tuple', ['int', ['list', 'tuple', 'int']])
 
 def deserialize_path(data):
-	charno, path = data.split(' ')
-	return int(charno), [tuple(map(int, pos.split(','))) for pos in path.split(':')]
+	return deserialize_value(data, 'tuple', ['int', ['list', 'tuple', 'int']])
 
 def serialize_attack(charno, path, damage, messages):
-	pathdata = serialize_path(charno, path)
-	damage = str(damage)
-	messages = ' '.join(map(binascii.hexlify, messages))
-	return ' '.join(map(binascii.hexlify, (pathdata, damage, messages)))
+	return serialize_value((charno, path, damage, messages), 'tuple', ['int', ['list', 'tuple', 'int'], 'int', ['list', 'str']])
 
 def deserialize_attack(data):
-	pathdata, damage, messages = map(binascii.unhexlify, data.split(' '))
-	charno, path = deserialize_path(pathdata)
-	return charno, path, int(damage), map(binascii.unhexlify, messages.split(' '))
+	return deserialize_value(data, 'tuple', ['int', ['list', 'tuple', 'int'], 'int', ['list', 'str']])
 
 def compatible_protocol(version):
 	return version == PROTOCOL_VERSION
