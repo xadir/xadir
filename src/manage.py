@@ -83,14 +83,15 @@ class Manager:
 		self.player.money
 		self.store = Store(10, 3000)
 
-		self.manage = UIContainer(None, (20, 20), (300, 250), self.screen)
-		self.party_con = UIContainer(None, (410, 20), (152, 250), self.screen)
-		self.inventory_con = UIContainer(None, (410, 290), (152, 380), self.screen)
-		self.char_inventory_con = UIContainer(None, (240, 20), (152, 250), self.screen)
-		self.team_con = UIContainer(None, (20, 290), (371, 120), self.screen)
-		self.store_con = UIContainer(None, (650, 120), (446, 550), self.screen)
-		self.item_con = UIContainer(None, (20, 450), (371, 220), self.screen)
-		self.text_con = UIContainer(None, (650, 20), (446, 80), self.screen)
+		self.lobby_con = UIContainer(None, (20, 20), (270, 650), self.screen)
+		self.manage = UIContainer(None, (320, 20), (300, 250), self.screen)
+		self.party_con = UIContainer(None, (710, 20), (152, 250), self.screen)
+		self.inventory_con = UIContainer(None, (710, 290), (152, 380), self.screen)
+		self.char_inventory_con = UIContainer(None, (540, 20), (152, 250), self.screen)
+		self.team_con = UIContainer(None, (320, 290), (371, 120), self.screen)
+		self.store_con = UIContainer(None, (880, 120), (298, 550), self.screen)
+		self.item_con = UIContainer(None, (320, 450), (371, 220), self.screen)
+		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
 
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
@@ -136,7 +137,7 @@ class Manager:
 
 		self.text_con.clear()
 
-		texts = pygame.Surface((436,60))
+		texts = pygame.Surface((200,60))
 		texts.fill(COLOR_BG)
 		text_y = 0
 		
@@ -168,8 +169,8 @@ class Manager:
 		text_sprite = pygame.sprite.Sprite()
 		text_sprite.image = texts
 		rect = texts.get_rect()
-		rect.x = 655
-		rect.y = 25
+		rect.x = self.text_con.x + 10
+		rect.y = self.text_con.y + 10
 		text_sprite.rect = rect
 		print texts, texts.get_rect()
 		self.text_con.spritegroup.add(text_sprite)
@@ -1030,6 +1031,7 @@ class Manager:
 
 		while 1:
 			self.screen.fill((127, 127, 127))
+			self.lobby_con.draw()
 			self.text_con.draw()
 			self.manage.draw()
 			self.party_con.draw()
@@ -1044,6 +1046,7 @@ class Manager:
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
+						self.container_click(event, self.lobby_con)
 						self.container_click(event, self.inventory_con)
 						self.container_click(event, self.party_con)
 						self.container_click(event, self.manage)
