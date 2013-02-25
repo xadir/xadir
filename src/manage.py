@@ -94,11 +94,11 @@ class Manager:
 		for i in range(3):
 			sword = random.choice(weapons.values())
 			self.inventory.append(sword)
-			self.add_item(self.sword_icon, sword.name.capitalize(), self.inventory_con, sword, "player")
+			self.add_auto_item('player', self.inventory_con, sword)
 		for i in range(1):
 			armor = random.choice(armors.values())
 			self.inventory.append(armor)
-			self.add_item(self.armor_icon, armor.name.capitalize(), self.inventory_con, armor, "player")
+			self.add_auto_item('player', self.inventory_con, armor)
 
 
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
@@ -170,26 +170,23 @@ class Manager:
 		print self.inventory, self.char_inventory
 		self.inventory_con.clear()
 		for item in self.inventory:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.inventory_con, item, "player")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.inventory_con, item, "player")
+			self.add_auto_item('player', self.inventory_con, item)
 
 		self.char_inventory_con.clear()
 		for item in self.char_inventory:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.char_inventory_con, item, "char")
+			self.add_auto_item('char', self.char_inventory_con, item)
 
 	def update_store(self):
 		print "Store inventory: ", self.store.items, "Store balance: ", self.store.money
 		self.store_con.clear()
 		for item in self.store.items:
-			if isinstance(item, Weapon):
-				self.add_item(self.sword_icon, item.name.capitalize(), self.store_con, item, "store")
-			elif isinstance(item, Armor):
-				self.add_item(self.armor_icon, item.name.capitalize(), self.store_con, item, "store")
+			self.add_auto_item('store', self.store_con, item)
+
+	def add_auto_item(self, container_type, container, item):
+		if isinstance(item, Weapon):
+			self.add_item(self.sword_icon, item.name.capitalize(), container, item, container_type)
+		elif isinstance(item, Armor):
+			self.add_item(self.armor_icon, item.name.capitalize(), container, item, container_type)
 
 	def update_char_panels(self):
 		self.party_con.clear()
