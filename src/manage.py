@@ -53,11 +53,6 @@ class Manager:
 
 		self.res = Resources(None)
 
-		self.race_sprites = dict((name, ('races.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'races.txt')).read().split('\n')) if name)
-		self.hair_sprites = dict((name, ('hairs.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'hairs.txt')).read().split('\n')) if name)
-		#self.armor_sprites = dict((name, ('armors.png', i+1)) for i, name in enumerate(file(os.path.join(GFXDIR, 'armors.txt')).read().split('\n')) if name)
-
-
 		self.ip = ''
 		IpResolver('manager', self).start()
 
@@ -563,11 +558,8 @@ class Manager:
 
 		self.classes = ['warrior', 'wizard', 'rogue']
 
-		self.races = self.race_sprites.keys()
-		self.hairs = self.hair_sprites.keys()
-
-		print "Races form races.txt", self.races
-		print "Hairs form hairs.txt", self.hairs
+		self.races = self.res.races.keys()
+		self.hairs = self.res.hairs.keys()
 
 		self.current_race = self.races[self.race_index]
 		self.current_class = self.classes[self.class_index]
@@ -687,8 +679,6 @@ class Manager:
 		print "Update", self.selected_char.class_
 
 		container.clear()
-
-		self.race_sprite_path = self.race_sprites[self.selected_char.race.name]
 
 		self.selected_charsprite.x = self.race_sprite_x
 		self.selected_charsprite.y = self.race_sprite_y + 8 #XXX hack
