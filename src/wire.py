@@ -15,7 +15,7 @@ def serialize_iter(kind, value, *itemkinds):
 	if itemkinds and isinstance(itemkinds[0], list):
 		assert len(itemkinds) == 1, 'Further specifications will be ignored'
 		assert len(value) == len(itemkinds[0])
-		return ' '.join(serialize_value(item, itemkind) for itemkind, item in zip(itemkinds[0], value))
+		return ' '.join(serialize_value(item, *(itemkind if isinstance(itemkind, list) else [itemkind])) for itemkind, item in zip(itemkinds[0], value))
 	else:
 		return ' '.join(serialize_value(item, *itemkinds) for item in value)
 
@@ -24,7 +24,7 @@ def deserialize_iter(kind, data, *itemkinds):
 		assert len(itemkinds) == 1, 'Further specifications will be ignored'
 		items = data.split(' ')
 		assert len(items) == len(itemkinds[0])
-		return allowed[kind][0](deserialize_value(item, itemkind) for itemkind, item in zip(itemkinds[0], items))
+		return allowed[kind][0](deserialize_value(item, *(itemkind if isinstance(itemkind, list) else [itemkind])) for itemkind, item in zip(itemkinds[0], items))
 	else:
 		return allowed[kind][0](deserialize_value(item, *itemkinds) for item in data.split())
 
