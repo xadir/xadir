@@ -76,7 +76,7 @@ class Manager:
 		self.store = Store(10, 3000)
 
 		self.local_con = UIContainer(None, (20, 20), (270, 200), self.screen)
-		self.lobby_con = UIContainer(None, (20, 220), (270, 430), self.screen)
+		self.network_con = UIContainer(None, (20, 230), (270, 430), self.screen)
 		self.manage = UIContainer(None, (320, 20), (300, 250), self.screen)
 		self.party_con = UIContainer(None, (710, 20), (152, 250), self.screen)
 		self.inventory_con = UIContainer(None, (710, 290), (152, 380), self.screen)
@@ -104,30 +104,61 @@ class Manager:
 #			self.inventory.append(armor)
 #			self.add_auto_item('player', self.inventory_con, armor)
 
+		### Text Input fields
+		self.text_field_buttons = []
 
-		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
-		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
-		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
-		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
+		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
+		self.text_fields.append([False, self.player_input])
+
+		self.player_input_btn = FuncButton(self.local_con, 10, 10, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 0), True, False, True)
+
+		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ')
+		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
+		self.ip_input.value = "xadir.net"
+		self.port_input.value = "33333"
+		self.text_fields.append([False, self.ip_input])
+		self.text_fields.append([False, self.port_input])
+		
+		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
+		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
+
+		self.text_field_buttons.append(self.player_input_btn)
+		self.text_field_buttons.append(self.ip_btn)
+		self.text_field_buttons.append(self.port_btn)
+
+		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
+		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
+		self.network_host_btn = FuncButton(self.network_con, 10, 180, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_server, None), True, False, True)
+
+		### Manager buttons
+#		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
+#		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
+#		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
+#		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
-		self.team1_btn = FuncButton(self.team_con, 255, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
-		self.team2_btn = FuncButton(self.team_con, 310, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
+#		self.team1_btn = FuncButton(self.team_con, 255, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
+#		self.team2_btn = FuncButton(self.team_con, 310, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
 
-		self.team1_btn.select()
+#		self.team1_btn.select()
 
-		self.manager_buttons.append(self.save_btn)
-		self.manager_buttons.append(self.play_btn)
-		self.manager_buttons.append(self.join_btn)
-		self.manager_buttons.append(self.host_btn)
+#		self.manager_buttons.append(self.save_btn)
+#		self.manager_buttons.append(self.play_btn)
+#		self.manager_buttons.append(self.join_btn)
+#		self.manager_buttons.append(self.host_btn)
 		self.manager_buttons.append(self.new_char_btn)
-		self.manager_buttons.append(self.team1_btn)
-		self.manager_buttons.append(self.team2_btn)
+#		self.manager_buttons.append(self.team1_btn)
+#		self.manager_buttons.append(self.team2_btn)
+
+		self.manager_buttons.append(self.network_play_btn)
+		self.manager_buttons.append(self.network_connect_btn)
+		self.manager_buttons.append(self.network_host_btn)
 
 #		self.update_char_panels()
 		self.update_store()
 #		self.update_general_texts()
 		self.update_local_playerlist()
+		self.show_network_panel()
 
 	def update_general_texts(self):
 
@@ -200,14 +231,12 @@ class Manager:
 		self.local_con.clear()
 		self.local_con_buttons = []
 
-		self.player_input = eztext.Input(x=self.local_con.x + 10, y=self.local_con.y + 10, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
-		self.text_fields.append(self.player_input)
-		
 		addplayer_btn = FuncButton(self.local_con, 10, 50, 200, 30, [["Add player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.add_player, None), True, False, True)
 
 		self.local_con_buttons.append(addplayer_btn)
 
 		self.local_con.spritegroup.add(addplayer_btn)
+		self.local_con.spritegroup.add(self.player_input_btn)
 
 		btn_y = 80
 		for p in self.players:
@@ -227,6 +256,12 @@ class Manager:
 
 	def show_network_panel(self):
 		print "Showing network panel"
+		self.network_con.clear()
+		self.network_con.spritegroup.add(self.ip_btn)
+		self.network_con.spritegroup.add(self.port_btn)
+		self.network_con.spritegroup.add(self.network_play_btn)
+		self.network_con.spritegroup.add(self.network_connect_btn)
+		self.network_con.spritegroup.add(self.network_host_btn)
 
 	def update_lobby(self):
 		print "Updating network lobby"
@@ -243,12 +278,10 @@ class Manager:
 		self.manage.clear()
 
 		#self.manage.spritegroup.add(self.save_btn)
-		self.team_con.spritegroup.add(self.play_btn)
-		self.team_con.spritegroup.add(self.join_btn)
-		self.team_con.spritegroup.add(self.host_btn)
+#		self.team_con.spritegroup.add(self.play_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
-		self.team_con.spritegroup.add(self.team1_btn)
-		self.team_con.spritegroup.add(self.team2_btn)
+#		self.team_con.spritegroup.add(self.team1_btn)
+#		self.team_con.spritegroup.add(self.team2_btn)
 
 		self.manager_texts = []
 		self.manager_char_buttons = []
@@ -921,6 +954,26 @@ class Manager:
 			self.team = self.team1
 			self.update_char_panels()
 
+	def start_hotseat_game(self, none):
+		log_stats('play')
+		print self.players
+		teams = []
+		for i in range(len(self.players)):
+			teams.append((self.players[i].name, self.players[i].team))
+		mapsel = MapSelection(self.screen, 'map_new.txt')
+		mapsel.loop()
+		start_game(self.screen, mapsel.mapname, teams)
+
+	def connect_server(self, none):
+		log_stats('join')
+		join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
+
+	def host_server(self, none):
+		log_stats('host')
+		mapsel = MapSelection(self.screen, 'map_new.txt')
+		mapsel.loop()
+		host_game(self.screen, int(self.port_input.value), mapsel.mapname, self.player.team)
+
 	def start_game(self, team):
 		log_stats('play')
 		print self.team1, self.team2
@@ -962,6 +1015,9 @@ class Manager:
 			self.update_local_playerlist()
 
 	def manage_player(self, player):
+		if self.player != None:
+			self.player.team = self.team
+
 #		print "Selected player, parameters: ", parm
 
 #		player = parm[0]
@@ -974,6 +1030,7 @@ class Manager:
 #		print "Selected another player: ", player, player.name, player.characters, player.inventory, player.money
 
 		self.player = player
+		self.team = self.player.team
 
 		self.party = self.player.characters
 		self.inventory = self.player.inventory
@@ -986,6 +1043,12 @@ class Manager:
 		self.update_general_texts()
 		self.update_local_playerlist()
 		self.update_inventories()
+
+	def select_field(self, index):
+		print "Clicked on field button"
+		for t in self.text_fields:
+			t[0] = False
+		self.text_fields[index][0] = True
 
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
@@ -1008,8 +1071,11 @@ class Manager:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+		for b in self.text_field_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
 
-	
 	def container_click(self, event, container):
 		i = 0
 		for b in container.children:
@@ -1043,7 +1109,7 @@ class Manager:
 		while 1:
 			self.screen.fill((127, 127, 127))
 			self.local_con.draw()
-			self.lobby_con.draw()
+			self.network_con.draw()
 			self.text_con.draw()
 			self.manage.draw()
 			self.party_con.draw()
@@ -1053,19 +1119,20 @@ class Manager:
 			self.store_con.draw()
 			self.item_con.draw()
 			for tf in self.text_fields:
-				tf.draw(self.screen)
+				tf[1].draw(self.screen)
 			pygame.display.flip()
 
 
 			events = pygame.event.get()
 			for tf in self.text_fields:
-				tf.update(events)
+				if tf[0]:
+					tf[1].update(events)
 			for event in events:
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
 						self.container_click(event, self.local_con)
-						self.container_click(event, self.lobby_con)
+						self.container_click(event, self.network_con)
 						self.container_click(event, self.inventory_con)
 						self.container_click(event, self.party_con)
 						self.container_click(event, self.manage)
