@@ -927,22 +927,22 @@ def deserialize_team(team):
 	return deserialize_value(team, 'list', 'Character')
 
 def serialize_spawns(players):
-	return serialize_value(players, 'list', 'list', 'tuple', 'int')
+	return serialize_value(players, 'list', 'list', ':coord')
 
 def deserialize_spawns(players):
-	return deserialize_value(players, 'list', 'list', 'tuple', 'int')
+	return deserialize_value(players, 'list', 'list', ':coord')
 
 def serialize_path(charno, path):
-	return serialize_value((charno, path), 'tuple', ['int', ['list', 'tuple', 'int']])
+	return serialize_value((charno, path), 'tuple', ['int', ':path'])
 
 def deserialize_path(data):
-	return deserialize_value(data, 'tuple', ['int', ['list', 'tuple', 'int']])
+	return deserialize_value(data, 'tuple', ['int', ':path'])
 
 def serialize_attack(charno, path, damage, messages):
-	return serialize_value((charno, path, damage, messages), 'tuple', ['int', ['list', 'tuple', 'int'], 'int', ['list', 'str']])
+	return serialize_value((charno, path, damage, messages), 'tuple', ['int', ':path', 'int', ['list', 'str']])
 
 def deserialize_attack(data):
-	return deserialize_value(data, 'tuple', ['int', ['list', 'tuple', 'int'], 'int', ['list', 'str']])
+	return deserialize_value(data, 'tuple', ['int', ':path', 'int', ['list', 'str']])
 
 def compatible_protocol(version):
 	return version == PROTOCOL_VERSION
