@@ -33,26 +33,8 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-
 		self.players = []
 		self.player = None
-
-#		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
-
-#		player_party = []
-#		for i in range(5):
-#			char = Character.random()
-#			player_party.append(char)
-
-#		player_inventory = []
-
-#		player_money = 1000
-
-#		self.players.append(Player(player_name, player_party, player_inventory, player_money))
-
-#		self.player = self.players[0]
-
-#		self.party = self.player.characters
 
 		self.screen = screen
 		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
@@ -92,16 +74,6 @@ class Manager:
 		self.manager_texts = []
 		self.local_con_buttons = []
 		self.text_fields = []
-
-#		for i in range(3):
-#			sword = random.choice(weapons.values())
-#			self.inventory.append(sword)
-#			self.add_auto_item('player', self.inventory_con, sword)
-#		for i in range(1):
-#			armor = random.choice(armors.values())
-#			self.inventory.append(armor)
-#			self.add_auto_item('player', self.inventory_con, armor)
-
 
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
 		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
