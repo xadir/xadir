@@ -64,8 +64,6 @@ class Manager:
 		IpResolver('manager', self).start()
 
 		self.team = []
-		self.team1 = []
-		self.team2 = []
 
 #		self.inventory = self.player.inventory
 #		self.char_inventory = []
@@ -111,18 +109,11 @@ class Manager:
 		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
-		self.team1_btn = FuncButton(self.team_con, 255, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
-		self.team2_btn = FuncButton(self.team_con, 310, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
-
-		self.team1_btn.select()
-
 		self.manager_buttons.append(self.save_btn)
 		self.manager_buttons.append(self.play_btn)
 		self.manager_buttons.append(self.join_btn)
 		self.manager_buttons.append(self.host_btn)
 		self.manager_buttons.append(self.new_char_btn)
-		self.manager_buttons.append(self.team1_btn)
-		self.manager_buttons.append(self.team2_btn)
 
 #		self.update_char_panels()
 		self.update_store()
@@ -247,8 +238,6 @@ class Manager:
 		self.team_con.spritegroup.add(self.join_btn)
 		self.team_con.spritegroup.add(self.host_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
-		self.team_con.spritegroup.add(self.team1_btn)
-		self.team_con.spritegroup.add(self.team2_btn)
 
 		self.manager_texts = []
 		self.manager_char_buttons = []
@@ -905,26 +894,9 @@ class Manager:
 		else:
 			self.update_char_panels()
 
-	def save_team1(self, team):
-		if self.team1_btn.selected:
-			self.team2_btn.select()
-			self.team1_btn.unselect()
-			self.team1 = self.team
-			self.team = self.team2
-			self.update_char_panels()
-
-	def save_team2(self, team):
-		if self.team2_btn.selected:
-			self.team1_btn.select()
-			self.team2_btn.unselect()
-			self.team2 = self.team
-			self.team = self.team1
-			self.update_char_panels()
-
 	def start_game(self, team):
 		log_stats('play')
-		print self.team1, self.team2
-		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
+		teams = [(player.name, player.team) for player in self.players]
 		mapsel = MapSelection(self.screen, 'map_new.txt')
 		mapsel.loop()
 		start_game(self.screen, mapsel.mapname, teams)
@@ -976,6 +948,7 @@ class Manager:
 		self.player = player
 
 		self.party = self.player.characters
+		self.team = self.player.team
 		self.inventory = self.player.inventory
 		self.char_inventory = []
 
