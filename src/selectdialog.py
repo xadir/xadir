@@ -65,10 +65,10 @@ class Button(UIObject):
 		self.down = None
 
 	def event(self, ev):
-		if ev.type == pygame.MOUSEBUTTONDOWN:
+		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
 			if self.contains(*ev.pos):
 				self.down = self.translate(*ev.pos)
-		if ev.type == pygame.MOUSEBUTTONUP:
+		if ev.type == pygame.MOUSEBUTTONUP and ev.button == 1:
 			if self.contains(*ev.pos) and self.down:
 				self.clicked(ev)
 			self.down = None
@@ -131,6 +131,10 @@ class TextList(StateTrackingSprite):
 
 	def event(self, ev):
 		self.scroll.event(ev)
+		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
+			self.scroll.knob.rel_y -= 1
+		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 5:
+			self.scroll.knob.rel_y += 1
 
 	def get_state(self):
 		divisor = self.font.get_linesize() if self.tickless else 1
