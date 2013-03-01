@@ -18,11 +18,11 @@ class FakeGrid:
 class Window:
 	def __init__(self, screen):
 		self.screen = screen
-		self.width, self.height = self.screen.get_size()
 
-		self.background = pygame.Surface((self.width, self.height))
+		self.background = pygame.Surface(self.screen.get_size())
 		self.background.fill((0, 0, 0))
 
+		self.fps = 30
 		self.clock = pygame.time.Clock()
 
 		self.res = Resources(None)
@@ -53,6 +53,6 @@ class Window:
 if __name__ == "__main__":
 	screen = init_pygame()
 
-	win = Window()
+	win = Window(screen)
 	win.loop()
 

@@ -39,7 +39,6 @@ class Manager:
 
 		### Objects to implement multi-round game
 
-
 		self.players = []
 		self.player = None
 
@@ -76,8 +75,6 @@ class Manager:
 		IpResolver('manager', self).start()
 
 		self.team = []
-		self.team1 = []
-		self.team2 = []
 
 #		self.inventory = self.player.inventory
 #		self.char_inventory = []
@@ -107,28 +104,10 @@ class Manager:
 		self.local_con_buttons = []
 		self.text_fields = []
 
-#		for i in range(3):
-#			sword = random.choice(weapons.values())
-#			self.inventory.append(sword)
-#			self.add_auto_item('player', self.inventory_con, sword)
-#		for i in range(1):
-#			armor = random.choice(armors.values())
-#			self.inventory.append(armor)
-#			self.add_auto_item('player', self.inventory_con, armor)
 
 		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
 		self.network_host_btn = FuncButton(self.network_con, 10, 180, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_server, None), True, False, True)
-
-		### Manager buttons
-#		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
-#		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
-#		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
-#		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)
-		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
-
-#		self.team1_btn = FuncButton(self.team_con, 255, 80, 50, 30, [["Team 1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team2, self.team1), True, True, True)
-#		self.team2_btn = FuncButton(self.team_con, 310, 80, 50, 30, [["Team 2", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_team1, self.team2), True, False, True)
 
 
 		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
@@ -143,17 +122,21 @@ class Manager:
 		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
 
 
-#		self.manager_buttons.append(self.save_btn)
-#		self.manager_buttons.append(self.play_btn)
-#		self.manager_buttons.append(self.join_btn)
-#		self.manager_buttons.append(self.host_btn)
-		self.manager_buttons.append(self.new_char_btn)
-#		self.manager_buttons.append(self.team1_btn)
-#		self.manager_buttons.append(self.team2_btn)
 
 		self.manager_buttons.append(self.network_play_btn)
 		self.manager_buttons.append(self.network_connect_btn)
 		self.manager_buttons.append(self.network_host_btn)
+		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
+		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
+		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
+		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
+		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
+
+		self.manager_buttons.append(self.save_btn)
+		self.manager_buttons.append(self.play_btn)
+		self.manager_buttons.append(self.join_btn)
+		self.manager_buttons.append(self.host_btn)
+		self.manager_buttons.append(self.new_char_btn)
 
 #		self.update_char_panels()
 		self.update_store()
@@ -361,8 +344,6 @@ class Manager:
 		#self.manage.spritegroup.add(self.save_btn)
 #		self.team_con.spritegroup.add(self.play_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
-#		self.team_con.spritegroup.add(self.team1_btn)
-#		self.team_con.spritegroup.add(self.team2_btn)
 
 		self.manager_texts = []
 		self.manager_char_buttons = []
@@ -1063,8 +1044,7 @@ class Manager:
 
 	def start_game(self, team):
 		log_stats('play')
-		print self.team1, self.team2
-		teams = [('Player 1', self.team1), ('Player 2', self.team2)]
+		teams = [(player.name, player.team) for player in self.players]
 		mapsel = MapSelection(self.screen, 'map_new.txt')
 		mapsel.loop()
 		start_game(self.screen, mapsel.mapname, teams)
@@ -1120,6 +1100,7 @@ class Manager:
 		self.team = self.player.team
 
 		self.party = self.player.characters
+		self.team = self.player.team
 		self.inventory = self.player.inventory
 		self.char_inventory = []
 
