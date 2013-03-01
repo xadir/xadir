@@ -62,16 +62,16 @@ class Window:
 class Button(UIObject):
 	def __init__(self, parent, rel_pos, size):
 		UIObject.__init__(self, parent, rel_pos, size)
-		self.down = False
+		self.down = None
 
 	def event(self, ev):
 		if ev.type == pygame.MOUSEBUTTONDOWN:
 			if self.contains(*ev.pos):
-				self.down = True
+				self.down = self.translate(*ev.pos)
 		if ev.type == pygame.MOUSEBUTTONUP:
 			if self.contains(*ev.pos) and self.down:
 				self.clicked(ev)
-			self.down = False
+			self.down = None
 
 	def clicked(self, ev):
 		raise NotImplemented, 'This method must be implemented by base classes'
@@ -85,7 +85,8 @@ class Draggable(Button):
 		Button.event(self, ev)
 		if ev.type == pygame.MOUSEMOTION:
 			if self.down:
-				pos = self.parent.translate(*ev.pos)
+				x, y = self.parent.translate(*ev.pos)
+				pos = x - self.down[0], y - self.down[1]
 				self.rel_pos = clamp_elem(pos, self.size, self.parent.size)
 
 	def clicked(self, ev):
