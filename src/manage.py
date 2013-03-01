@@ -103,12 +103,13 @@ class Manager:
 		self.manager_texts = []
 		self.local_con_buttons = []
 		self.text_fields = []
-
+		self.network_buttons = []
 
 		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
 		self.network_host_btn = FuncButton(self.network_con, 10, 180, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_server, None), True, False, True)
-
+		self.network_disconnect_btn = FuncButton(self.network_con, 10, 390, 70, 30, [["Disconnect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.disconnect_server, None), True, False, True)
+		self.network_ready_btn = FuncButton(self.network_con, 100, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
 
 		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
 
@@ -268,6 +269,7 @@ class Manager:
 		self.network_con.spritegroup.add(self.network_play_btn)
 		self.network_con.spritegroup.add(self.network_connect_btn)
 		self.network_con.spritegroup.add(self.network_host_btn)
+		self.network_buttons = []
 
 	def show_network_panel(self):
 		print "Showing network panel"
@@ -307,6 +309,11 @@ class Manager:
 		text_sprite.rect = rect
 		print texts, texts.get_rect()
 		self.network_con.spritegroup.add(text_sprite)
+
+		self.network_con.spritegroup.add(self.network_disconnect_btn)
+		self.network_con.spritegroup.add(self.network_ready_btn)
+		self.network_buttons.append(self.network_disconnect_btn)
+		self.network_buttons.append(self.network_ready_btn)
 
 		self.update_server_playerlists()
 		self.update_server_chat()
@@ -1036,6 +1043,15 @@ class Manager:
 		self.update_text_fields()
 		self.show_network_panel()
 
+	def disconnect_server(self, none):
+		self.network_connected = False
+		self.server = None
+		self.update_text_fields
+		self.show_connect_panel()
+
+	def ready_server(self, none):
+		print "Player is ready"
+
 	def host_server(self, none):
 		log_stats('host')
 		mapsel = MapSelection(self.screen, 'map_new.txt')
@@ -1153,6 +1169,10 @@ class Manager:
 				f = b.function[0]
 				f(b.function[1])
 		for b in self.text_field_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+		for b in self.network_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
