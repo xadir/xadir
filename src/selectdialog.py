@@ -21,6 +21,8 @@ class FakeGrid:
 	def __init__(self, size):
 		self.cell_size = size
 
+root = UIRoot()
+
 class Window:
 	def __init__(self, screen):
 		self.screen = screen
@@ -33,11 +35,13 @@ class Window:
 
 		self.res = Resources(None)
 
-		self.elem = TextList([str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']], (100, 200))
+		self.elem1 = TextList(root, (10, 10), (100, 200), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']])
+		self.elem2 = TextList(root, (120, 60), (100, 100), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']])
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.set_clip()
-		self.sprites.add(self.elem)
+		self.sprites.add(self.elem1)
+		self.sprites.add(self.elem2)
 
 	def draw(self, frames = 1):
 		for i in range(frames):
@@ -55,7 +59,8 @@ class Window:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					self.done = True
-				self.elem.event(event)
+				self.elem1.event(event)
+				self.elem2.event(event)
 
 			self.draw()
 
@@ -117,12 +122,12 @@ class ScrollBar(UIObject):
 	def event(self, ev):
 		self.knob.event(ev)
 
-class TextList(StateTrackingSprite):
-	def __init__(self, items, size, tickless = True):
+class TextList(StateTrackingSprite, UIObject):
+	def __init__(self, parent, rel_pos, size, items, tickless = True):
 		StateTrackingSprite.__init__(self)
+		UIObject.__init__(self, parent, rel_pos, size)
 
 		self.image = pygame.Surface(size)
-		self.rect = pygame.Rect((0, 0), size)
 
 		self.font = pygame.font.Font(FONT, int(16*FONTSCALE))
 		self.linesize = self.font.get_linesize()
@@ -135,19 +140,19 @@ class TextList(StateTrackingSprite):
 		else:
 			target_size = len(items) - size[1] / self.linesize
 
-		self.scroll = ScrollBar(UIRoot(), (size[0]-10, 0), (10, size[1]), (10, 20), (0, clamp_above(target_size, 0)))
+		self.scroll = ScrollBar(self, (size[0]-10, 0), (10, size[1]), (10, 20), (0, clamp_above(target_size, 0)))
 
 		self.items = items
-		self.size = size
-		self.pos = 0
 
 	def event(self, ev):
 		self.scroll.event(ev)
 		value = self.scroll.value
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
-			self.scroll.value = (value[0], value[1] - self.linesize)
+			if self.contains(*ev.pos):
+				self.scroll.value = (value[0], value[1] - self.linesize)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 5:
-			self.scroll.value = (value[0], value[1] + self.linesize)
+			if self.contains(*ev.pos):
+				self.scroll.value = (value[0], value[1] + self.linesize)
 
 	def get_state(self):
 		divisor = self.linesize if self.tickless else 1
