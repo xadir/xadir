@@ -144,10 +144,18 @@ class TextList(StateTrackingSprite, UIObject):
 		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), (0, clamp_above(target_size, 0)))
 
 		self.items = items
+		self.sel = None
 
 	def event(self, ev):
 		self.scroll.event(ev)
 		value = self.scroll.value
+		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
+			if self.contains(*ev.pos) and not self.scroll.contains(*ev.pos):
+				multiplier = 1 if self.tickless else self.linesize
+				divisor = self.linesize if self.tickless else 1
+				pos = self.scroll.value[1] * multiplier + self.translate(*ev.pos)[1]
+				index, offset = divmod(pos, divisor)
+				self.sel = index if index != self.sel else None
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
 			if self.contains(*ev.pos):
 				self.scroll.value = (value[0], value[1] - self.linesize)
@@ -158,13 +166,15 @@ class TextList(StateTrackingSprite, UIObject):
 	def get_state(self):
 		divisor = self.linesize if self.tickless else 1
 		index, offset = divmod(self.scroll.value[1], divisor)
-		return self.items[index:index+self.linecount], self.scroll.knob.rel_y, offset
+		return self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
 
 	def redraw(self):
-		items, knob_y, offset = self.state
+		items, knob_y, base, offset, sel = self.state
 		self.image.fill((255, 255, 255))
 		y = -offset
-		for item in items:
+		for i, item in enumerate(items):
+			if base + i == sel:
+				self.image.fill((191, 191, 191), (0, max(y, 0), self.width, self.linesize + min(y, 0)))
 			text = self.font.render(item, True, (0, 0, 0))
 			self.image.blit(text, (0, y))
 			y += self.linesize
