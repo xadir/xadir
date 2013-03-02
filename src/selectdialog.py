@@ -134,11 +134,12 @@ class TextList(StateTrackingSprite, UIObject):
 		self.linecount = (self.height - 1) / self.linesize + 1
 
 		self.tickless = tickless
+		self.ratios = [1, self.linesize]
 
 		if self.tickless:
-			target_size = len(items) * self.linesize - self.height
-		else:
-			target_size = len(items) - self.height / self.linesize
+			self.ratios.reverse()
+
+		target_size = len(items) * self.ratios[0] - self.height / self.ratios[1]
 
 		bar_width, bar_height = 10, 20
 		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), (0, clamp_above(target_size, 0)))
@@ -151,10 +152,8 @@ class TextList(StateTrackingSprite, UIObject):
 		value = self.scroll.value
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
 			if self.contains(*ev.pos) and not self.scroll.contains(*ev.pos):
-				multiplier = 1 if self.tickless else self.linesize
-				divisor = self.linesize if self.tickless else 1
-				pos = self.scroll.value[1] * multiplier + self.translate(*ev.pos)[1]
-				index, offset = divmod(pos, divisor)
+				pos = self.scroll.value[1] * self.ratios[1] + self.translate(*ev.pos)[1]
+				index, offset = divmod(pos, self.ratios[0])
 				self.sel = index if index != self.sel else None
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
 			if self.contains(*ev.pos):
@@ -164,8 +163,7 @@ class TextList(StateTrackingSprite, UIObject):
 				self.scroll.value = (value[0], value[1] + self.linesize)
 
 	def get_state(self):
-		divisor = self.linesize if self.tickless else 1
-		index, offset = divmod(self.scroll.value[1], divisor)
+		index, offset = divmod(self.scroll.value[1], self.ratios[0])
 		return self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
 
 	def redraw(self):
