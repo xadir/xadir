@@ -42,11 +42,11 @@ class Manager:
 		self.players = []
 		self.player = None
 
-		self.server = Server("0.0.0.0", 23, [Player("test1", [], [], 100), Player("test1", [], [], 100)])
+		self.server = Server("0.0.0.0", 23, [Player("test1", [], [], 100), Player("test2", [], [], 100)])
 
 		self.selected_networkplayers = []
 
-		self.selected_networkplayers.append(self.server.playerlist[0])
+#		self.selected_networkplayers.append(self.server.playerlist[0])
 
 #		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
 
@@ -110,7 +110,8 @@ class Manager:
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
 		self.network_host_btn = FuncButton(self.network_con, 10, 180, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_server, None), True, False, True)
 		self.network_disconnect_btn = FuncButton(self.network_con, 10, 390, 70, 30, [["Disconnect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.disconnect_server, None), True, False, True)
-		self.network_ready_btn = FuncButton(self.network_con, 100, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
+		self.network_ready_btn = FuncButton(self.network_con, 90, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
+		self.network_challenge_btn = FuncButton(self.network_con, 170, 390, 70, 30, [["Challenge", None]], None, ICON_FONTSIZE, self.screen, 1, (self.send_challenge, None), True, False, True)
 
 		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
 
@@ -313,8 +314,11 @@ class Manager:
 
 		self.network_con.spritegroup.add(self.network_disconnect_btn)
 		self.network_con.spritegroup.add(self.network_ready_btn)
+		self.network_con.spritegroup.add(self.network_challenge_btn)
 		self.network_buttons.append(self.network_disconnect_btn)
 		self.network_buttons.append(self.network_ready_btn)
+		if len(self.selected_networkplayers) > 0:
+			self.network_buttons.append(self.network_challenge_btn)
 
 		self.update_server_playerlists()
 		self.update_server_chat()
@@ -1053,8 +1057,14 @@ class Manager:
 		self.update_text_fields
 		self.show_connect_panel()
 
+	def send_challenge(self, none):
+		for p in self.selected_networkplayers:
+			print "Sent challenge to " + p.name
+		###XXX Add challenge sending here
+
 	def ready_server(self, none):
 		print "Player is ready"
+		###XXX Add ready-sending activities here
 
 	def host_server(self, none):
 		log_stats('host')
@@ -1133,8 +1143,9 @@ class Manager:
 		self.update_inventories()
 
 	def select_networkplayer(self, p):
-		self.selected_networkplayers.append(p)
-		self.show_network_panel()
+		if not p in self.selected_networkplayers:
+			self.selected_networkplayers.append(p)
+			self.show_network_panel()
 
 	def unselect_networkplayer(self, p):
 		self.selected_networkplayers.remove(p)
