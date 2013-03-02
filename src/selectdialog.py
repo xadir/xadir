@@ -131,16 +131,17 @@ class TextList(StateTrackingSprite, UIObject):
 
 		self.font = pygame.font.Font(FONT, int(16*FONTSCALE))
 		self.linesize = self.font.get_linesize()
-		self.linecount = (size[1] - 1) / self.linesize + 1
+		self.linecount = (self.height - 1) / self.linesize + 1
 
 		self.tickless = tickless
 
 		if self.tickless:
-			target_size = len(items) * self.linesize - size[1]
+			target_size = len(items) * self.linesize - self.height
 		else:
-			target_size = len(items) - size[1] / self.linesize
+			target_size = len(items) - self.height / self.linesize
 
-		self.scroll = ScrollBar(self, (size[0]-10, 0), (10, size[1]), (10, 20), (0, clamp_above(target_size, 0)))
+		bar_width, bar_height = 10, 20
+		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), (0, clamp_above(target_size, 0)))
 
 		self.items = items
 
@@ -157,7 +158,7 @@ class TextList(StateTrackingSprite, UIObject):
 	def get_state(self):
 		divisor = self.linesize if self.tickless else 1
 		index, offset = divmod(self.scroll.value[1], divisor)
-		return self.scroll.knob.rel_pos[1], self.items[index:index+self.linecount], offset
+		return self.scroll.knob.rel_y, self.items[index:index+self.linecount], offset
 
 	def redraw(self):
 		self.image.fill((255, 255, 255))
@@ -166,8 +167,8 @@ class TextList(StateTrackingSprite, UIObject):
 			text = self.font.render(item, True, (0, 0, 0))
 			self.image.blit(text, (0, y))
 			y += self.linesize
-		self.image.fill((127, 127, 127), (self.size[0]-10, 0, 10, self.size[1]))
-		self.image.fill((63, 63, 63), (self.size[0]-10, self.state[0], 10, 20))
+		self.image.fill((127, 127, 127), (self.width - self.scroll.width, 0, self.scroll.width, self.height))
+		self.image.fill((63, 63, 63), (self.width - self.scroll.width, self.state[0], self.scroll.width, self.scroll.knob.height))
 
 if __name__ == "__main__":
 	screen = init_pygame()
