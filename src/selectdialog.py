@@ -125,14 +125,15 @@ class TextList(StateTrackingSprite):
 		self.rect = pygame.Rect((0, 0), size)
 
 		self.font = pygame.font.Font(FONT, int(16*FONTSCALE))
-		self.linecount = (size[1] - 1) / self.font.get_linesize() + 1
+		self.linesize = self.font.get_linesize()
+		self.linecount = (size[1] - 1) / self.linesize + 1
 
 		self.tickless = tickless
 
 		if self.tickless:
-			target_size = len(items) * self.font.get_linesize() - size[1]
+			target_size = len(items) * self.linesize - size[1]
 		else:
-			target_size = len(items) - size[1] / self.font.get_linesize()
+			target_size = len(items) - size[1] / self.linesize
 
 		self.scroll = ScrollBar(UIRoot(), (size[0]-10, 0), (10, size[1]), (10, 20), (0, clamp_above(target_size, 0)))
 
@@ -149,7 +150,7 @@ class TextList(StateTrackingSprite):
 			self.scroll.value = (value[0], value[1] + 1)
 
 	def get_state(self):
-		divisor = self.font.get_linesize() if self.tickless else 1
+		divisor = self.linesize if self.tickless else 1
 		index, offset = divmod(self.scroll.value[1], divisor)
 		return self.scroll.knob.rel_pos[1], self.items[index:index+self.linecount], offset
 
@@ -159,7 +160,7 @@ class TextList(StateTrackingSprite):
 		for item in self.state[1]:
 			text = self.font.render(item, True, (0, 0, 0))
 			self.image.blit(text, (0, y))
-			y += self.font.get_linesize()
+			y += self.linesize
 		self.image.fill((127, 127, 127), (self.size[0]-10, 0, 10, self.size[1]))
 		self.image.fill((63, 63, 63), (self.size[0]-10, self.state[0], 10, 20))
 
