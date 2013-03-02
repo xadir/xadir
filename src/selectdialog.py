@@ -37,11 +37,15 @@ class Window:
 
 		self.elem1 = TextList(root, (10, 10), (100, 200), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']])
 		self.elem2 = TextList(root, (120, 60), (100, 100), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']])
+		self.elem3 = TextList(root, (10, 220), (100, 200), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']], tickless = False)
+		self.elem4 = TextList(root, (120, 270), (100, 100), [str(i) + s for i in range(10) for s in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']], tickless = False)
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
 		self.sprites.set_clip()
 		self.sprites.add(self.elem1)
 		self.sprites.add(self.elem2)
+		self.sprites.add(self.elem3)
+		self.sprites.add(self.elem4)
 
 	def draw(self, frames = 1):
 		for i in range(frames):
@@ -61,6 +65,8 @@ class Window:
 					self.done = True
 				self.elem1.event(event)
 				self.elem2.event(event)
+				self.elem3.event(event)
+				self.elem4.event(event)
 
 			self.draw()
 
