@@ -96,12 +96,23 @@ class ScrollBar(UIObject):
 	def __init__(self, parent, rel_pos, size, knob_size, final_size):
 		UIObject.__init__(self, parent, rel_pos, size)
 		self.knob = Draggable(self, (0, 0), knob_size)
-		self.final_size = final_size
+		self.leeway = tuple(self.size[i] - self.knob.size[i] for i in range(2))
+		self.range = final_size
+		self._value = (0, 0)
 
-	def _get_knob_pos(self):
-		leeway = tuple(self.size[i] - self.knob.size[i] for i in range(2))
-		return tuple(self.knob.rel_pos[i] * self.final_size[i] / leeway[i] if leeway[i] else 0 for i in range(2))
-	knob_pos = property(_get_knob_pos)
+	def _set_value(self, value):
+		value = clamp_pos(value, self.range)
+		self._value = value
+		self.knob.rel_pos = tuple(value[i] * self.leeway[i] / self.range[i] if self.range[i] else 0 for i in range(2))
+
+	def _get_value(self):
+		# Return self._value if it still matches the position of the knob, otherwise recalculate it
+		value = tuple(self._value[i] * self.leeway[i] / self.range[i] if self.range[i] else 0 for i in range(2))
+		if value != self.knob.rel_pos:
+			self._value = tuple(self.knob.rel_pos[i] * self.range[i] / self.leeway[i] if self.leeway[i] else 0 for i in range(2))
+		return self._value
+
+	value = property(_get_value, _set_value)
 
 	def event(self, ev):
 		self.knob.event(ev)
@@ -131,14 +142,15 @@ class TextList(StateTrackingSprite):
 
 	def event(self, ev):
 		self.scroll.event(ev)
+		value = self.scroll.value
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
-			self.scroll.knob.rel_y -= 1
+			self.scroll.value = (value[0], value[1] - 1)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 5:
-			self.scroll.knob.rel_y += 1
+			self.scroll.value = (value[0], value[1] + 1)
 
 	def get_state(self):
 		divisor = self.font.get_linesize() if self.tickless else 1
-		index, offset = divmod(self.scroll.knob_pos[1], divisor)
+		index, offset = divmod(self.scroll.value[1], divisor)
 		return self.scroll.knob.rel_pos[1], self.items[index:index+self.linecount], offset
 
 	def redraw(self):
