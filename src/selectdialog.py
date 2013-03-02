@@ -158,17 +158,18 @@ class TextList(StateTrackingSprite, UIObject):
 	def get_state(self):
 		divisor = self.linesize if self.tickless else 1
 		index, offset = divmod(self.scroll.value[1], divisor)
-		return self.scroll.knob.rel_y, self.items[index:index+self.linecount], offset
+		return self.items[index:index+self.linecount], self.scroll.knob.rel_y, offset
 
 	def redraw(self):
+		items, knob_y, offset = self.state
 		self.image.fill((255, 255, 255))
-		y = -self.state[2]
-		for item in self.state[1]:
+		y = -offset
+		for item in items:
 			text = self.font.render(item, True, (0, 0, 0))
 			self.image.blit(text, (0, y))
 			y += self.linesize
 		self.image.fill((127, 127, 127), (self.width - self.scroll.width, 0, self.scroll.width, self.height))
-		self.image.fill((63, 63, 63), (self.width - self.scroll.width, self.state[0], self.scroll.width, self.scroll.knob.height))
+		self.image.fill((63, 63, 63), (self.width - self.scroll.width, knob_y, self.scroll.width, self.scroll.knob.height))
 
 if __name__ == "__main__":
 	screen = init_pygame()
