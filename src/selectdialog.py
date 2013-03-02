@@ -145,9 +145,9 @@ class TextList(StateTrackingSprite):
 		self.scroll.event(ev)
 		value = self.scroll.value
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
-			self.scroll.value = (value[0], value[1] - 1)
+			self.scroll.value = (value[0], value[1] - self.linesize)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 5:
-			self.scroll.value = (value[0], value[1] + 1)
+			self.scroll.value = (value[0], value[1] + self.linesize)
 
 	def get_state(self):
 		divisor = self.linesize if self.tickless else 1
