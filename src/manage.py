@@ -34,6 +34,11 @@ class Server:
 		self.ping = ping
 		self.playerlist = players
 
+class Challenge:
+	def __init__(self, players, map):
+		self.players = players
+		self.map = map
+
 class Manager:
 	def __init__(self, screen):
 
@@ -42,9 +47,11 @@ class Manager:
 		self.players = []
 		self.player = None
 
-		self.server = Server("0.0.0.0", 23, [Player("test1", [], [], 100), Player("test2", [], [], 100)])
+		self.server = Server("0.0.0.0", 23, [Player("test1", [], [], 100), Player("test2", [], [], 100), Player("test3", [], [], 100), Player("test4", [], [], 100)])
 
 		self.selected_networkplayers = []
+		self.received_challenges = []
+		self.received_challenges.append(Challenge([Player("test1", [], [], 100), Player("test2", [], [], 100)], "new_map.txt"))
 
 #		self.selected_networkplayers.append(self.server.playerlist[0])
 
@@ -277,7 +284,7 @@ class Manager:
 		print "Showing network panel"
 		self.network_con.clear()
 		
-		texts = pygame.Surface((260,100))
+		texts = pygame.Surface((260,400))
 		texts.fill(COLOR_BG)
 		text_x = 0
 		
@@ -302,7 +309,14 @@ class Manager:
 		rect.x = 0
 		rect.y = 40
 		texts.blit(text, rect)
-		
+
+		font = pygame.font.Font(FONT, int(25*FONTSCALE))
+		text = font.render("Challenges", True, COLOR_FONT, COLOR_BG)
+		rect = text.get_rect()
+		rect.x = 0
+		rect.y = 190
+		texts.blit(text, rect)
+
 		text_sprite = pygame.sprite.Sprite()
 		text_sprite.image = texts
 		rect = texts.get_rect()
@@ -321,7 +335,7 @@ class Manager:
 			self.network_buttons.append(self.network_challenge_btn)
 
 		self.update_server_playerlists()
-		self.update_server_chat()
+		self.update_challengelist()
 
 	def update_network_panel(self):
 		self.show_network_panel()
@@ -341,6 +355,16 @@ class Manager:
 			btn_y += 30
 			self.network_con.spritegroup.add(btn)
 			self.network_playerlist_buttons.append(btn)
+
+	def update_challengelist(self):
+		print "Updating received challenges"
+		self.network_challengelist_buttons = []
+		btn_y = 0
+		for c in self.received_challenges:
+			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, (self.accept_challenge, c), True, False, True)
+			btn_y += 30
+			self.network_con.spritegroup.add(btn)
+			self.network_challengelist_buttons.append(btn)
 
 	def update_server_chat(self):
 		print "Updating server chat"
@@ -1058,9 +1082,18 @@ class Manager:
 		self.show_connect_panel()
 
 	def send_challenge(self, none):
+		try:
+			c = Challenge(self.selected_networkplayers + self.player)
+		except TypeError:
+			print "Cannot send challenge, you must have local player selected by now"
+			sys.exit(0)
 		for p in self.selected_networkplayers:
-			print "Sent challenge to " + p.name
+			print "Sent challenge " + c + " to " + p.name
 		###XXX Add challenge sending here
+
+	def accept_challenge(self, c):
+		self.selected_networkplayers = c.players
+		self.show_network_panel()
 
 	def ready_server(self, none):
 		print "Player is ready"
@@ -1171,30 +1204,43 @@ class Manager:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+				return True
 		for b in self.new_char_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+				return True
 		for b in self.manager_char_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+				return True
 		for b in self.local_con_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
+				return True
 		for b in self.text_field_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
-		for b in self.network_buttons:
-			if b.contains(*event.pos):
-				f = b.function[0]
-				f(b.function[1])
-		for b in self.network_playerlist_buttons:
-			if b.contains(*event.pos):
-				f = b.function[0]
-				f(b.function[1])
+				return True
+		if self.network_connected:
+			for b in self.network_buttons:
+				if b.contains(*event.pos):
+					f = b.function[0]
+					f(b.function[1])
+					return True
+			for b in self.network_playerlist_buttons:
+				if b.contains(*event.pos):
+					f = b.function[0]
+					f(b.function[1])
+					return True
+			for b in self.network_challengelist_buttons:
+				if b.contains(*event.pos):
+					f = b.function[0]
+					f(b.function[1])
+					return True
 
 	def container_click(self, event, container):
 		i = 0
