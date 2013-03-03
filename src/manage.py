@@ -107,7 +107,7 @@ class Manager:
 		self.item_con = UIContainer(None, (320, 450), (371, 220), self.screen)
 		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
 
-		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players)
+		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players, selected = self.select_player)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 
@@ -1188,6 +1188,10 @@ class Manager:
 
 			self.players.append(Player(str(name), player_party, player_inventory, 1000))
 			#self.update_local_playerlist()
+
+	def select_player(self, namelist, event):
+		player = namelist.items[namelist.sel]
+		self.manage_player(player)
 
 	def manage_player(self, player):
 		if self.player != None:
