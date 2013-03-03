@@ -1,6 +1,6 @@
 
 class Player(object):
-	fields = 'name:str characters:list:Character inventory:list:Armor,Weapon money:int'
+	fields = 'name:str characters:list:Character team:list:Character inventory:list:Armor,Weapon money:int'
 	def __init__(self, name, characters, inventory, money):
 		self.name = name
 		self.characters = characters
