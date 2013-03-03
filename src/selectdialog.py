@@ -128,7 +128,7 @@ class ScrollBar(UIObject):
 		self.knob.event(ev)
 
 class TextList(StateTrackingSprite, UIObject):
-	def __init__(self, parent, rel_pos, size, items, tickless = True, selected = None):
+	def __init__(self, parent, rel_pos, size, items, tickless = True, selected = None, format_item = None):
 		StateTrackingSprite.__init__(self)
 		UIObject.__init__(self, parent, rel_pos, size)
 
@@ -153,6 +153,8 @@ class TextList(StateTrackingSprite, UIObject):
 		self.sel = None
 
 		self.selected = None
+		if format_item:
+			self.format_item = format_item
 
 	def event(self, ev):
 		self.scroll.event(ev)
@@ -186,6 +188,9 @@ class TextList(StateTrackingSprite, UIObject):
 			y += self.linesize
 		self.image.fill((127, 127, 127), (self.width - self.scroll.width, 0, self.scroll.width, self.height))
 		self.image.fill((63, 63, 63), (self.width - self.scroll.width, knob_y, self.scroll.width, self.scroll.knob.height))
+
+	def format_item(self, item):
+		return item
 
 	def _selected(self, ev):
 		if self.selected:
