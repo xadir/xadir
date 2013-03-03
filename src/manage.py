@@ -13,6 +13,7 @@ from weapon import Weapon, weapons
 from armor import Armor, armors
 from player import Player
 from selectdialog import TextList
+from wire import serialize, deserialize
 import random
 import eztext
 
@@ -145,12 +146,14 @@ class Manager:
 		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
 		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
 		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
+		self.save_player_btn = FuncButton(self.team_con, 260, 80, 100, 30, [["Save player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_selected_player, None), True, False, True)
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
 		self.manager_buttons.append(self.save_btn)
 		self.manager_buttons.append(self.play_btn)
 		self.manager_buttons.append(self.join_btn)
 		self.manager_buttons.append(self.host_btn)
+		self.manager_buttons.append(self.save_player_btn)
 		self.manager_buttons.append(self.new_char_btn)
 
 		self.addplayer_btn = FuncButton(self.local_con, 10, 50, 200, 30, [["Add player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.add_player, None), True, False, True)
@@ -168,6 +171,31 @@ class Manager:
 
 		self.network_connected = False
 		self.update_text_fields()
+
+		self.load_all_players()
+
+	def load_all_players(self):
+		for fname in os.listdir(SAVEDIR):
+			if not fname.endswith('.sav'):
+				continue
+			self.load_and_add_player(fname)
+
+	def load_and_add_player(self, fname):
+		with file(os.path.join(SAVEDIR, fname), 'rb') as f:
+			data = f.read()
+
+		player = deserialize(data, 'Player')
+		self.players.append(player)
+
+	def save_player(self, player):
+		fname = player.name + '.sav'
+		data = serialize(player, 'Player')
+
+		with file(os.path.join(SAVEDIR, fname), 'wb') as f:
+			f.write(data)
+
+	def save_selected_player(self, xxx):
+		self.save_player(self.player)
 
 	def update_general_texts(self):
 
@@ -414,7 +442,7 @@ class Manager:
 		self.manage.clear()
 
 		#self.manage.spritegroup.add(self.save_btn)
-#		self.team_con.spritegroup.add(self.play_btn)
+		self.team_con.spritegroup.add(self.save_player_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 
 		self.manager_texts = []

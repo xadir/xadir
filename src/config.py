@@ -11,6 +11,7 @@ GFXDIR = os.path.join(BASEDIR, 'gfx')
 SNDDIR = os.path.join(BASEDIR, 'snd')
 MAPDIR = os.path.join(BASEDIR, 'map')
 FONTDIR = os.path.join(BASEDIR, 'font')
+SAVEDIR = os.path.join(BASEDIR, 'save')
 
 FONT = os.path.join(FONTDIR, 'FreeSansBold.ttf')
 FONTSCALE = 0.6875
