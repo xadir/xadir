@@ -12,6 +12,7 @@ from game import start_game, host_game, join_game
 from weapon import Weapon, weapons
 from armor import Armor, armors
 from player import Player
+from selectdialog import TextList
 import random
 import eztext
 
@@ -102,6 +103,14 @@ class Manager:
 		self.item_con = UIContainer(None, (320, 450), (371, 220), self.screen)
 		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
 
+		self.local_playerlist = TextList(self.local_con, (10, 90), (100, 100), self.players)
+		self.network_playerlist_all = None
+		self.network_playerlist_selected = None
+
+		self.selectdialogs = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
+		self.selectdialogs.add(self.local_playerlist)
+		self.selectdialogs.set_clip()
+
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
 		self.manager_buttons = []
@@ -132,10 +141,10 @@ class Manager:
 		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
 
 
-
-		self.manager_buttons.append(self.network_play_btn)
-		self.manager_buttons.append(self.network_connect_btn)
-		self.manager_buttons.append(self.network_host_btn)
+		self.connect_buttons = []
+		self.connect_buttons.append(self.network_play_btn)
+		self.connect_buttons.append(self.network_connect_btn)
+		self.connect_buttons.append(self.network_host_btn)
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
 		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
 		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
@@ -148,14 +157,25 @@ class Manager:
 		self.manager_buttons.append(self.host_btn)
 		self.manager_buttons.append(self.new_char_btn)
 
+		self.addplayer_btn = FuncButton(self.local_con, 10, 50, 200, 30, [["Add player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.add_player, None), True, False, True)
+
+		self.local_con_buttons.append(self.addplayer_btn)
+
+		self.local_con.spritegroup.add(self.addplayer_btn)
+		self.local_con.spritegroup.add(self.player_input_btn)
+
 #		self.update_char_panels()
 		self.update_store()
 #		self.update_general_texts()
-		self.update_local_playerlist()
+		#self.update_local_playerlist()
 		self.show_connect_panel()
 
 		self.network_connected = False
 		self.update_text_fields()
+
+		self.screen.fill((127, 127, 127))
+		self.local_con.draw()
+		self.network_con.draw()
 
 	def update_general_texts(self):
 
@@ -272,19 +292,24 @@ class Manager:
 
 	def show_connect_panel(self):
 		print "Showing connecting panel"
+		self.network_buttons = []
 		self.network_con.clear()
 		self.network_con.spritegroup.add(self.ip_btn)
+		self.network_buttons.append(self.ip_btn)
 		self.network_con.spritegroup.add(self.port_btn)
+		self.network_buttons.append(self.port_btn)
 		self.network_con.spritegroup.add(self.network_play_btn)
+		self.network_buttons.append(self.network_play_btn)
 		self.network_con.spritegroup.add(self.network_connect_btn)
+		self.network_buttons.append(self.network_connect_btn)
 		self.network_con.spritegroup.add(self.network_host_btn)
-		self.network_buttons = []
+		self.network_buttons.append(self.host_btn)
 
 	def show_network_panel(self):
 		print "Showing network panel"
 		self.network_con.clear()
 		
-		texts = pygame.Surface((260,400))
+		texts = pygame.Surface((260,65))
 		texts.fill(COLOR_BG)
 		text_x = 0
 		
@@ -326,22 +351,29 @@ class Manager:
 		print texts, texts.get_rect()
 		self.network_con.spritegroup.add(text_sprite)
 
+		self.network_buttons = []
 		self.network_con.spritegroup.add(self.network_disconnect_btn)
 		self.network_con.spritegroup.add(self.network_ready_btn)
 		self.network_con.spritegroup.add(self.network_challenge_btn)
+		self.network_buttons.append(self.network_challenge_btn)
 		self.network_buttons.append(self.network_disconnect_btn)
 		self.network_buttons.append(self.network_ready_btn)
 		if len(self.selected_networkplayers) > 0:
 			self.network_buttons.append(self.network_challenge_btn)
 
-		self.update_server_playerlists()
-		self.update_challengelist()
+		#self.update_server_playerlists()
+		#self.update_challengelist()
 
 	def update_network_panel(self):
 		self.show_network_panel()
+		self.network_con.draw(True)
 
 	def update_server_playerlists(self):
 		print "Updating network lobby"
+		#self.network_playerlist_all.items = self.server.playerlist
+		#self.network_playerlist_selected.items = self.selected_networkplayers
+		#self.network_challengelist.items = self.received_challenges
+		
 		self.network_playerlist_buttons = []
 		btn_y = 0
 		for p in self.server.playerlist:
@@ -355,13 +387,15 @@ class Manager:
 			btn_y += 30
 			self.network_con.spritegroup.add(btn)
 			self.network_playerlist_buttons.append(btn)
+		
 
 	def update_challengelist(self):
 		print "Updating received challenges"
 		self.network_challengelist_buttons = []
 		btn_y = 0
 		for c in self.received_challenges:
-			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, (self.accept_challenge, c), True, False, True)
+			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, None, True, False, True)
+			btn.function = (self.accept_challenge, c)
 			btn_y += 30
 			self.network_con.spritegroup.add(btn)
 			self.network_challengelist_buttons.append(btn)
@@ -1072,12 +1106,19 @@ class Manager:
 		else:
 			join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
 		self.network_connected = True
+		self.network_playerlist_all= TextList(self.network_con, (10, 80), (100, 200), self.server.playerlist)
+		self.network_playerlist_selected = TextList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
+		self.selectdialogs.add(self.network_playerlist_all)
+		self.selectdialogs.add(self.network_playerlist_selected)
 		self.update_text_fields()
 		self.show_network_panel()
+		self.network_con.draw()
 
 	def disconnect_server(self, none):
 		self.network_connected = False
 		self.server = None
+		self.network_playerlist_all = None
+		self.network_playerlist_selected = None
 		self.update_text_fields
 		self.show_connect_panel()
 
@@ -1142,7 +1183,7 @@ class Manager:
 				player_inventory.append(armor)
 
 			self.players.append(Player(str(name), player_party, player_inventory, 1000))
-			self.update_local_playerlist()
+			#self.update_local_playerlist()
 
 	def manage_player(self, player):
 		if self.player != None:
@@ -1188,6 +1229,7 @@ class Manager:
 		self.network_connected = False
 		self.update_text_fields()
 		self.show_connect_panel()
+		self.network_con.draw()
 
 	def select_field(self, index):
 		print "Clicked on field button"
@@ -1231,6 +1273,13 @@ class Manager:
 					f = b.function[0]
 					f(b.function[1])
 					return True
+		else:
+			for b in self.connect_buttons:
+				if b.contains(*event.pos):
+					f = b.function[0]
+					f(b.function[1])
+					return True
+			"""
 			for b in self.network_playerlist_buttons:
 				if b.contains(*event.pos):
 					f = b.function[0]
@@ -1241,6 +1290,7 @@ class Manager:
 					f = b.function[0]
 					f(b.function[1])
 					return True
+			"""
 
 	def container_click(self, event, container):
 		i = 0
@@ -1269,16 +1319,24 @@ class Manager:
 						f(b.function[1])
 					break
 
+	def draw_selectdialogs(self):
+		self.selectdialogs.update()
+		#self.selectdialogs.clear(self.screen, self.background)
+		# Update layers
+		self.selectdialogs._spritelist.sort(key = lambda sprite: sprite._layer)
+		self.selectdialogs.draw(self.screen)
+		#pygame.display.flip()
+
 	def loop(self):
 		change_sound(0, load_sound('menu-old.ogg'), BGM_FADE_MS)
 
 		while 1:
-			self.screen.fill((127, 127, 127))
+			#self.screen.fill((127, 127, 127))
 
 			if self.network_connected: self.update_network_panel()
 
-			self.local_con.draw()
-			self.network_con.draw()
+			#self.local_con.draw()
+			#self.network_con.draw()
 			self.text_con.draw()
 			self.manage.draw()
 			self.party_con.draw()
@@ -1289,6 +1347,7 @@ class Manager:
 			self.item_con.draw()
 			for tf in self.text_fields:
 				tf[1].draw(self.screen)
+			self.draw_selectdialogs()
 			pygame.display.flip()
 
 
@@ -1297,6 +1356,11 @@ class Manager:
 				if tf[0]:
 					tf[1].update(events)
 			for event in events:
+				self.local_playerlist.event(event)
+				if self.network_playerlist_all != None:
+					self.network_playerlist_all.event(event)
+				if self.network_playerlist_selected != None:
+					self.network_playerlist_selected.event(event)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
