@@ -1218,7 +1218,7 @@ class Manager:
 		self.update_char_panels()
 		self.update_store()
 		self.update_general_texts()
-		self.update_local_playerlist()
+		#self.update_local_playerlist()
 		self.update_inventories()
 
 	def select_networkplayer(self, p):
