@@ -29,6 +29,10 @@ class FakeGrid:
 		self.x, self.y = (0, 0)
 		self.cell_size = size
 
+class NameList(TextList):
+	def format_item(self, item):
+		return item.name
+
 class Server:
 	def __init__(self, ip, ping, players):
 		self.ip = ip
@@ -103,7 +107,7 @@ class Manager:
 		self.item_con = UIContainer(None, (320, 450), (371, 220), self.screen)
 		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
 
-		self.local_playerlist = TextList(self.local_con, (10, 90), (100, 100), self.players)
+		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 
@@ -1106,8 +1110,8 @@ class Manager:
 		else:
 			join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
 		self.network_connected = True
-		self.network_playerlist_all= TextList(self.network_con, (10, 80), (100, 200), self.server.playerlist)
-		self.network_playerlist_selected = TextList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
+		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.server.playerlist)
+		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
 		self.selectdialogs.add(self.network_playerlist_all)
 		self.selectdialogs.add(self.network_playerlist_selected)
 		self.update_text_fields()
