@@ -47,10 +47,12 @@ class Input:
 
     def update(self, events):
         """ Update the input based on passed events """
+	print "Possible keypress"
+	contains = True
         for event in events:
             if event.type == KEYUP:
                 if event.key == K_LSHIFT or event.key == K_RSHIFT: self.shifted = False
-            if event.type == KEYDOWN:
+            elif event.type == KEYDOWN:
                 if event.key == K_BACKSPACE: self.value = self.value[:-1]
                 elif event.key == K_LSHIFT or event.key == K_RSHIFT: self.shifted = True
                 elif event.key == K_SPACE: self.value += ' '
@@ -151,4 +153,7 @@ class Input:
                     elif event.key == K_PERIOD and '>' in self.restricted: self.value += '>'
                     elif event.key == K_SLASH and '?' in self.restricted: self.value += '?'
 
-        if len(self.value) > self.maxlength and self.maxlength >= 0: self.value = self.value[:-1]
+        	else: contains = False
+	if len(self.value) > self.maxlength and self.maxlength >= 0: self.value = self.value[:-1]
+	print contains
+	return contains
