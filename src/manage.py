@@ -60,23 +60,6 @@ class Manager:
 
 #		self.selected_networkplayers.append(self.server.playerlist[0])
 
-#		player_name = random.choice('Alexer Zokol brenon Ren IronBear'.split())
-
-#		player_party = []
-#		for i in range(5):
-#			char = Character.random()
-#			player_party.append(char)
-
-#		player_inventory = []
-
-#		player_money = 1000
-
-#		self.players.append(Player(player_name, player_party, player_inventory, player_money))
-
-#		self.player = self.players[0]
-
-#		self.party = self.player.characters
-
 		self.screen = screen
 		self.sword_icon = pygame.image.load(os.path.join(GFXDIR, "weapon_icon.png"))
 #		self.armor_icon = pygame.image.load(os.path.join(GFXDIR, "armor_icon.png"))
