@@ -1116,6 +1116,8 @@ class Manager:
 	def disconnect_server(self, none):
 		self.network_connected = False
 		self.server = None
+		self.selectdialogs.remove(self.network_playerlist_all)
+		self.selectdialogs.remove(self.network_playerlist_selected)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 		self.update_text_fields()
