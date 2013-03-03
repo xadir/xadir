@@ -106,6 +106,7 @@ class Manager:
 		self.store_con = UIContainer(None, (880, 120), (298, 550), self.screen)
 		self.item_con = UIContainer(None, (320, 450), (371, 220), self.screen)
 		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
+		self.textfield_con = UIContainer(None, (20, 20), (600, 430), self.screen)
 
 		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players, selected = self.select_player)
 		self.network_playerlist_all = None
@@ -140,6 +141,15 @@ class Manager:
 		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ')
 		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
 
+		self.ip_input.value = "xadir.net"
+		self.port_input.value = "33333"
+
+		self.text_fields = []
+
+		self.text_fields.append([False, self.player_input])
+		self.text_fields.append([False, self.ip_input])
+		self.text_fields.append([False, self.port_input])
+		
 
 		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
 		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
@@ -225,21 +235,28 @@ class Manager:
 
 	def update_text_fields(self):
 		### Text Input fields
+		self.textfield_con.clear()
 		self.text_fields = []
 		self.text_field_buttons = []
 
 		self.text_fields.append([False, self.player_input])
 
 		self.text_field_buttons.append(self.player_input_btn)
+		self.textfield_con.spritegroup.add(self.player_input_btn)
+#		self.textfield_con.draw(True)
 		if not self.network_connected:
 
-			self.ip_input.value = "xadir.net"
-			self.port_input.value = "33333"
 			self.text_fields.append([False, self.ip_input])
 			self.text_fields.append([False, self.port_input])
 			
 			self.text_field_buttons.append(self.ip_btn)
 			self.text_field_buttons.append(self.port_btn)
+			self.textfield_con.spritegroup.add(self.ip_btn)
+			self.textfield_con.spritegroup.add(self.port_btn)
+#			self.network_con.draw(True)
+		self.textfield_con.draw(True)
+		for tf in self.text_fields:
+			tf[1].draw(self.screen)
 
 
 	def update_inventories(self):
@@ -1123,7 +1140,9 @@ class Manager:
 		self.server = None
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
-		self.update_text_fields
+		self.update_text_fields()
+		self.ip_input.value = "xadir.net"
+		self.port_input.value = "33333"
 		self.show_connect_panel()
 
 	def send_challenge(self, none):
@@ -1237,7 +1256,7 @@ class Manager:
 		self.network_connected = False
 		self.update_text_fields()
 		self.show_connect_panel()
-		self.network_con.draw()
+		self.network_con.draw(False)
 
 	def select_field(self, index):
 		print "Clicked on field button"
@@ -1338,6 +1357,9 @@ class Manager:
 	def loop(self):
 		change_sound(0, load_sound('menu-old.ogg'), BGM_FADE_MS)
 
+		for tf in self.text_fields:
+			tf[1].draw(self.screen)
+
 		while 1:
 			#self.screen.fill((127, 127, 127))
 
@@ -1353,8 +1375,8 @@ class Manager:
 			self.char_inventory_con.draw()
 			self.store_con.draw()
 			self.item_con.draw()
-			for tf in self.text_fields:
-				tf[1].draw(self.screen)
+			#for tf in self.text_fields:
+			#	tf[1].draw(self.screen)
 			self.draw_selectdialogs()
 			pygame.display.flip()
 
@@ -1362,7 +1384,8 @@ class Manager:
 			events = pygame.event.get()
 			for tf in self.text_fields:
 				if tf[0]:
-					tf[1].update(events)
+					if tf[1].update(events):
+						self.update_text_fields()
 			for event in events:
 				self.local_playerlist.event(event)
 				if self.network_playerlist_all != None:
