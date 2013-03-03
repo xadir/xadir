@@ -1217,8 +1217,18 @@ class Manager:
 			#self.update_local_playerlist()
 
 	def select_player(self, namelist, event):
-		player = namelist.items[namelist.sel]
-		self.manage_player(player)
+		if namelist.sel is not None:
+			player = namelist.items[namelist.sel]
+			self.manage_player(player)
+		else:
+			# "Unmanage" player
+			self.player = None
+			self.team = []
+			self.party_con.clear()
+			self.team_con.clear()
+			self.manage.clear()
+			self.inventory_con.clear()
+			self.char_inventory_con.clear()
 
 	def manage_player(self, player):
 		if self.player != None:
