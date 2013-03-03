@@ -361,7 +361,8 @@ class Manager:
 		self.network_challengelist_buttons = []
 		btn_y = 0
 		for c in self.received_challenges:
-			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, (self.accept_challenge, c), True, False, True)
+			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, None, True, False, True)
+			btn.function = (self.accept_challenge, c)
 			btn_y += 30
 			self.network_con.spritegroup.add(btn)
 			self.network_challengelist_buttons.append(btn)
