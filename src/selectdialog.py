@@ -74,7 +74,7 @@ class Button(UIObject):
 	def __init__(self, parent, rel_pos, size, clicked = None):
 		UIObject.__init__(self, parent, rel_pos, size)
 		self.down = None
-		self.clicked = clicked
+		self._clicked = clicked
 
 	def event(self, ev):
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
@@ -82,12 +82,12 @@ class Button(UIObject):
 				self.down = self.translate(*ev.pos)
 		if ev.type == pygame.MOUSEBUTTONUP and ev.button == 1:
 			if self.contains(*ev.pos) and self.down:
-				self._clicked(ev)
+				self.clicked(ev)
 			self.down = None
 
-	def _clicked(self, ev):
-		if self.clicked:
-			self.clicked(self, ev)
+	def clicked(self, ev):
+		if self._clicked:
+			self._clicked(self, ev)
 
 class Draggable(Button):
 	def __init__(self, parent, rel_pos, size, clicked = None):
@@ -152,7 +152,7 @@ class TextList(StateTrackingSprite, UIObject):
 		self.items = items
 		self.sel = None
 
-		self.selected = None
+		self._selected = selected
 		if format_item:
 			self.format_item = format_item
 
@@ -164,7 +164,7 @@ class TextList(StateTrackingSprite, UIObject):
 				pos = self.scroll.value[1] * self.ratios[1] + self.translate(*ev.pos)[1]
 				index, offset = divmod(pos, self.linesize)
 				self.sel = index if index != self.sel else None
-				self._selected(ev)
+				self.selected(ev)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
 			if self.contains(*ev.pos):
 				self.scroll.value = (value[0], value[1] - self.ratios[0])
@@ -192,9 +192,9 @@ class TextList(StateTrackingSprite, UIObject):
 	def format_item(self, item):
 		return item
 
-	def _selected(self, ev):
-		if self.selected:
-			self.selected(self, ev)
+	def selected(self, ev):
+		if self._selected:
+			self._selected(self, ev)
 
 if __name__ == "__main__":
 	screen = init_pygame()
