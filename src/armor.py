@@ -25,7 +25,7 @@ armor_data = [
 _armor_id = 0
 class Armor(object):
 	damage_types = ['piercing', 'slashing', 'bludgeoning', 'magic']
-	fields = 'name:str,NoneType miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:set:str style:str'
+	fields = 'name:str,NoneType miss_chance:int damage_reduction:int enchanted_damage_reduction:int enchanted_damage_reduction_type:set:str style:str price:int'
 	def __init__(self, name, miss_chance, damage_reduction, enchanted_damage_reduction, enchanted_damage_reduction_type, price, style = None):
 		self.name = name
 		self.miss_chance = miss_chance
