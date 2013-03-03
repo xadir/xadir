@@ -112,9 +112,8 @@ class Manager:
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 
-		self.selectdialogs = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
+		self.selectdialogs = pygame.sprite.LayeredUpdates()
 		self.selectdialogs.add(self.local_playerlist)
-		self.selectdialogs.set_clip()
 
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
@@ -186,10 +185,6 @@ class Manager:
 
 		self.network_connected = False
 		self.update_text_fields()
-
-		self.screen.fill((127, 127, 127))
-		self.local_con.draw()
-		self.network_con.draw()
 
 	def update_general_texts(self):
 
@@ -1361,12 +1356,12 @@ class Manager:
 			tf[1].draw(self.screen)
 
 		while 1:
-			#self.screen.fill((127, 127, 127))
+			self.screen.fill((127, 127, 127))
 
 			if self.network_connected: self.update_network_panel()
 
-			#self.local_con.draw()
-			#self.network_con.draw()
+			self.local_con.draw()
+			self.network_con.draw()
 			self.text_con.draw()
 			self.manage.draw()
 			self.party_con.draw()
@@ -1375,8 +1370,8 @@ class Manager:
 			self.char_inventory_con.draw()
 			self.store_con.draw()
 			self.item_con.draw()
-			#for tf in self.text_fields:
-			#	tf[1].draw(self.screen)
+			for tf in self.text_fields:
+				tf[1].draw(self.screen)
 			self.draw_selectdialogs()
 			pygame.display.flip()
 
@@ -1384,8 +1379,7 @@ class Manager:
 			events = pygame.event.get()
 			for tf in self.text_fields:
 				if tf[0]:
-					if tf[1].update(events):
-						self.update_text_fields()
+					tf[1].update(events)
 			for event in events:
 				self.local_playerlist.event(event)
 				if self.network_playerlist_all != None:
