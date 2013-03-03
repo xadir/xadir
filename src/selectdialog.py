@@ -179,7 +179,7 @@ class TextList(StateTrackingSprite, UIObject):
 		for i, item in enumerate(items):
 			if base + i == sel:
 				self.image.fill((191, 191, 191), (0, max(y, 0), self.width, self.linesize + min(y, 0)))
-			text = self.font.render(item, True, (0, 0, 0))
+			text = self.font.render(item.name, True, (0, 0, 0))
 			self.image.blit(text, (0, y))
 			y += self.linesize
 		self.image.fill((127, 127, 127), (self.width - self.scroll.width, 0, self.scroll.width, self.height))
