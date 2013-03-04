@@ -93,6 +93,7 @@ class LoungeConnection(CentralConnectionBase):
 	def handle_general(self, cmd, args):
 		if cmd == 'MSG':
 			client_id, msg = deserialize(args, 'tuple', ['int', 'str'])
+			self.manage.network_messages.items.append('%s: %s' % (self.users[client_id].name, msg))
 		elif cmd == 'JOIN':
 			client_id, ip_addr, nicks = deserialize(args, 'tuple', ['int', 'str', ['list', 'str']])
 			player = NetworkPlayer(client_id, ip_addr, nicks)
@@ -105,6 +106,9 @@ class LoungeConnection(CentralConnectionBase):
 			self.manage.networkplayers[:] = [player for player in self.manage.networkplayers if player.client_id != client_id]
 		else:
 			self.die('Unknown command: ' + repr(cmd))
+
+	def send_message(self, msg):
+		self.push_cmd('MSG', serialize(msg, 'str'))
 
 	def handle_close(self):
 		self.manage.handle_disconnect()
@@ -161,6 +165,7 @@ class Manager:
 		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players, selected = self.select_player)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
+		self.network_messages = None
 
 		self.selectdialogs = pygame.sprite.LayeredUpdates()
 		self.selectdialogs.add(self.local_playerlist)
@@ -195,11 +200,15 @@ class Manager:
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
 
+		self.message_input = eztext.Input(x=self.network_con.x + 10, y=self.network_con.y + 370, maxlength=25, color=COLOR_FONT, prompt='Message: ', font = pygame.font.Font(FONT, int(16*FONTSCALE)), handle_enter = self.send_message)
+		self.message_btn = FuncButton(self.network_con, 10, 370, 248, 20, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
+
 		self.text_fields = []
 
 		self.text_fields.append([False, self.player_input])
 		self.text_fields.append([False, self.ip_input])
 		self.text_fields.append([False, self.port_input])
+		self.text_fields.append([False, self.message_input])
 		
 
 		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
@@ -241,6 +250,10 @@ class Manager:
 		self.update_text_fields()
 
 		self.load_all_players()
+
+	def send_message(self):
+		self.lounge.send_message(self.message_input.value)
+		self.message_input.value = ''
 
 	def load_all_players(self):
 		for fname in os.listdir(SAVEDIR):
@@ -319,18 +332,21 @@ class Manager:
 		self.textfield_con.spritegroup.add(self.player_input_btn)
 #		self.textfield_con.draw(True)
 		if not self.network_connected:
-
 			self.text_fields.append([False, self.ip_input])
 			self.text_fields.append([False, self.port_input])
-			
+
 			self.text_field_buttons.append(self.ip_btn)
 			self.text_field_buttons.append(self.port_btn)
 			self.textfield_con.spritegroup.add(self.ip_btn)
 			self.textfield_con.spritegroup.add(self.port_btn)
 #			self.network_con.draw(True)
+		else:
+			self.text_fields.append([False, self.message_input])
+			self.text_field_buttons.append(self.message_btn)
+			self.textfield_con.spritegroup.add(self.message_btn)
 		self.textfield_con.draw(True)
-		for tf in self.text_fields:
-			tf[1].draw(self.screen)
+		#for tf in self.text_fields:
+		#	tf[1].draw(self.screen)
 
 
 	def update_inventories(self):
@@ -1201,8 +1217,10 @@ class Manager:
 		self.network_connected = True
 		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
+		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
 		self.selectdialogs.add(self.network_playerlist_all)
 		self.selectdialogs.add(self.network_playerlist_selected)
+		self.selectdialogs.add(self.network_messages)
 		self.update_text_fields()
 		self.show_network_panel()
 		self.network_con.draw()
@@ -1219,8 +1237,10 @@ class Manager:
 		self.server = None
 		self.selectdialogs.remove(self.network_playerlist_all)
 		self.selectdialogs.remove(self.network_playerlist_selected)
+		self.selectdialogs.remove(self.network_messages)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
+		self.network_messages = None
 		self.update_text_fields()
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
@@ -1482,6 +1502,8 @@ class Manager:
 					self.network_playerlist_all.event(event)
 				if self.network_playerlist_selected != None:
 					self.network_playerlist_selected.event(event)
+				if self.network_messages != None:
+					self.network_messages.event(event)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
