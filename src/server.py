@@ -58,8 +58,11 @@ class XadirServerClient(CentralConnectionBase):
 		CentralConnectionBase.__init__(self, sock)
 		self.serv = serv
 
+		self.nicks = None
 		self.client_id = self.serv.client_id
 		self.serv.client_id += 1
+
+		print 'CONNECT', self.client_id
 
 		self.handle_connect()
 
@@ -76,6 +79,7 @@ class XadirServerClient(CentralConnectionBase):
 	def handle_nick(self, cmd, args):
 		assert cmd == 'NICK'
 		self.nicks = deserialize(args, 'list', 'str')
+		print 'JOIN', self.client_id, self.nicks
 		self.bcast_cmd('JOIN', serialize((self.client_id, self.addr[0], self.nicks), 'tuple', ['int', 'str', ['list', 'str']]))
 		self.push_cmd('ID', serialize(self.client_id, 'int'))
 		self.push_cmd('NICKS', serialize([(client.client_id, client.addr[0], client.nicks) for client in self.serv.clients], 'list', 'tuple', ['int', 'str', ['list', 'str']]))
@@ -84,12 +88,13 @@ class XadirServerClient(CentralConnectionBase):
 	def handle_general(self, cmd, args):
 		if cmd == 'MSG':
 			msg = deserialize(args, 'str')
-			print self.client_id, self.nicks, repr(msg)
+			print 'MSG', self.client_id, self.nicks, repr(msg)
 			self.bcast_cmd('MSG', serialize((self.client_id, msg), 'tuple', ['int', 'str']), not_to_self = False)
 		else:
 			self.die('Unknown command: ' + repr(cmd))
 
 	def handle_close(self):
+		print 'DISCONNECT', self.client_id, self.nicks
 		self.bcast_cmd('QUIT', serialize(self.client_id, 'int'))
 		self.serv.clients.remove(self)
 		self.close()
