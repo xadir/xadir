@@ -20,6 +20,14 @@ import eztext
 from mapselection import MapSelection
 from resolver import *
 
+import asyncore
+import asynchat
+import socket
+import server
+from server import CentralConnectionBase
+
+DEFAULT_CENTRAL_HOST = '94.23.194.22'
+
 if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
@@ -45,6 +53,62 @@ class Challenge:
 		self.players = players
 		self.map = map
 
+class NetworkPlayer:
+	def __init__(self, client_id, ip_addr, nicks):
+		self.client_id = client_id
+		self.ip_addr = ip_addr
+		self.nicks = nicks
+		self.name = '%s (%d)' % (nicks[0], len(nicks))
+
+class LoungeConnection(CentralConnectionBase):
+	def __init__(self, manage, host, port):
+		CentralConnectionBase.__init__(self, socket.socket())
+
+		self.manage = manage
+		self.nicks = [player.name for player in manage.players]
+		self.client_id = None
+		self.users = {}
+
+		self.connect((host, port))
+
+	def handle_version(self, cmd, args):
+		CentralConnectionBase.handle_version(self, cmd, args)
+		self.push_cmd('NICK', serialize(self.nicks, 'list', 'str'))
+		self.handler = self.handle_id
+
+	def handle_id(self, cmd, args):
+		assert cmd == 'ID'
+		self.client_id = deserialize(args, 'int')
+		self.handler = self.handle_nicks
+
+	def handle_nicks(self, cmd, args):
+		assert cmd == 'NICKS'
+		users = deserialize(args, 'list', 'tuple', ['int', 'str', ['list', 'str']])
+		for client_id, ip_addr, nicks in users:
+			player = NetworkPlayer(client_id, ip_addr, nicks)
+			self.users[client_id] = player
+			self.manage.networkplayers.append(player)
+		self.handler = self.handle_general
+
+	def handle_general(self, cmd, args):
+		if cmd == 'MSG':
+			client_id, msg = deserialize(args, 'tuple', ['int', 'str'])
+		elif cmd == 'JOIN':
+			client_id, ip_addr, nicks = deserialize(args, 'tuple', ['int', 'str', ['list', 'str']])
+			player = NetworkPlayer(client_id, ip_addr, nicks)
+			self.users[client_id] = player
+			self.manage.networkplayers.append(player)
+		elif cmd == 'QUIT':
+			client_id = deserialize(args, 'int')
+			del self.users[client_id]
+			# XXX: ugh...
+			self.manage.networkplayers[:] = [player for player in self.manage.networkplayers if player.client_id != client_id]
+		else:
+			self.die('Unknown command: ' + repr(cmd))
+
+	def handle_close(self):
+		self.close()
+
 class Manager:
 	def __init__(self, screen):
 
@@ -55,6 +119,7 @@ class Manager:
 
 		self.server = Server("0.0.0.0", 23, [Player("test1", [], [], 100), Player("test2", [], [], 100), Player("test3", [], [], 100), Player("test4", [], [], 100)])
 
+		self.networkplayers = []
 		self.selected_networkplayers = []
 		self.received_challenges = []
 		self.received_challenges.append(Challenge([Player("test1", [], [], 100), Player("test2", [], [], 100)], "new_map.txt"))
@@ -124,7 +189,7 @@ class Manager:
 		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ')
 		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
 
-		self.ip_input.value = "xadir.net"
+		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
 
 		self.text_fields = []
@@ -333,7 +398,6 @@ class Manager:
 		self.network_buttons.append(self.host_btn)
 
 	def show_network_panel(self):
-		print "Showing network panel"
 		self.network_con.clear()
 		
 		texts = pygame.Surface((260,65))
@@ -375,7 +439,6 @@ class Manager:
 		rect.x = self.network_con.x + 10
 		rect.y = self.network_con.y + 10
 		text_sprite.rect = rect
-		print texts, texts.get_rect()
 		self.network_con.spritegroup.add(text_sprite)
 
 		self.network_buttons = []
@@ -403,7 +466,7 @@ class Manager:
 		
 		self.network_playerlist_buttons = []
 		btn_y = 0
-		for p in self.server.playerlist:
+		for p in self.networkplayers:
 			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y - 150 + btn_y, 100, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, (self.select_networkplayer, p), True, False, True)
 			btn_y += 30
 			self.network_con.spritegroup.add(btn)
@@ -1127,21 +1190,24 @@ class Manager:
 		start_game(self.screen, mapsel.mapname, teams)
 
 	def connect_server(self, none):
-		log_stats('join')
-		if self.player == None:
-			print "Create player before connecting"
-		else:
-			join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
+		#log_stats('join')
+		#if self.player == None:
+		#	print "Create player before connecting"
+		#else:
+		#	join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
 		self.network_connected = True
-		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.server.playerlist)
+		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
 		self.selectdialogs.add(self.network_playerlist_all)
 		self.selectdialogs.add(self.network_playerlist_selected)
 		self.update_text_fields()
 		self.show_network_panel()
 		self.network_con.draw()
+		self.lounge = LoungeConnection(self, self.ip_input.value, int(self.port_input.value))
 
 	def disconnect_server(self, none):
+		self.lounge.handle_close()
+		self.lounge = None
 		self.network_connected = False
 		self.server = None
 		self.selectdialogs.remove(self.network_playerlist_all)
@@ -1149,7 +1215,7 @@ class Manager:
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 		self.update_text_fields()
-		self.ip_input.value = "xadir.net"
+		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
 		self.show_connect_panel()
 
@@ -1425,6 +1491,7 @@ class Manager:
 				elif event.type == pygame.QUIT:
 					sys.exit()
 
+			asyncore.loop(count=1, timeout=0.0)
 			time.sleep(0.05)
 
 if __name__ == "__main__":
