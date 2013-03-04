@@ -26,7 +26,7 @@ import socket
 import server
 from server import CentralConnectionBase
 
-DEFAULT_CENTRAL_HOST = '94.23.194.22'
+DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -182,12 +182,14 @@ class Manager:
 		self.network_ready_btn = FuncButton(self.network_con, 90, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
 		self.network_challenge_btn = FuncButton(self.network_con, 170, 390, 70, 30, [["Challenge", None]], None, ICON_FONTSIZE, self.screen, 1, (self.send_challenge, None), True, False, True)
 
-		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ')
+		self.ezfont = pygame.font.Font(FONT, int(24*FONTSCALE))
 
-		self.player_input_btn = FuncButton(self.local_con, 10, 10, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 0), True, False, True)
+		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ', font = self.ezfont)
 
-		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ')
-		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
+		self.player_input_btn = FuncButton(self.local_con, 10, 10, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 0), True, False, True)
+
+		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ', font = self.ezfont)
+		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ', font = self.ezfont)
 
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
@@ -199,8 +201,8 @@ class Manager:
 		self.text_fields.append([False, self.port_input])
 		
 
-		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
-		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
+		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
+		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
 
 
 		self.connect_buttons = []
