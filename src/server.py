@@ -18,13 +18,9 @@ class SimpleServer(asyncore.dispatcher):
 		client = self.clientclass(self, sock)
 		self.clients.append(client)
 
-class XadirServerClient(asynchat.async_chat):
-	def __init__(self, serv, sock):
+class CentralConnectionBase(asynchat.async_chat):
+	def __init__(self, sock):
 		asynchat.async_chat.__init__(self, sock)
-		self.serv = serv
-
-		self.client_id = self.serv.client_id
-		self.serv.client_id += 1
 
 		self.line = ''
 		self.set_terminator('\n')
@@ -45,12 +41,6 @@ class XadirServerClient(asynchat.async_chat):
 	def push_cmd(self, cmd, args):
 		self.push('%s %s\n' % (cmd, binascii.hexlify(args)))
 
-	def bcast_cmd(self, cmd, args, not_to_self = True):
-		for client in self.serv.clients:
-			if client == self and not_to_self:
-				continue
-			client.push_cmd(cmd, args)
-
 	def die(self, msg):
 		self.push_cmd('ERROR', serialize(msg, 'str'))
 		self.handle_close()
@@ -62,6 +52,25 @@ class XadirServerClient(asynchat.async_chat):
 		assert cmd == 'VERSION'
 		version = deserialize(args, 'str')
 		assert version == VERSION
+
+class XadirServerClient(CentralConnectionBase):
+	def __init__(self, serv, sock):
+		CentralConnectionBase.__init__(self, sock)
+		self.serv = serv
+
+		self.client_id = self.serv.client_id
+		self.serv.client_id += 1
+
+		self.handle_connect()
+
+	def bcast_cmd(self, cmd, args, not_to_self = True):
+		for client in self.serv.clients:
+			if client == self and not_to_self:
+				continue
+			client.push_cmd(cmd, args)
+
+	def handle_version(self, cmd, args):
+		CentralConnectionBase.handle_version(self, cmd, args)
 		self.handler = self.handle_nick
 
 	def handle_nick(self, cmd, args):
