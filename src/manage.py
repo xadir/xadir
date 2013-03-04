@@ -107,6 +107,7 @@ class LoungeConnection(CentralConnectionBase):
 			self.die('Unknown command: ' + repr(cmd))
 
 	def handle_close(self):
+		self.manage.handle_disconnect()
 		self.close()
 
 class Manager:
@@ -1208,8 +1209,12 @@ class Manager:
 		self.lounge = LoungeConnection(self, self.ip_input.value, int(self.port_input.value))
 
 	def disconnect_server(self, none):
-		self.lounge.handle_close()
+		self.lounge.close()
+		self.handle_disconnect()
+
+	def handle_disconnect(self):
 		self.lounge = None
+		self.networkplayers[:] = []
 		self.network_connected = False
 		self.server = None
 		self.selectdialogs.remove(self.network_playerlist_all)
