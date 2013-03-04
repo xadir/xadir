@@ -1218,6 +1218,7 @@ class Manager:
 		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
+		self.network_messages.scroll.knob.rel_pos = self.network_messages.scroll.leeway
 		self.selectdialogs.add(self.network_playerlist_all)
 		self.selectdialogs.add(self.network_playerlist_selected)
 		self.selectdialogs.add(self.network_messages)
