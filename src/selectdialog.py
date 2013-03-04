@@ -175,10 +175,11 @@ class TextList(StateTrackingSprite, UIObject):
 
 	def get_state(self):
 		index, offset = divmod(self.scroll.value[1], self.ratios[0])
-		return self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
+		return len(self.items), self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
 
 	def redraw(self):
-		items, knob_y, base, offset, sel = self.state
+		self.scroll.range = (0, clamp_above(len(self.items) * self.ratios[0] - self.height / self.ratios[1], 0))
+		total, items, knob_y, base, offset, sel = self.state
 		self.image.fill((255, 255, 255))
 		y = -offset
 		for i, item in enumerate(items):
