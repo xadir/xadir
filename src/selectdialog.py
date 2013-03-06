@@ -33,18 +33,18 @@ class Window:
 		tinylist = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 		biglist = [str(i) + s for i in range(10) for s in tinylist]
 		self.elems = [
-			TextList(root, (10, 10), (100, 200), biglist),
-			TextList(root, (120, 60), (100, 100), biglist),
-			TextList(root, (230, 10), (100, 200), tinylist),
-			TextList(root, (10, 220), (100, 200), biglist, tickless = False),
-			TextList(root, (120, 270), (100, 100), biglist, tickless = False),
-			TextList(root, (230, 220), (100, 200), tinylist, tickless = False),
-			TextList(root, (350, 10), (100, 200), biglist, multi = True),
-			TextList(root, (460, 60), (100, 100), biglist, multi = True),
-			TextList(root, (570, 10), (100, 200), tinylist, multi = True),
-			TextList(root, (350, 220), (100, 200), biglist, tickless = False, multi = True),
-			TextList(root, (460, 270), (100, 100), biglist, tickless = False, multi = True),
-			TextList(root, (570, 220), (100, 200), tinylist, tickless = False, multi = True),
+			TextList(root, (20, 20), (100, 200), biglist),
+			TextList(root, (140, 20), (100, 90), biglist),
+			TextList(root, (140, 130), (100, 90), tinylist),
+			TextList(root, (20, 240), (100, 200), biglist, tickless = False),
+			TextList(root, (140, 240), (100, 90), biglist, tickless = False),
+			TextList(root, (140, 350), (100, 90), tinylist, tickless = False),
+			TextList(root, (280, 20), (100, 200), biglist, multi = True),
+			TextList(root, (400, 20), (100, 90), biglist, multi = True),
+			TextList(root, (400, 130), (100, 90), tinylist, multi = True),
+			TextList(root, (280, 240), (100, 200), biglist, tickless = False, multi = True),
+			TextList(root, (400, 240), (100, 90), biglist, tickless = False, multi = True),
+			TextList(root, (400, 350), (100, 90), tinylist, tickless = False, multi = True),
 		]
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
