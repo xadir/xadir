@@ -113,10 +113,13 @@ class Draggable(Button):
 class ScrollBar(UIObject):
 	def __init__(self, parent, rel_pos, size, knob_size, final_size):
 		UIObject.__init__(self, parent, rel_pos, size)
-		self.knob = Draggable(self, (0, 0), knob_size)
+		self.knob = Draggable(self, (0, 0), knob_size, moved = self._knob_moved)
 		self.leeway = tuple(self.size[i] - self.knob.size[i] for i in range(2))
 		self.range = final_size
 		self._value = (0, 0)
+
+	def _knob_moved(self, knob, event):
+		self._value = scale_pos(self.knob.rel_pos, self.leeway, self.range)
 
 	def _set_value(self, value):
 		value = clamp_pos(value, self.range)
@@ -124,10 +127,6 @@ class ScrollBar(UIObject):
 		self.knob.rel_pos = scale_pos(value, self.range, self.leeway)
 
 	def _get_value(self):
-		# Return self._value if it still matches the position of the knob, otherwise recalculate it
-		value = scale_pos(self._value, self.range, self.leeway)
-		if value != self.knob.rel_pos:
-			self._value = scale_pos(self.knob.rel_pos, self.leeway, self.range)
 		return self._value
 
 	value = property(_get_value, _set_value)
