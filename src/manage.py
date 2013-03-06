@@ -167,8 +167,8 @@ class Manager:
 		self.network_playerlist_selected = None
 		self.network_messages = None
 
-		self.selectdialogs = pygame.sprite.LayeredUpdates()
-		self.selectdialogs.add(self.local_playerlist)
+		self.sprites = pygame.sprite.LayeredUpdates()
+		self.sprites.add(self.local_playerlist)
 
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
@@ -177,7 +177,6 @@ class Manager:
 		self.manager_char_buttons = []
 		self.manager_texts = []
 		self.local_con_buttons = []
-		self.text_fields = []
 		self.network_buttons = []
 		self.network_playerlist_buttons = []
 
@@ -190,30 +189,17 @@ class Manager:
 
 		self.ezfont = pygame.font.Font(FONT, int(24*FONTSCALE))
 
-		self.player_input = eztext.Input(x=self.local_con.x + 15, y=self.local_con.y + 12, maxlength=15, color=COLOR_FONT, prompt='Player name: ', font = self.ezfont)
+		self.player_input = eztext.Input(self.local_con, (10, 10), (250, 25), maxlength=15, color=COLOR_FONT, prompt='Player name: ', font = self.ezfont)
 
-		self.player_input_btn = FuncButton(self.local_con, 10, 10, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 0), True, False, True)
-
-		self.ip_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 13, maxlength=15, color=COLOR_FONT, prompt='IP: ', font = self.ezfont)
-		self.port_input = eztext.Input(x=self.network_con.x + 15, y=self.network_con.y + 58, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ', font = self.ezfont)
+		self.ip_input = eztext.Input(self.network_con, (10, 10), (250, 25), maxlength=20, color=COLOR_FONT, prompt='IP: ', font = self.ezfont)
+		self.port_input = eztext.Input(self.network_con, (10, 45), (250, 25), maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ', font = self.ezfont)
 
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
 
-		self.message_input = eztext.Input(x=self.network_con.x + 10, y=self.network_con.y + 370, maxlength=25, color=COLOR_FONT, prompt='Message: ', font = pygame.font.Font(FONT, int(16*FONTSCALE)), handle_enter = self.send_message)
-		self.message_btn = FuncButton(self.network_con, 10, 370, 248, 20, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
+		self.message_input = eztext.Input(self.network_con, (10, 370), (250, 16), maxlength=25, color=COLOR_FONT, prompt='Message: ', font = pygame.font.Font(FONT, int(16*FONTSCALE)), handle_enter = self.send_message)
 
-		self.text_fields = []
-
-		self.text_fields.append([False, self.player_input])
-		self.text_fields.append([False, self.ip_input])
-		self.text_fields.append([False, self.port_input])
-		self.text_fields.append([False, self.message_input])
-		
-
-		self.ip_btn = FuncButton(self.network_con, 10, 10, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 1), True, False, True)
-		self.port_btn = FuncButton(self.network_con, 10, 55, 248, 25, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, 2), True, False, True)
-
+		self.sprites.add([self.player_input, self.ip_input, self.port_input, self.message_input])
 
 		self.connect_buttons = []
 		self.connect_buttons.append(self.network_play_btn)
@@ -238,7 +224,6 @@ class Manager:
 		self.local_con_buttons.append(self.addplayer_btn)
 
 		self.local_con.spritegroup.add(self.addplayer_btn)
-		self.local_con.spritegroup.add(self.player_input_btn)
 
 #		self.update_char_panels()
 		self.update_store()
@@ -321,33 +306,12 @@ class Manager:
 		self.text_con.spritegroup.add(text_sprite)
 
 	def update_text_fields(self):
-		### Text Input fields
-		self.textfield_con.clear()
-		self.text_fields = []
-		self.text_field_buttons = []
-
-		self.text_fields.append([False, self.player_input])
-
-		self.text_field_buttons.append(self.player_input_btn)
-		self.textfield_con.spritegroup.add(self.player_input_btn)
-#		self.textfield_con.draw(True)
 		if not self.network_connected:
-			self.text_fields.append([False, self.ip_input])
-			self.text_fields.append([False, self.port_input])
-
-			self.text_field_buttons.append(self.ip_btn)
-			self.text_field_buttons.append(self.port_btn)
-			self.textfield_con.spritegroup.add(self.ip_btn)
-			self.textfield_con.spritegroup.add(self.port_btn)
-#			self.network_con.draw(True)
+			self.sprites.add([self.ip_input, self.port_input])
+			self.sprites.remove(self.message_input)
 		else:
-			self.text_fields.append([False, self.message_input])
-			self.text_field_buttons.append(self.message_btn)
-			self.textfield_con.spritegroup.add(self.message_btn)
-		self.textfield_con.draw(True)
-		#for tf in self.text_fields:
-		#	tf[1].draw(self.screen)
-
+			self.sprites.remove([self.ip_input, self.port_input])
+			self.sprites.add(self.message_input)
 
 	def update_inventories(self):
 		print self.inventory, self.char_inventory
@@ -383,7 +347,6 @@ class Manager:
 		self.local_con_buttons.append(addplayer_btn)
 
 		self.local_con.spritegroup.add(addplayer_btn)
-		self.local_con.spritegroup.add(self.player_input_btn)
 
 		btn_y = 80
 		for p in self.players:
@@ -405,10 +368,6 @@ class Manager:
 		print "Showing connecting panel"
 		self.network_buttons = []
 		self.network_con.clear()
-		self.network_con.spritegroup.add(self.ip_btn)
-		self.network_buttons.append(self.ip_btn)
-		self.network_con.spritegroup.add(self.port_btn)
-		self.network_buttons.append(self.port_btn)
 		self.network_con.spritegroup.add(self.network_play_btn)
 		self.network_buttons.append(self.network_play_btn)
 		self.network_con.spritegroup.add(self.network_connect_btn)
@@ -1219,9 +1178,9 @@ class Manager:
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
 		self.network_messages.scroll.knob.rel_pos = self.network_messages.scroll.leeway
-		self.selectdialogs.add(self.network_playerlist_all)
-		self.selectdialogs.add(self.network_playerlist_selected)
-		self.selectdialogs.add(self.network_messages)
+		self.sprites.add(self.network_playerlist_all)
+		self.sprites.add(self.network_playerlist_selected)
+		self.sprites.add(self.network_messages)
 		self.update_text_fields()
 		self.show_network_panel()
 		self.network_con.draw()
@@ -1236,9 +1195,9 @@ class Manager:
 		self.networkplayers[:] = []
 		self.network_connected = False
 		self.server = None
-		self.selectdialogs.remove(self.network_playerlist_all)
-		self.selectdialogs.remove(self.network_playerlist_selected)
-		self.selectdialogs.remove(self.network_messages)
+		self.sprites.remove(self.network_playerlist_all)
+		self.sprites.remove(self.network_playerlist_selected)
+		self.sprites.remove(self.network_messages)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 		self.network_messages = None
@@ -1373,9 +1332,6 @@ class Manager:
 
 	def select_field(self, index):
 		print "Clicked on field button"
-		for t in self.text_fields:
-			t[0] = False
-		self.text_fields[index][0] = True
 
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
@@ -1398,11 +1354,6 @@ class Manager:
 				f(b.function[1])
 				return True
 		for b in self.local_con_buttons:
-			if b.contains(*event.pos):
-				f = b.function[0]
-				f(b.function[1])
-				return True
-		for b in self.text_field_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
@@ -1459,19 +1410,16 @@ class Manager:
 						f(b.function[1])
 					break
 
-	def draw_selectdialogs(self):
-		self.selectdialogs.update()
-		#self.selectdialogs.clear(self.screen, self.background)
+	def draw(self):
+		self.sprites.update()
+		#self.sprites.clear(self.screen, self.background)
 		# Update layers
-		self.selectdialogs._spritelist.sort(key = lambda sprite: sprite._layer)
-		self.selectdialogs.draw(self.screen)
+		self.sprites._spritelist.sort(key = lambda sprite: sprite._layer)
+		self.sprites.draw(self.screen)
 		#pygame.display.flip()
 
 	def loop(self):
 		change_sound(0, load_sound('menu-old.ogg'), BGM_FADE_MS)
-
-		for tf in self.text_fields:
-			tf[1].draw(self.screen)
 
 		while 1:
 			self.screen.fill((127, 127, 127))
@@ -1488,17 +1436,15 @@ class Manager:
 			self.char_inventory_con.draw()
 			self.store_con.draw()
 			self.item_con.draw()
-			for tf in self.text_fields:
-				tf[1].draw(self.screen)
-			self.draw_selectdialogs()
+			self.draw()
 			pygame.display.flip()
 
 
 			events = pygame.event.get()
-			for tf in self.text_fields:
-				if tf[0]:
-					tf[1].update(events)
 			for event in events:
+				for sprite in self.sprites:
+					if hasattr(sprite, 'event'):
+						sprite.event(event)
 				self.local_playerlist.event(event)
 				if self.network_playerlist_all != None:
 					self.network_playerlist_all.event(event)

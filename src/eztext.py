@@ -1,13 +1,19 @@
 # input lib
 from pygame.locals import *
 import pygame, string
+from resources import *
+from tiles import *
+from UI import *
 from config import FONT, FONTSCALE
 
 DEFAULT_ALLOWED = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~ '
 
-class Input:
-	def __init__(self, x = 0, y = 0, font = None, color = (0, 0, 0), restricted = DEFAULT_ALLOWED, maxlength = None, prompt = '', handle_enter = None):
-		self.pos = (x, y)
+class Input(StateTrackingSprite, UIObject):
+	def __init__(self, parent, rel_pos, size, font = None, color = (0, 0, 0), restricted = DEFAULT_ALLOWED, maxlength = None, prompt = '', handle_enter = None):
+		StateTrackingSprite.__init__(self)
+		UIObject.__init__(self, parent, rel_pos, size)
+
+		self.image = pygame.Surface(self.size)
 		self.font = font or pygame.font.Font(FONT, int(32*FONTSCALE))
 		self.color = color
 		self.restricted = restricted
@@ -16,20 +22,28 @@ class Input:
 		self.value = ''
 		self._handle_enter = handle_enter
 
-	def draw(self, surface):
-		text = self.font.render(self.prompt + self.value, 1, self.color)
-		surface.blit(text, self.pos)
+	rect = property(lambda self: pygame.Rect(self.pos, self.image.get_size()))
+
+	def get_state(self):
+		return self.font, self.color, self.prompt, self.value
+
+	def redraw(self):
+		font, color, prompt, value = self.state
+		text = font.render(prompt + value, True, color)
+		self.image.fill((255, 255, 255))
+		self.image.blit(text, (0, 0))
 
 	def handle_enter(self):
 		if self._handle_enter:
 			self._handle_enter()
 
-	def update(self, events):
-		for event in events:
-			self.event(event)
-
 	def event(self, event):
-		if event.type == KEYDOWN:
+		if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+			if self.contains(*event.pos):
+				grab_inputfocus(self)
+			else:
+				ungrab_inputfocus(self)
+		if event.type == KEYDOWN and get_inputfocus() == self:
 			if event.key == K_BACKSPACE:
 				self.value = self.value[:-1]
 			elif event.key == K_RETURN:
