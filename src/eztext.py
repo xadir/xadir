@@ -17,14 +17,6 @@ class Input:
 		self.value = ''
 		self._handle_enter = handle_enter
 
-	def set_pos(self, x, y):
-		"""Set the position to x, y"""
-		self.pos = (x, y)
-
-	def set_font(self, font):
-		"""Set the font for the input"""
-		self.font = font
-
 	def draw(self, surface):
 		"""Draw the text input to a surface"""
 		text = self.font.render(self.prompt + self.value, 1, self.color)
