@@ -66,6 +66,7 @@ allowed = {
 	'bool':      (bool,      lambda kind, value: str(int(value)), lambda kind, value: bool(int(value))),
 	'int':       (int,       serialize_basic,                     deserialize_basic),
 	'str':       (str,       serialize_basic,                     deserialize_basic),
+	'unicode':   (unicode,   serialize_basic,                     deserialize_basic),
 	'float':     (float,     serialize_basic,                     deserialize_basic),
 	'tuple':     (tuple,     serialize_iter,                      deserialize_iter),
 	'list':      (list,      serialize_iter,                      deserialize_iter),

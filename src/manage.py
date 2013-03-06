@@ -73,7 +73,7 @@ class LoungeConnection(CentralConnectionBase):
 
 	def handle_version(self, cmd, args):
 		CentralConnectionBase.handle_version(self, cmd, args)
-		self.push_cmd('NICK', serialize(self.nicks, 'list', 'str'))
+		self.push_cmd('NICK', serialize(self.nicks, 'list', 'unicode'))
 		self.handler = self.handle_id
 
 	def handle_id(self, cmd, args):
@@ -83,7 +83,7 @@ class LoungeConnection(CentralConnectionBase):
 
 	def handle_nicks(self, cmd, args):
 		assert cmd == 'NICKS'
-		users = deserialize(args, 'list', 'tuple', ['int', 'str', ['list', 'str']])
+		users = deserialize(args, 'list', 'tuple', ['int', 'str', ['list', 'unicode']])
 		for client_id, ip_addr, nicks in users:
 			player = NetworkPlayer(client_id, ip_addr, nicks)
 			self.users[client_id] = player
@@ -92,10 +92,10 @@ class LoungeConnection(CentralConnectionBase):
 
 	def handle_general(self, cmd, args):
 		if cmd == 'MSG':
-			client_id, msg = deserialize(args, 'tuple', ['int', 'str'])
+			client_id, msg = deserialize(args, 'tuple', ['int', 'unicode'])
 			self.manage.network_messages.items.append('%s: %s' % (self.users[client_id].name, msg))
 		elif cmd == 'JOIN':
-			client_id, ip_addr, nicks = deserialize(args, 'tuple', ['int', 'str', ['list', 'str']])
+			client_id, ip_addr, nicks = deserialize(args, 'tuple', ['int', 'str', ['list', 'unicode']])
 			player = NetworkPlayer(client_id, ip_addr, nicks)
 			self.users[client_id] = player
 			self.manage.networkplayers.append(player)
@@ -108,7 +108,7 @@ class LoungeConnection(CentralConnectionBase):
 			self.die('Unknown command: ' + repr(cmd))
 
 	def send_message(self, msg):
-		self.push_cmd('MSG', serialize(msg, 'str'))
+		self.push_cmd('MSG', serialize(msg, 'unicode'))
 
 	def handle_close(self):
 		self.manage.handle_disconnect()

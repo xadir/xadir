@@ -2,7 +2,7 @@ import os
 
 TRACK_USAGE = False
 
-PROTOCOL_VERSION = '0.4'
+PROTOCOL_VERSION = '0.5'
 
 BASEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if BASEDIR.endswith('.zip'): # Because py2exe, that's why (and deadlines)
