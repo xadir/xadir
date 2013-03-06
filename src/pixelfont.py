@@ -61,3 +61,17 @@ def draw_speech_bubble(text):
 	bubble = pygame.transform.scale(bubble, (SCALE * rect.width, SCALE * rect.height))
 	return bubble
 
+class PixelFont:
+	def __init__(self, scale):
+		self.scale = scale
+
+	def render(self, text, antialias, color, background = None):
+		# XXX: white does not work as the color, background does not work at all
+		return draw_pixel_text(text, self.scale, color)
+
+	def size(self, text):
+		return self.render(text, False, (0, 0, 0)).get_rect().size
+
+	def get_linesize(self):
+		return self.scale * 10
+
