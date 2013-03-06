@@ -108,9 +108,10 @@ class Button(UIObject):
 			self._clicked(self, ev)
 
 class Draggable(Button):
-	def __init__(self, parent, rel_pos, size, clicked = None):
+	def __init__(self, parent, rel_pos, size, clicked = None, moved = None):
 		Button.__init__(self, parent, rel_pos, size, clicked)
 		assert parent.size[0] >= size[0] and parent.size[1] >= size[1]
+		self._moved = moved
 
 	def event(self, ev):
 		Button.event(self, ev)
@@ -119,6 +120,11 @@ class Draggable(Button):
 				x, y = self.parent.translate(*ev.pos)
 				pos = x - self.down[0], y - self.down[1]
 				self.rel_pos = clamp_elem(pos, self.size, self.parent.size)
+				self.moved(ev)
+
+	def moved(self, ev):
+		if self._moved:
+			self._moved(self, ev)
 
 class ScrollBar(UIObject):
 	def __init__(self, parent, rel_pos, size, knob_size, final_size):
