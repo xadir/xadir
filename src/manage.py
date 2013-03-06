@@ -1311,8 +1311,9 @@ class Manager:
 			#self.update_local_playerlist()
 
 	def select_player(self, namelist, event):
-		if namelist.sel is not None:
-			player = namelist.items[namelist.sel]
+		sel = namelist.get_selected()
+		if sel is not None:
+			player = namelist.items[sel]
 			self.manage_player(player)
 		else:
 			# "Unmanage" player

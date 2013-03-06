@@ -39,6 +39,12 @@ class Window:
 			TextList(root, (10, 220), (100, 200), biglist, tickless = False),
 			TextList(root, (120, 270), (100, 100), biglist, tickless = False),
 			TextList(root, (230, 220), (100, 200), tinylist, tickless = False),
+			TextList(root, (350, 10), (100, 200), biglist, multi = True),
+			TextList(root, (460, 60), (100, 100), biglist, multi = True),
+			TextList(root, (570, 10), (100, 200), tinylist, multi = True),
+			TextList(root, (350, 220), (100, 200), biglist, tickless = False, multi = True),
+			TextList(root, (460, 270), (100, 100), biglist, tickless = False, multi = True),
+			TextList(root, (570, 220), (100, 200), tinylist, tickless = False, multi = True),
 		]
 
 		self.sprites = pygame.sprite.LayeredDirty(_time_threshold = 1000.0)
@@ -130,7 +136,7 @@ class ScrollBar(UIObject):
 		self.knob.event(ev)
 
 class TextList(StateTrackingSprite, UIObject):
-	def __init__(self, parent, rel_pos, size, items, tickless = True, selected = None, format_item = None):
+	def __init__(self, parent, rel_pos, size, items, tickless = True, selected = None, format_item = None, multi = False):
 		StateTrackingSprite.__init__(self)
 		UIObject.__init__(self, parent, rel_pos, size)
 
@@ -147,7 +153,8 @@ class TextList(StateTrackingSprite, UIObject):
 			self.ratios.reverse()
 
 		self.items = items
-		self.sel = None
+		self.multi = multi
+		self.sel = set()
 
 		bar_width, bar_height = 10, 20
 		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), self._get_target_size())
@@ -167,7 +174,12 @@ class TextList(StateTrackingSprite, UIObject):
 			if self.contains(*ev.pos) and not self.scroll.contains(*ev.pos):
 				pos = self.scroll.value[1] * self.ratios[1] + self.translate(*ev.pos)[1]
 				index, offset = divmod(pos, self.linesize)
-				self.sel = index if index != self.sel else None
+				if index in self.sel:
+					self.sel.remove(index)
+				else:
+					if not self.multi:
+						self.sel.clear()
+					self.sel.add(index)
 				self.selected(ev)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
 			if self.contains(*ev.pos):
@@ -178,7 +190,7 @@ class TextList(StateTrackingSprite, UIObject):
 
 	def get_state(self):
 		index, offset = divmod(self.scroll.value[1], self.ratios[0])
-		return len(self.items), self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
+		return len(self.items), self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel.copy()
 
 	def redraw(self):
 		self.scroll.range = self._get_target_size()
@@ -186,7 +198,7 @@ class TextList(StateTrackingSprite, UIObject):
 		self.image.fill((255, 255, 255))
 		y = -offset
 		for i, item in enumerate(items):
-			if base + i == sel:
+			if base + i in sel:
 				self.image.fill((191, 191, 191), (0, max(y, 0), self.width, self.linesize + min(y, 0)))
 			text = self.font.render(self.format_item(item), True, (0, 0, 0))
 			self.image.blit(text, (0, y))
@@ -200,6 +212,13 @@ class TextList(StateTrackingSprite, UIObject):
 	def selected(self, ev):
 		if self._selected:
 			self._selected(self, ev)
+
+	def get_selected(self):
+		assert not self.multi
+		sel = None
+		if self.sel:
+			(sel, ) = self.sel
+		return sel
 
 if __name__ == "__main__":
 	screen = init_pygame()
