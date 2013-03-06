@@ -146,17 +146,19 @@ class TextList(StateTrackingSprite, UIObject):
 		if self.tickless:
 			self.ratios.reverse()
 
-		target_size = len(items) * self.ratios[0] - self.height / self.ratios[1]
-
-		bar_width, bar_height = 10, 20
-		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), (0, clamp_above(target_size, 0)))
-
 		self.items = items
 		self.sel = None
+
+		bar_width, bar_height = 10, 20
+		self.scroll = ScrollBar(self, (self.width - bar_width, 0), (bar_width, self.height), (bar_width, bar_height), self._get_target_size())
 
 		self._selected = selected
 		if format_item:
 			self.format_item = format_item
+
+	def _get_target_size(self):
+		target_size = len(self.items) * self.ratios[0] - self.height / self.ratios[1]
+		return (0, clamp_above(target_size, 0))
 
 	def event(self, ev):
 		self.scroll.event(ev)
@@ -179,7 +181,7 @@ class TextList(StateTrackingSprite, UIObject):
 		return len(self.items), self.items[index:index+self.linecount], self.scroll.knob.rel_y, index, offset, self.sel
 
 	def redraw(self):
-		self.scroll.range = (0, clamp_above(len(self.items) * self.ratios[0] - self.height / self.ratios[1], 0))
+		self.scroll.range = self._get_target_size()
 		total, items, knob_y, base, offset, sel = self.state
 		self.image.fill((255, 255, 255))
 		y = -offset
