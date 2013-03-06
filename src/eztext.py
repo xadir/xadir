@@ -3,34 +3,20 @@ from pygame.locals import *
 import pygame, string
 from config import FONT, FONTSCALE
 
-class ConfigError(KeyError): pass
-
-class Config:
-	""" A utility for configuration """
-	def __init__(self, options, *look_for):
-		assertions = []
-		for key in look_for:
-			if key[0] in options.keys(): setattr(self, key[0], options[key[0]])
-			else: setattr(self, key[0], key[1])
-			assertions.append(key[0])
-		for key in options.keys():
-			if key not in assertions: raise ConfigError(key+' not expected as option')
+DEFAULT_ALLOWED = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~ '
 
 class Input:
 	""" A text input for pygame apps """
-	def __init__(self, **options):
-		""" Options: x, y, font, color, restricted, maxlength, prompt """
-		self.options = Config(options, ['x', 0], ['y', 0], ['font', pygame.font.Font(FONT, int(32*FONTSCALE))],
-							  ['color', (0,0,0)], ['restricted', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~ '],
-							  ['maxlength', -1], ['prompt', ''], ['handle_enter', None])
-		self.x = self.options.x; self.y = self.options.y
-		self.font = self.options.font
-		self.color = self.options.color
-		self.restricted = self.options.restricted
-		self.maxlength = self.options.maxlength
-		self.prompt = self.options.prompt; self.value = ''
-		self.shifted = False
-		self._handle_enter = self.options.handle_enter
+	def __init__(self, x = 0, y = 0, font = None, color = (0, 0, 0), restricted = DEFAULT_ALLOWED, maxlength = -1, prompt = '', handle_enter = None):
+		self.x = x
+		self.y = y
+		self.font = font or pygame.font.Font(FONT, int(32*FONTSCALE))
+		self.color = color
+		self.restricted = restricted
+		self.maxlength = maxlength
+		self.prompt = prompt
+		self.value = ''
+		self._handle_enter = handle_enter
 
 	def set_pos(self, x, y):
 		""" Set the position to x, y """
