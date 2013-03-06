@@ -1,33 +1,11 @@
 import os, sys, time
 import pygame
 from pygame.locals import *
+from helpers import *
 from resources import *
 from UI import *
 
 from tiles import *
-
-# Misleading names, since they are inclusize
-clamp_below = lambda v, maxv: min(v, maxv)
-clamp_above = lambda v, minv: max(v, minv)
-
-def clamp(v, minv, maxv):
-	"""Clamp the value v between minv and maxv, inclusive"""
-	assert minv <= maxv, 'Invalid clamping constraint'
-	return min(max(v, minv), maxv)
-	# minv <= v <= maxv
-
-def clamp_pos((x, y), (width, height)):
-	"""Clamp the position (x, y) inside an element of size (width, height)"""
-	# The position does not have a size, so it can reach the maximum size
-	assert 0 <= width and 0 <= height, 'Invalid clamping constraint'
-	return (clamp(x, 0, width), clamp(y, 0, height))
-	# 0 <= x <= width and 0 <= y <= height
-
-def clamp_elem((x, y), (width, height), (area_width, area_height)):
-	"""Clamp the element of position (x, y) and of size (width, height) inside an element of size (area_width, area_height)"""
-	assert 0 <= width <= area_width and 0 <= height <= area_height, 'Invalid clamping constraint'
-	return clamp_pos((x, y), (area_width - width, area_height - height))
-	# 0 <= x + width <= area_width and 0 <= y + height <= area_height
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"

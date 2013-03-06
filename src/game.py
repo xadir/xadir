@@ -4,6 +4,7 @@ import math
 import random
 import Image
 from pygame.locals import *
+from helpers import *
 from resources import *
 from grid import *
 from algo import *
@@ -34,32 +35,6 @@ if not pygame.font:
 	print "Warning: Fonts not enabled"
 if not pygame.mixer:
 	print "Warning: Audio not enabled"
-
-def get_distance_2(pos1, pos2):
-	"""Get squared euclidean distance"""
-	return (pos2[0] - pos1[0])**2 + (pos2[1] - pos1[1])**2
-
-def div_ceil(dividend, divisor):
-	"""Integer division, but with result rounded up instead"""
-	return (dividend - 1) / divisor + 1
-
-def sign(value):
-	return cmp(value, 0)
-
-# XXX: Figure out how to do scaling better (output is new_max only if input is old_max)
-def scale_floor(value, old_max, new_max):
-	"""Scaling function where the result is new_max only when the input is old_max"""
-	assert value >= 0
-	assert value <= old_max
-	return new_max * value / old_max
-
-def scale_ceil(value, old_max, new_max):
-	"""Scaling function where the result is 0 only when the input is 0"""
-	assert value >= 0
-	assert value <= old_max
-	return div_ceil(new_max * value, old_max)
-
-scale = scale_ceil
 
 def get_hp_bar_color(total, value):
 	"""Linearly generates colors from red to yellow to green"""
