@@ -15,15 +15,22 @@ def scale_floor(value, old_max, new_max):
 	"""Scaling function where the result is new_max only when the input is old_max"""
 	assert value >= 0
 	assert value <= old_max
+	if old_max == 0:
+		return 0
 	return new_max * value / old_max
 
 def scale_ceil(value, old_max, new_max):
 	"""Scaling function where the result is 0 only when the input is 0"""
 	assert value >= 0
 	assert value <= old_max
+	if old_max == 0:
+		return 0
 	return div_ceil(new_max * value, old_max)
 
 scale = scale_ceil
+
+def scale_pos(value, old_max, new_max):
+	return tuple(scale(value[i], old_max[i], new_max[i]) for i in range(2))
 
 # Misleading names, since they are inclusize
 clamp_below = lambda v, maxv: min(v, maxv)

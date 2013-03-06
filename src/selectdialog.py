@@ -115,13 +115,13 @@ class ScrollBar(UIObject):
 	def _set_value(self, value):
 		value = clamp_pos(value, self.range)
 		self._value = value
-		self.knob.rel_pos = tuple(value[i] * self.leeway[i] / self.range[i] if self.range[i] else 0 for i in range(2))
+		self.knob.rel_pos = scale_pos(value, self.range, self.leeway)
 
 	def _get_value(self):
 		# Return self._value if it still matches the position of the knob, otherwise recalculate it
-		value = tuple(self._value[i] * self.leeway[i] / self.range[i] if self.range[i] else 0 for i in range(2))
+		value = scale_pos(self._value, self.range, self.leeway)
 		if value != self.knob.rel_pos:
-			self._value = tuple(self.knob.rel_pos[i] * self.range[i] / self.leeway[i] if self.leeway[i] else 0 for i in range(2))
+			self._value = scale_pos(self.knob.rel_pos, self.leeway, self.range)
 		return self._value
 
 	value = property(_get_value, _set_value)
