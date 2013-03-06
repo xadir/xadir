@@ -62,7 +62,7 @@ class Window:
 				if event.type == pygame.QUIT:
 					self.done = True
 				for elem in self.elems:
-					self.elem.event(event)
+					elem.event(event)
 
 			self.draw()
 
