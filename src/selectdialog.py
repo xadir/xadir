@@ -138,7 +138,7 @@ class TextList(StateTrackingSprite, UIObject):
 
 		self.font = pygame.font.Font(FONT, int(16*FONTSCALE))
 		self.linesize = self.font.get_linesize()
-		self.linecount = (self.height - 1) / self.linesize + 1
+		self.linecount = div_ceil(self.height, self.linesize)
 
 		self.tickless = tickless
 		self.ratios = [1, self.linesize]
