@@ -21,7 +21,7 @@ class Input:
     def __init__(self, **options):
         """ Options: x, y, font, color, restricted, maxlength, prompt """
         self.options = Config(options, ['x', 0], ['y', 0], ['font', pygame.font.Font(FONT, int(32*FONTSCALE))],
-                              ['color', (0,0,0)], ['restricted', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~'],
+                              ['color', (0,0,0)], ['restricted', 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~ '],
                               ['maxlength', -1], ['prompt', ''], ['handle_enter', None])
         self.x = self.options.x; self.y = self.options.y
         self.font = self.options.font
@@ -53,61 +53,8 @@ class Input:
     def update(self, events):
         """ Update the input based on passed events """
         for event in events:
-            if event.type == KEYUP:
-                if event.key == K_LSHIFT or event.key == K_RSHIFT: self.shifted = False
             if event.type == KEYDOWN:
                 if event.key == K_BACKSPACE: self.value = self.value[:-1]
-                elif event.key == K_LSHIFT or event.key == K_RSHIFT: self.shifted = True
-                elif event.key == K_SPACE: self.value += ' '
                 elif event.key == K_RETURN: self.handle_enter()
-                value = {
-                    K_a: ('a', 'A'),
-                    K_b: ('b', 'B'),
-                    K_c: ('c', 'C'),
-                    K_d: ('d', 'D'),
-                    K_e: ('e', 'E'),
-                    K_f: ('f', 'F'),
-                    K_g: ('g', 'G'),
-                    K_h: ('h', 'H'),
-                    K_i: ('i', 'I'),
-                    K_j: ('j', 'J'),
-                    K_k: ('k', 'K'),
-                    K_l: ('l', 'L'),
-                    K_m: ('m', 'M'),
-                    K_n: ('n', 'N'),
-                    K_o: ('o', 'O'),
-                    K_p: ('p', 'P'),
-                    K_q: ('q', 'Q'),
-                    K_r: ('r', 'R'),
-                    K_s: ('s', 'S'),
-                    K_t: ('t', 'T'),
-                    K_u: ('u', 'U'),
-                    K_v: ('v', 'V'),
-                    K_w: ('w', 'W'),
-                    K_x: ('x', 'X'),
-                    K_y: ('y', 'Y'),
-                    K_z: ('z', 'Z'),
-                    K_0: ('0', ')'),
-                    K_1: ('1', '!'),
-                    K_2: ('2', '@'),
-                    K_3: ('3', '#'),
-                    K_4: ('4', '$'),
-                    K_5: ('5', '%'),
-                    K_6: ('6', '^'),
-                    K_7: ('7', '&'),
-                    K_8: ('8', '*'),
-                    K_9: ('9', '('),
-                    K_BACKQUOTE: ('`', '~'),
-                    K_MINUS: ('-', '_'),
-                    K_EQUALS: ('=', '+'),
-                    K_LEFTBRACKET: ('[', '{'),
-                    K_RIGHTBRACKET: (']', '}'),
-                    K_BACKSLASH: ('\\', '|'),
-                    K_SEMICOLON: (';', ':'),
-                    K_QUOTE: ('\'', '"'),
-                    K_COMMA: (',', '<'),
-                    K_PERIOD: ('.', '>'),
-                    K_SLASH: ('/', '?'),
-                }.get(event.key, ('', ''))[self.shifted]
-                if value in self.restricted: self.value += value
+                elif event.unicode in self.restricted: self.value += event.unicode
         if len(self.value) > self.maxlength and self.maxlength >= 0: self.value = self.value[:-1]
