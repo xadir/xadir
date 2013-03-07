@@ -1445,13 +1445,6 @@ class Manager:
 				for sprite in self.sprites:
 					if hasattr(sprite, 'event'):
 						sprite.event(event)
-				self.local_playerlist.event(event)
-				if self.network_playerlist_all != None:
-					self.network_playerlist_all.event(event)
-				if self.network_playerlist_selected != None:
-					self.network_playerlist_selected.event(event)
-				if self.network_messages != None:
-					self.network_messages.event(event)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
