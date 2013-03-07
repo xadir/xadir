@@ -7,7 +7,6 @@ except ImportError:
 from pygame.locals import *
 from resources import *
 from config import *
-from chartest import *
 from UI import *
 from manage import *
 from mapedit import MapEditor

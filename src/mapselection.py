@@ -54,8 +54,8 @@ class MapSelection:
 
 		self.sidebar_container = UIContainer(None, (957, 0), (238, 715), self.screen)
 
-		self.ip_input = eztext.Input(x=self.sidebar_container.x + 16, y=12, maxlength=15, color=COLOR_FONT, prompt='IP: ')
-		self.port_input = eztext.Input(x=self.sidebar_container.x + 16, y=78, maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
+		self.ip_input = eztext.Input(self.sidebar_container, (10, 10), (218, 30), maxlength=15, color=COLOR_FONT, prompt='IP: ')
+		self.port_input = eztext.Input(self.sidebar_container, (10, 50), (218, 30), maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ')
 		if network_host:
 			self.ip_input.value = ip
 		if network:
