@@ -65,21 +65,16 @@ class MapSelection:
 		#if self.network_host:
 		#	self.ip_btn = FuncButton(self.sidebar_container, 10, 10, 218, 30, [["127.0.0.1", None]], None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "ip"), True, False, True)
 		#else:
-		self.ip_btn = FuncButton(self.sidebar_container, 10, 10, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "ip"), True, False, True)
-		self.port_btn = FuncButton(self.sidebar_container, 10, 75, 218, 30, None, None, ICON_FONTSIZE, self.screen, 1, (self.select_field, "port"), True, False, True)
 
 		self.buttons = []
 		self.maplist = []
 
 		self.buttons.append(self.play_btn)
-		if self.network:
-			self.buttons.append(self.ip_btn)
-			self.buttons.append(self.port_btn)
 
 		self.sidebar_container.spritegroup.add(self.play_btn)
 		if self.network:
-			self.sidebar_container.spritegroup.add(self.ip_btn)
-			self.sidebar_container.spritegroup.add(self.port_btn)
+			self.sidebar_container.spritegroup.add(self.ip_input)
+			self.sidebar_container.spritegroup.add(self.port_input)
 
 		if self.mapname:
 			self.load(self.mapname)
@@ -151,18 +146,6 @@ class MapSelection:
 			for x in range(self.grid.width):
 				print >>f, self.grid[x, y] or '?',
 			print >>f
-
-	def select_field(self, field):
-		print "Clicked on field button"
-		if field == "ip":
-			if not self.network_host:
-				print "Selected IP field"
-				self.ip_input_enabled = True
-				self.port_input_enabled = False
-		if field == "port":
-			print "Selected Port field"
-			self.ip_input_enabled = False
-			self.port_input_enabled = True
 
 	def load(self, mapname):
 		self.mapname = mapname
@@ -240,23 +223,15 @@ class MapSelection:
 		self.done = False
 
 		while not self.done:
-			events = pygame.event.get()
 			self.screen.fill(COLOR_BG)
 			self.draw()
 	
-			if self.ip_input_enabled:
-				self.ip_input.update(events)
-			elif self.port_input_enabled:
-				self.port_input.update(events)
-
-			# blit txtbx on the sceen
-			#if not self.network_host:
-			self.ip_input.draw(self.screen)
-			self.port_input.draw(self.screen)
-
 			pygame.display.flip()
 
+			events = pygame.event.get()
 			for event in events:
+				self.ip_input.event(event)
+				self.port_input.event(event)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
