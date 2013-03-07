@@ -1266,7 +1266,7 @@ class Manager:
 				armor = random.choice(armors.values())
 				player_inventory.append(armor)
 
-			self.players.append(Player(str(name), player_party, player_inventory, 1000))
+			self.players.append(Player(name, player_party, player_inventory, 1000))
 			#self.update_local_playerlist()
 
 	def select_player(self, namelist, event):

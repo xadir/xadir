@@ -8,7 +8,7 @@ import binascii
 
 _character_id = 0
 class Character(object):
-	fields = 'name:str,NoneType race_name:str class_name:str hair_name:str var_str:int var_dex:int var_con:int var_int:int xp:int level:int upgrade_points:int per_wc_miss_chance:dict:tuple:#str,int armor:Armor weapon:Weapon'
+	fields = 'name:unicode,NoneType race_name:str class_name:str hair_name:str var_str:int var_dex:int var_con:int var_int:int xp:int level:int upgrade_points:int per_wc_miss_chance:dict:tuple:#str,int armor:Armor weapon:Weapon'
 	def __init__(self, name, race_name, class_name, str = 0, dex = 0, con = 0, int = 0, xp = 0, armor = None, weapon = None, hair_name = None):
 		self.name = name
 
@@ -54,7 +54,7 @@ class Character(object):
 	@classmethod
 	def random(cls):
 		global _character_id
-		name = 'character%d' % _character_id
+		name = u'character%d' % _character_id
 		_character_id += 1
 		race_name = random.choice(races.keys())
 		class_name = random.choice(classes.keys())
