@@ -3,6 +3,7 @@ import binascii
 import asyncore
 import asynchat
 import socket
+import debug, sys
 
 VERSION = 'CENTRAL 0.1'
 
@@ -26,6 +27,10 @@ class CentralConnectionBase(asynchat.async_chat):
 		self.set_terminator('\n')
 
 		self.handler = self.handle_version
+
+	def handle_error(self):
+		debug.exchandler(*sys.exc_info())
+		self.handle_close()
 
 	def collect_incoming_data(self, data):
 		self.line += data
