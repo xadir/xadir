@@ -1178,11 +1178,13 @@ class Manager:
 		#	join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
 		self.network_connected = True
 		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers)
-		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 200), self.selected_networkplayers)
+		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 95), self.selected_networkplayers)
+		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), [])
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
 		self.network_messages.scroll.knob.rel_pos = self.network_messages.scroll.leeway
 		self.sprites.add(self.network_playerlist_all)
 		self.sprites.add(self.network_playerlist_selected)
+		self.sprites.add(self.network_challengelist)
 		self.sprites.add(self.network_messages)
 		self.update_text_fields()
 		self.show_network_panel()
@@ -1200,9 +1202,11 @@ class Manager:
 		self.server = None
 		self.sprites.remove(self.network_playerlist_all)
 		self.sprites.remove(self.network_playerlist_selected)
+		self.sprites.remove(self.network_challengelist)
 		self.sprites.remove(self.network_messages)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
+		self.network_challengelist = None
 		self.network_messages = None
 		self.update_text_fields()
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
