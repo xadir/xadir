@@ -173,13 +173,14 @@ class TextList(StateTrackingSprite, UIObject):
 			if self.contains(*ev.pos) and not self.scroll.contains(*ev.pos):
 				pos = self.scroll.value[1] * self.ratios[1] + self.translate(*ev.pos)[1]
 				index, offset = divmod(pos, self.linesize)
-				if index in self.sel:
-					self.sel.remove(index)
-				else:
-					if not self.multi:
-						self.sel.clear()
-					self.sel.add(index)
-				self.selected(ev)
+				if index < len(self.items):
+					if index in self.sel:
+						self.sel.remove(index)
+					else:
+						if not self.multi:
+							self.sel.clear()
+						self.sel.add(index)
+					self.selected(ev)
 		if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 4:
 			if self.contains(*ev.pos):
 				self.scroll.value = (value[0], value[1] - self.ratios[0])
