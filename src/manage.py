@@ -64,17 +64,18 @@ class Challenge:
 		return [nick for client in self.get_clients() for nick in client.nicks]
 
 class NetworkPlayer:
-	def __init__(self, client_id, ip_addr, nicks):
+	def __init__(self, client_id, ip_addr, name, nicks):
 		self.client_id = client_id
 		self.ip_addr = ip_addr
+		self.name = '%s (%d)' % (name, len(nicks))
 		self.nicks = nicks
-		self.name = '%s (%d)' % (nicks[0] if nicks else '?', len(nicks))
 
 class LoungeConnection(CentralConnectionBase):
 	def __init__(self, manage, host, port):
 		CentralConnectionBase.__init__(self, socket.socket())
 
 		self.manage = manage
+		self.name = manage.nick_input.value
 		self.nicks = [player.name for player in manage.players]
 		self.client_id = None
 		self.users = {}
@@ -83,7 +84,7 @@ class LoungeConnection(CentralConnectionBase):
 
 	def handle_version(self, cmd, args):
 		CentralConnectionBase.handle_version(self, cmd, args)
-		self.push_cmd('NICK', serialize(self.nicks, 'list', 'unicode'))
+		self.push_cmd('NICK', serialize((self.name, self.nicks), 'tuple', ['unicode', ['list', 'unicode']]))
 		self.handler = self.handle_id
 
 	def handle_id(self, cmd, args):
@@ -93,9 +94,9 @@ class LoungeConnection(CentralConnectionBase):
 
 	def handle_nicks(self, cmd, args):
 		assert cmd == 'NICKS'
-		users = deserialize(args, 'list', 'tuple', ['int', 'str', ['list', 'unicode']])
-		for client_id, ip_addr, nicks in users:
-			player = NetworkPlayer(client_id, ip_addr, nicks)
+		users = deserialize(args, 'list', 'tuple', ['int', 'str', 'unicode', ['list', 'unicode']])
+		for client_id, ip_addr, name, nicks in users:
+			player = NetworkPlayer(client_id, ip_addr, name, nicks)
 			self.users[client_id] = player
 			self.manage.networkplayers.append(player)
 		self.handler = self.handle_general
@@ -105,8 +106,8 @@ class LoungeConnection(CentralConnectionBase):
 			client_id, msg = deserialize(args, 'tuple', ['int', 'unicode'])
 			self.manage.network_messages.items.append('%s: %s' % (self.users[client_id].name, msg))
 		elif cmd == 'JOIN':
-			client_id, ip_addr, nicks = deserialize(args, 'tuple', ['int', 'str', ['list', 'unicode']])
-			player = NetworkPlayer(client_id, ip_addr, nicks)
+			client_id, ip_addr, name, nicks = deserialize(args, 'tuple', ['int', 'str', 'unicode', ['list', 'unicode']])
+			player = NetworkPlayer(client_id, ip_addr, name, nicks)
 			self.users[client_id] = player
 			self.manage.networkplayers.append(player)
 		elif cmd == 'QUIT':
@@ -223,17 +224,18 @@ class Manager:
 
 		self.ezfont = pygame.font.Font(FONT, int(24*FONTSCALE))
 
-		self.player_input = eztext.Input(self.local_con, (10, 10), (250, 25), maxlength=15, color=COLOR_FONT, prompt='Player name: ', font = self.ezfont)
+		self.player_input = eztext.Input(self.local_con, (10, 10), (250, 20), maxlength=15, color=COLOR_FONT, prompt='Player name: ', font = self.ezfont)
 
-		self.ip_input = eztext.Input(self.network_con, (10, 10), (250, 25), maxlength=20, color=COLOR_FONT, prompt='IP: ', font = self.ezfont)
-		self.port_input = eztext.Input(self.network_con, (10, 45), (250, 25), maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ', font = self.ezfont)
+		self.ip_input = eztext.Input(self.network_con, (10, 10), (250, 20), maxlength=20, color=COLOR_FONT, prompt='Host: ', font = self.ezfont)
+		self.port_input = eztext.Input(self.network_con, (10, 40), (250, 20), maxlength=5, restricted='0123456789', color=COLOR_FONT, prompt='Port: ', font = self.ezfont)
+		self.nick_input = eztext.Input(self.network_con, (10, 70), (250, 20), maxlength=15, color=COLOR_FONT, prompt='Nick: ', font = self.ezfont)
 
 		self.ip_input.value = DEFAULT_CENTRAL_HOST
 		self.port_input.value = "33333"
 
 		self.message_input = eztext.Input(self.network_con, (10, 370), (250, 16), maxlength=25, color=COLOR_FONT, prompt='Message: ', font = pygame.font.Font(FONT, int(16*FONTSCALE)), handle_enter = self.send_message)
 
-		self.sprites.add([self.player_input, self.ip_input, self.port_input, self.message_input])
+		self.sprites.add([self.player_input, self.ip_input, self.port_input, self.nick_input, self.message_input])
 
 		self.connect_buttons = []
 		self.connect_buttons.append(self.network_play_btn)
@@ -355,10 +357,10 @@ class Manager:
 
 	def update_text_fields(self):
 		if not self.network_connected:
-			self.sprites.add([self.ip_input, self.port_input])
+			self.sprites.add([self.ip_input, self.port_input, self.nick_input])
 			self.sprites.remove(self.message_input)
 		else:
-			self.sprites.remove([self.ip_input, self.port_input])
+			self.sprites.remove([self.ip_input, self.port_input, self.nick_input])
 			self.sprites.add(self.message_input)
 
 	def update_inventories(self):
@@ -1162,6 +1164,9 @@ class Manager:
 		start_game(self.screen, mapsel.mapname, teams)
 
 	def connect_server(self, none):
+		if not self.nick_input.value:
+			self.error('A nickname must be specified')
+			return
 		#log_stats('join')
 		#if self.player == None:
 		#	print "Create player before connecting"

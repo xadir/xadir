@@ -92,11 +92,11 @@ class XadirServerClient(CentralConnectionBase):
 
 	def handle_nick(self, cmd, args):
 		assert cmd == 'NICK'
-		self.nicks = deserialize(args, 'list', 'unicode')
+		self.name, self.nicks = deserialize(args, 'tuple', ['unicode', ['list', 'unicode']])
 		print 'JOIN', self.client_id, self.nicks
-		self.bcast_cmd('JOIN', serialize((self.client_id, self.addr[0], self.nicks), 'tuple', ['int', 'str', ['list', 'unicode']]))
+		self.bcast_cmd('JOIN', serialize((self.client_id, self.addr[0], self.name, self.nicks), 'tuple', ['int', 'str', 'unicode', ['list', 'unicode']]))
 		self.push_cmd('ID', serialize(self.client_id, 'int'))
-		self.push_cmd('NICKS', serialize([(client.client_id, client.addr[0], client.nicks) for client in self.serv.clients], 'list', 'tuple', ['int', 'str', ['list', 'unicode']]))
+		self.push_cmd('NICKS', serialize([(client.client_id, client.addr[0], client.name, client.nicks) for client in self.serv.clients], 'list', 'tuple', ['int', 'str', 'unicode', ['list', 'unicode']]))
 		self.handler = self.handle_general
 
 	def handle_general(self, cmd, args):
