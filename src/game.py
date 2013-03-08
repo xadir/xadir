@@ -140,16 +140,11 @@ class Game:
 	# Player actions
 
 	def move(self, character, dst_pos):
-		assert target_pos in self.get_action_area_for(character)
+		assert dst_pos in self.get_action_area_for(character)
 		assert not self.is_attack_move(character, dst_pos)
 
 		src_pos = character.grid_pos
 		path = self.get_move_path_for(character, src_pos, dst_pos)
-		distance = len(path) - 1
-
-		character.grid_pos = dst_pos
-		character.mp -= distance
-		character.heading = get_heading(path[-2], end_pos)
 
 		return [('MOVE', self.all_players.index(character.player), character.player.all_characters.index(character), path)]
 
@@ -159,32 +154,46 @@ class Game:
 
 		src_pos = character.grid_pos
 		path = self.get_attack_path_for(character, src_pos, target_pos)
-		dst_pos = path[-2]
-		distance = len(path) - 2
 
 		target = self.get_other_character_at(character.player, target_pos)
 		damage, messages = roll_attack_damage(self.map, character, target)
 
-		orig_hp = target.hp
-
-		character.grid_pos = dst_pos
-		character.mp = 0
-		character.heading = get_heading(dst_pos, target_pos)
-		target.take_hit(damage)
-
-		return [('ATTACK', self.all_players.index(character.player), character.player.all_characters.index(character), path, orig_hp, damage, messages)]
+		return [('ATTACK', self.all_players.index(character.player), character.player.all_characters.index(character), path, target.hp, damage, messages)]
 
 	def end_turn(self):
 		if len(self.all_players) < 1 or len(self.live_players) < 1:
 			return
 
-		self.turn = (self.turn + 1) % len(self.all_players)
+		turn = (self.turn + 1) % len(self.all_players)
 		while not self.current_player.is_alive():
-			self.turn = (self.turn + 1) % len(self.all_players)
+			turn = (turn + 1) % len(self.all_players)
 
+		return [('TURN', turn)]
+
+	# Actual state updates
+
+	def handle_move(self, player_idx, character_idx, path):
+		character = self.all_players[player_idx].all_characters[character_idx]
+		distance = len(path) - 1
+
+		character.grid_pos = path[-1]
+		character.mp -= distance
+		character.heading = get_heading(path[-2], path[-1])
+
+	def handle_attack(self, player_idx, character_idx, path, orig_hp, damage, messages):
+		character = self.all_players[player_idx].all_characters[character_idx]
+		target = self.get_other_character_at(character.player, path[-1])
+		distance = len(path) - 2
+
+		character.grid_pos = path[-2]
+		character.mp = 0
+		character.heading = get_heading(path[-2], path[-1])
+		target.hp = orig_hp
+		target.take_hit(damage)
+
+	def handle_turn(self, turn):
+		self.turn = turn
 		self.current_player.reset_movement_points()
-
-		return [('TURN', self.turn)]
 
 	# Support stuff
 
@@ -478,20 +487,21 @@ class XadirMain:
 				self.handle_attack(*action[1:])
 
 	def handle_turn(self, player_idx):
+		self.game.handle_turn(player_idx)
 		self.messages.messages.append('%s\'s turn' % self.game.current_player.name)
 
 	def handle_move(self, player_idx, character_idx, path):
 		character = self.game.all_players[player_idx].all_characters[character_idx]
 		self.animate_move(character, path)
+		self.game.handle_move(player_idx, character_idx, path)
 
 	def handle_attack(self, player_idx, character_idx, path, old_hp, damage, messages):
 		character = self.game.all_players[player_idx].all_characters[character_idx]
 		target = self.game.get_other_character_at(character.player, path[-1])
-		new_hp = target.hp
-		target.hp = old_hp
 		self.animate_move(character, path[:-1])
+		character.heading = get_heading(path[-2], path[-1])
 		self.animate_attack(character, target, damage, messages)
-		target.hp = new_hp
+		self.game.handle_attack(player_idx, character_idx, path, old_hp, damage, messages)
 
 	def animate_move(self, character, path):
 		# Five steps per second
@@ -499,6 +509,11 @@ class XadirMain:
 		for i in range(1, len(path) - 1):
 			character.heading = get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
+			self.draw(frames)
+		# This would come from the loop, but if there's only one step it doesn't, since the first turning isn't animated
+		if len(path) > 1:
+			character.heading = get_heading(path[-2], path[-1])
+			character.grid_pos = path[-1]
 			self.draw(frames)
 
 	def animate_attack(self, attacker, target, damage, messages):
