@@ -1216,10 +1216,8 @@ class Manager:
 
 	def send_challenge(self, none):
 		local_count = len(self.players)
-		net_count = len(self.selected_networkplayers)
+		net_count = sum(len(client.nicks) for client in self.selected_networkplayers)
 		map_count = 6
-
-		# XXX: local_count is player count, but net_count is client count...
 
 		if not self.network_map:
 			self.error('No map selected')
