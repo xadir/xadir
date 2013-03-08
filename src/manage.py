@@ -1334,7 +1334,64 @@ class Manager:
 						f(b.function[1])
 					break
 
+	def error(self, message):
+		width, height = size = self.screen.get_size()
+
+		images = []
+		max_width = sum_height = 0
+		for text, fontsize in [(message, 24), ('(Click anywhere to continue)', 16)]:
+			font = pygame.font.Font(FONT, int(fontsize*FONTSCALE))
+			image = font.render(text, True, (255, 0, 0))
+			max_width = max(max_width, image.get_width())
+			sum_height += image.get_height()
+			images.append(image)
+
+		surf = pygame.Surface((max_width, sum_height)).convert_alpha()
+		surf.fill((0, 0, 0, 0))
+		y = 0
+		for image in images:
+			rect = image.get_rect()
+			rect.centerx = max_width / 2
+			rect.y = y
+			surf.blit(image, rect)
+			y += image.get_height()
+
+		rect = surf.get_rect()
+		rect.center = (width / 2, height / 2)
+
+		overlay = pygame.Surface(size)
+		overlay.fill((0, 0, 0))
+		overlay.set_alpha(127)
+
+		self.draw()
+		self.screen.blit(overlay, (0, 0))
+		self.screen.blit(surf, rect)
+		pygame.display.flip()
+
+		done = False
+		while not done:
+			events = pygame.event.get()
+			for event in events:
+				if event.type == pygame.QUIT:
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+					done = True
+			time.sleep(0.05)
+
 	def draw(self):
+		self.screen.fill((127, 127, 127))
+
+		self.local_con.draw()
+		self.network_con.draw()
+		self.text_con.draw()
+		self.manage.draw()
+		self.party_con.draw()
+		self.inventory_con.draw()
+		self.team_con.draw()
+		self.char_inventory_con.draw()
+		self.store_con.draw()
+		self.item_con.draw()
+
 		self.sprites.update()
 		#self.sprites.clear(self.screen, self.background)
 		# Update layers
@@ -1346,23 +1403,10 @@ class Manager:
 		change_sound(0, load_sound('menu-old.ogg'), BGM_FADE_MS)
 
 		while 1:
-			self.screen.fill((127, 127, 127))
-
 			if self.network_connected: self.update_network_panel()
 
-			self.local_con.draw()
-			self.network_con.draw()
-			self.text_con.draw()
-			self.manage.draw()
-			self.party_con.draw()
-			self.inventory_con.draw()
-			self.team_con.draw()
-			self.char_inventory_con.draw()
-			self.store_con.draw()
-			self.item_con.draw()
 			self.draw()
 			pygame.display.flip()
-
 
 			events = pygame.event.get()
 			for event in events:
