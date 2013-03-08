@@ -881,7 +881,7 @@ class Manager:
 		self.current_class = self.classes[self.class_index]
 		self.current_hair = self.hairs[self.hair_index]
 		print self.current_class
-		self.selected_char = Character("test", self.current_race, self.current_class, 0, 0, 0, 0, 0, None, None)
+		self.selected_char = Character(u"test", self.current_race, self.current_class, 0, 0, 0, 0, 0, None, None)
 		self.selected_charsprite = CharacterSprite(None, self.selected_char, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
 
 		self.selected_charsprite.x = self.race_sprite_x
