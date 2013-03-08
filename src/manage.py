@@ -432,33 +432,11 @@ class Manager:
 		if len(self.selected_networkplayers) > 0:
 			self.network_buttons.append(self.network_challenge_btn)
 
-		#self.update_server_playerlists()
 		#self.update_challengelist()
 
 	def update_network_panel(self):
 		self.show_network_panel()
 		self.network_con.draw(True)
-
-	def update_server_playerlists(self):
-		print "Updating network lobby"
-		#self.network_playerlist_all.items = self.server.playerlist
-		#self.network_playerlist_selected.items = self.selected_networkplayers
-		#self.network_challengelist.items = self.received_challenges
-		
-		self.network_playerlist_buttons = []
-		btn_y = 0
-		for p in self.networkplayers:
-			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y - 150 + btn_y, 100, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, (self.select_networkplayer, p), True, False, True)
-			btn_y += 30
-			self.network_con.spritegroup.add(btn)
-			self.network_playerlist_buttons.append(btn)
-		btn_y = 0
-		for p in self.selected_networkplayers:
-			btn = FuncButton(self.network_con, self.network_con.x + 120, self.network_con.y - 150 + btn_y, 100, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, (self.unselect_networkplayer, p), True, False, True)
-			btn_y += 30
-			self.network_con.spritegroup.add(btn)
-			self.network_playerlist_buttons.append(btn)
-		
 
 	def update_challengelist(self):
 		print "Updating received challenges"
@@ -1329,15 +1307,6 @@ class Manager:
 		self.update_general_texts()
 		#self.update_local_playerlist()
 		self.update_inventories()
-
-	def select_networkplayer(self, p):
-		if not p in self.selected_networkplayers:
-			self.selected_networkplayers.append(p)
-			self.show_network_panel()
-
-	def unselect_networkplayer(self, p):
-		self.selected_networkplayers.remove(p)
-		self.show_network_panel()
 
 	def disconnect(self):
 		self.network_connected = False
