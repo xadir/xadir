@@ -8,7 +8,7 @@ import zlib
 
 from game import Game, Grid, load_map, GamePlayer
 
-VERSION = 'CENTRAL 0.2'
+VERSION = 'CENTRAL 0.3'
 
 class SimpleServer(asyncore.dispatcher):
 	def __init__(self, clientclass):
@@ -63,7 +63,7 @@ class CentralConnectionBase(asynchat.async_chat):
 	def handle_version(self, cmd, args):
 		assert cmd == 'VERSION'
 		version = deserialize(args, 'str')
-		assert version == VERSION
+		assert version == VERSION, 'local protocol version %s / remote protocol version %s' % (VERSION, version)
 
 class XadirServerClient(CentralConnectionBase):
 	def __init__(self, serv, sock):

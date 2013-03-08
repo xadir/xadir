@@ -26,7 +26,6 @@ import socket
 import server
 from server import CentralConnectionBase
 
-CLIENT_VERSION = 'CENTRAL 0.2'
 DEFAULT_CENTRAL_HOST = 'localhost'#'gameserver.xadir.net'
 
 if not pygame.font:
@@ -84,7 +83,11 @@ class LoungeConnection(CentralConnectionBase):
 		self.connect((host, port))
 
 	def handle_version(self, cmd, args):
-		CentralConnectionBase.handle_version(self, cmd, args)
+		try:
+			CentralConnectionBase.handle_version(self, cmd, args)
+		except Exception, e:
+			self.manage.error('Network protocol version mismatch - please update your client (%s)' % e.message)
+			raise
 		self.push_cmd('NICK', serialize((self.name, self.nicks), 'tuple', ['unicode', ['list', 'unicode']]))
 		self.handler = self.handle_id
 
@@ -1316,10 +1319,6 @@ class Manager:
 
 	def central_game(self, map, players, spawns):
 		log_stats('central')
-
-		if server.VERSION != CLIENT_VERSION:
-			self.error('Game protocol version mismatch, please download the latest client')
-			return
 
 		remote = self.lounge
 
