@@ -1115,22 +1115,6 @@ class Manager:
 		else:
 			self.update_char_panels()
 
-	def save_team1(self, team):
-		if self.team1_btn.selected:
-			self.team2_btn.select()
-			self.team1_btn.unselect()
-			self.team1 = self.team
-			self.team = self.team2
-			self.update_char_panels()
-
-	def save_team2(self, team):
-		if self.team2_btn.selected:
-			self.team1_btn.select()
-			self.team2_btn.unselect()
-			self.team2 = self.team
-			self.team = self.team1
-			self.update_char_panels()
-
 	def start_hotseat_game(self, none):
 		log_stats('play')
 		print self.players
