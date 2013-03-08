@@ -181,7 +181,6 @@ class Manager:
 		self.manager_texts = []
 		self.local_con_buttons = []
 		self.network_buttons = []
-		self.network_playerlist_buttons = []
 
 		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
@@ -403,22 +402,9 @@ class Manager:
 		if len(self.selected_networkplayers) > 0:
 			self.network_buttons.append(self.network_challenge_btn)
 
-		#self.update_challengelist()
-
 	def update_network_panel(self):
 		self.show_network_panel()
 		self.network_con.draw(True)
-
-	def update_challengelist(self):
-		print "Updating received challenges"
-		self.network_challengelist_buttons = []
-		btn_y = 0
-		for c in self.received_challenges:
-			btn = FuncButton(self.network_con, self.network_con.x + 10, self.network_con.y + btn_y, 200, 20, [[c.players[0].name + " (" +  str(len(c.players)) + ")", None]], None, ICON_FONTSIZE, self.screen, 1, None, True, False, True)
-			btn.function = (self.accept_challenge, c)
-			btn_y += 30
-			self.network_con.spritegroup.add(btn)
-			self.network_challengelist_buttons.append(btn)
 
 	def update_server_chat(self):
 		print "Updating server chat"
@@ -1320,18 +1306,6 @@ class Manager:
 					f = b.function[0]
 					f(b.function[1])
 					return True
-			"""
-			for b in self.network_playerlist_buttons:
-				if b.contains(*event.pos):
-					f = b.function[0]
-					f(b.function[1])
-					return True
-			for b in self.network_challengelist_buttons:
-				if b.contains(*event.pos):
-					f = b.function[0]
-					f(b.function[1])
-					return True
-			"""
 
 	def container_click(self, event, container):
 		i = 0
