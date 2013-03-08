@@ -114,6 +114,164 @@ def get_animation_surfaces(path):
 		surface = pygame_surface_from_pil_image(im)
 		rect = surface.get_rect()
 		yield pygame.transform.scale(surface, (rect.width * SCALE, rect.height * SCALE))
+
+def get_heading(a, b):
+	delta = (b[0] - a[0], b[1] - a[1])
+	# Negate y because screen coordinates differ from math coordinates
+	angle = math.degrees(math.atan2(-delta[1], delta[0])) % 360
+	# Make the angle an integer and a multiple of 45
+	angle = int(round(angle / 45)) * 45
+	# Prefer horizontal directions when the direction is not a multiple of 90
+	return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
+
+class Game:
+	def __init__(self, map, players):
+		self.map = map
+		self.all_players = players
+
+		self.walkable = ['G', 'D', 'F']
+
+		self.turn = 0
+
+	current_player = property(lambda self: self.all_players[self.turn])
+	live_players = property(lambda self: [player for player in self.all_players if player.is_alive()])
+	dead_players = property(lambda self: [player for player in self.all_players if not player.is_alive()])
+
+	# Player actions
+
+	def move(self, character, dst_pos):
+		assert target_pos in self.get_action_area_for(character)
+		assert not self.is_attack_move(character, dst_pos)
+
+		src_pos = character.grid_pos
+		path = self.get_move_path_for(character, src_pos, dst_pos)
+		distance = len(path) - 1
+
+		character.grid_pos = dst_pos
+		character.mp -= distance
+		character.heading = get_heading(path[-2], end_pos)
+
+		return [('MOVE', self.all_players.index(character.player), character.player.all_characters.index(character), path)]
+
+	def attack(self, character, target_pos):
+		assert target_pos in self.get_action_area_for(character)
+		assert self.is_attack_move(character, target_pos)
+
+		src_pos = character.grid_pos
+		path = self.get_attack_path_for(character, src_pos, target_pos)
+		dst_pos = path[-2]
+		distance = len(path) - 2
+
+		target = self.get_other_character_at(character.player, target_pos)
+		damage, messages = roll_attack_damage(self.map, character, target)
+
+		orig_hp = target.hp
+
+		character.grid_pos = dst_pos
+		character.mp = 0
+		character.heading = get_heading(dst_pos, target_pos)
+		target.take_hit(damage)
+
+		return [('ATTACK', self.all_players.index(character.player), character.player.all_characters.index(character), path, orig_hp, damage, messages)]
+
+	def end_turn(self):
+		if len(self.all_players) < 1 or len(self.live_players) < 1:
+			return
+
+		self.turn = (self.turn + 1) % len(self.all_players)
+		while not self.current_player.is_alive():
+			self.turn = (self.turn + 1) % len(self.all_players)
+
+		self.current_player.reset_movement_points()
+
+		return [('TURN', self.turn)]
+
+	# Support stuff
+
+	def get_enemy_players(self, player):
+		return [p for p in self.all_players if p != player]
+
+	def get_enemy_characters(self, player):
+		return [c for p in self.all_players for c in p.characters if p != player]
+
+	def get_all_other_characters(self, character):
+		return [c for p in self.all_players for c in p.characters if c != character]
+
+	def get_enemy_character_positions(self, player):
+		return [c.grid_pos for p in self.all_players for c in p.characters if p != player]
+
+	def get_all_other_character_positions(self, character):
+		return [c.grid_pos for p in self.all_players for c in p.characters if c != character]
+
+	def get_all_own_character_positions(self, player):
+		return [c.grid_pos for c in player.characters]
+
+	def get_other_character_at(self, player, coords):
+		target = None
+		for p in self.get_enemy_players(player):
+			for c in p.characters:
+				if c.grid_pos == coords:
+					target = c
+		return target
+
+	def is_attack_move(self, character, coords):
+		for c in self.get_enemy_character_positions(character.player):
+			if c == coords:
+				return True
+		return False
+
+	# Map-related methods
+
+	def is_walkable(self, coords):
+		"""Is the terrain at this point walkable?"""
+		grid = self.map
+		return coords in grid and grid[coords] in self.walkable
+
+	def is_passable_for(self, character, coords):
+		"""Is it okay for <character> to pass through this point without stopping?"""
+		return self.is_walkable(coords) and coords not in self.get_enemy_character_positions(character.player)
+
+	def is_haltable_for(self, character, coords):
+		"""Is it okay for <character> to stop at this point?"""
+		return self.is_walkable(coords) and coords not in self.get_all_other_character_positions(character)
+
+	def get_move_path_for(self, character, start, end):
+		"""Get path from start to end; all the intermediate points will be passable and the last one haltable"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert self.is_haltable_for(character, end)
+		return shortest_path(self, start, end, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
+
+	def get_attack_path_for(self, character, start, end):
+		"""Get path suitable for attacking from start to end; ie. a path where you can stop on the point just *before* the last one"""
+		assert isinstance(start, tuple)
+		assert isinstance(end, tuple)
+		assert end in self.get_enemy_character_positions(character.player), 'Target square must contain enemy character'
+		# Get possible stopping points, one square away from the enemy
+		ends = self.get_neighbours(end, lambda pos: self.is_haltable_for(character, pos))
+		path = shortest_path_any(self, start, set(ends), lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
+		if path:
+			path.append(end)
+		return path
+
+	def get_action_area_for(self, character):
+		"""Get points where the character can either move or attack"""
+		result = bfs_area(self, character.grid_pos, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
+		# Remove own characters
+		result = set(result) - set(self.get_all_own_character_positions(character.player))
+		# Remove enemies that can't be reached
+		result = result - set(c_pos for c_pos in self.get_enemy_character_positions(character.player) if not self.get_neighbours(c_pos, lambda pos: pos == character.grid_pos or pos in result))
+		return list(result)
+
+	def get_neighbours(self, coords, filter = None, size = 1):
+		"""Get surrounding points, filtered by some function"""
+		if filter is None:
+			filter = lambda pos: True
+		grid = self.map
+		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
+		result.sort(key = lambda pos: get_distance_2(pos, coords))
+		return result
+
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, screen, mapname='map_new.txt'):
@@ -128,7 +286,7 @@ class XadirMain:
 		self.clock = pygame.time.Clock()
 		self.fps = FPS
 		self.showhealth = False
-		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.do_next_turn))
+		self.buttons.append(Button(980, 600, 200, 100, "End turn", 40, self.end_turn))
 
 		self.disabled_chartypes = {}
 
@@ -141,26 +299,20 @@ class XadirMain:
 		self.sprites.add(self.buttons)
 		self.sprites.add(self.messages)
 
-		self.players = []
 		self.remote = None
 
-		log_stats('game')
-
-	current_player = property(lambda self: self.players[self.turn])
-	live_players = property(lambda self: [player for player in self.players if player.is_alive()])
-	dead_players = property(lambda self: [player for player in self.players if not player.is_alive()])
-
-	def load_resources(self):
 		self.res = Resources(None)
 
 		self.chartypes = self.res.races
 		self.imgs = self.res.selections
 
-		self.walkable = [name for name in self.res.terrain.keys() if name != 'W']
-
 		map, mapsize, spawns = load_map(self.mapname)
 		self.map = BackgroundMap(map, *mapsize, res = self.res)
 		self.spawns = spawns
+
+		self.game = Game(self.map, [])
+
+		log_stats('game')
 
 	def poll_local_events(self):
 		for event in pygame.event.get():
@@ -173,7 +325,7 @@ class XadirMain:
 							b.function()
 					self.click()
 			if event.type == KEYDOWN and event.key == K_SPACE:
-				self.do_next_turn()
+				self.end_turn()
 
 	def poll_remote_events(self):
 		asyncore.loop(count=1, timeout=0.01)
@@ -189,15 +341,15 @@ class XadirMain:
 		self.done = False
 		while not self.done:
 			self.draw()
-			if self.current_player.remote:
+			if self.game.current_player.remote:
 				self.poll_remote_events()
 			else:
 				self.poll_local_events()
 
-				if self.players[self.turn].movement_points_left() < 1:
-					self.do_next_turn()
+				if self.game.current_player.movement_points_left() < 1:
+					self.end_turn()
 
-			if len(self.live_players) <= 1:
+			if len(self.game.live_players) <= 1:
 				self.gameover()
 
 	def end_game(self):
@@ -269,7 +421,7 @@ class XadirMain:
 		self.grid_sprites = pygame.sprite.Group()
 		self.map_sprites = self.map.sprites.values()
 		self.sprites.add(self.map_sprites)
-		for p in self.players:
+		for p in self.game.all_players:
 			self.sprites.add(p.all_characters)
 			for c in p.all_characters:
 				self.sprites.add(DisabledCharacter(self, c))
@@ -282,7 +434,7 @@ class XadirMain:
 	def click(self):
 		mouse_pos = pygame.mouse.get_pos()
 		mouse_grid_pos = (mouse_pos[0]/TILE_SIZE[0], mouse_pos[1]/TILE_SIZE[1])
-		player = self.players[self.turn]
+		player = self.game.current_player
 		for character in player.characters:
 			if character.grid_pos == mouse_grid_pos:
 				if character.is_selected():
@@ -294,97 +446,82 @@ class XadirMain:
 						self.movement_grid = SpriteGrid([character.grid_pos], self.imgs['red'])
 						self.set_grid_sprites(self.movement_grid.sprites)
 					else:
-						self.movement_grid = SpriteGrid(self.get_action_area_for(character), self.imgs['green'])
+						self.movement_grid = SpriteGrid(self.game.get_action_area_for(character), self.imgs['green'])
 						self.set_grid_sprites(self.movement_grid.sprites)
 			elif character.is_selected():
 				self.set_grid_sprites(pygame.sprite.Group())
 				character.unselect()
-				if mouse_grid_pos in self.get_action_area_for(character):
-					if self.is_attack_move(mouse_grid_pos):
-						self.do_attack(character, mouse_grid_pos)
+				if mouse_grid_pos in self.game.get_action_area_for(character):
+					if self.game.is_attack_move(character, mouse_grid_pos):
+						self.attack(character, mouse_grid_pos)
 					else:
-						self.do_move(character, mouse_grid_pos)
+						self.move(character, mouse_grid_pos)
 			if character.grid_pos != mouse_grid_pos:
 				character.unselect()
 
-	def is_attack_move(self, coords):
-		for p in self.get_other_players():
-			for c in p.get_characters_coords():
-				if c == coords:
-					return True
-		return False
+	def move(self, character, coords):
+		self.handle_actions(self.game.move(character, coords))
 
-	def handle_remote(self, type, data):
-		if type == 'TURN':
-			self.next_turn()
-		if type == 'MOVE':
-			charno, path = deserialize_path(data)
-			char = self.current_player.all_characters[charno]
-			self.blah_move(char, path)
-		if type == 'ATTACK':
-			charno, path, damage, messages = deserialize_attack(data)
-			char = self.current_player.all_characters[charno]
-			self.blah_attack(char, path, damage, messages)
+	def attack(self, character, coords):
+		self.handle_actions(self.game.attack(character, coords))
 
-	def do_next_turn(self):
-		if self.remote:
-			self.remote.push_message('TURN', '')
-		self.next_turn()
+	def end_turn(self):
+		self.handle_actions(self.game.end_turn())
 
-	def do_attack(self, character, mouse_grid_pos):
-		start = character.grid_pos
-		path = self.get_attack_path_for(character, start, mouse_grid_pos)
-		target = self.get_other_character_at(mouse_grid_pos)
-		damage, messages = roll_attack_damage(self.map, character, target)
-		if self.remote:
-			self.remote.push_message('ATTACK', serialize_attack(self.current_player.all_characters.index(character), path, damage, messages))
-		self.blah_attack(character, path, damage, messages)
+	def handle_actions(self, actions):
+		for action in actions:
+			if action[0] == 'TURN':
+				self.handle_turn(*action[1:])
+			if action[0] == 'MOVE':
+				self.handle_move(*action[1:])
+			if action[0] == 'ATTACK':
+				self.handle_attack(*action[1:])
 
-	def blah_attack(self, character, path, damage, messages):
-		mouse_grid_pos = path[-1]
-		end = path[-2]
-		distance = len(path) - 2
-		self.animate_move(path, character)
-		character.grid_pos = end
-		character.mp -= distance
-		character.heading = self.get_heading(end, mouse_grid_pos)
-		target = self.get_other_character_at(mouse_grid_pos)
-		self.attack(character, target, damage, messages)
+	def handle_turn(self, player_idx):
+		self.messages.messages.append('%s\'s turn' % self.game.current_player.name)
 
-	def get_other_character_at(self, mouse_grid_pos):
-		target = None
-		for p in self.get_other_players():
-			for c in p.characters:
-				if c.grid_pos == mouse_grid_pos:
-					target = c
-		return target
+	def handle_move(self, player_idx, character_idx, path):
+		character = self.game.all_players[player_idx].all_characters[character_idx]
+		self.animate_move(character, path)
 
-	def do_move(self, character, mouse_grid_pos):
-		start = character.grid_pos
-		end = mouse_grid_pos
-		path = self.get_move_path_for(character, start, end)
-		if self.remote:
-			self.remote.push_message('MOVE', serialize_path(self.current_player.all_characters.index(character), path))
-		self.blah_move(character, path)
+	def handle_attack(self, player_idx, character_idx, path, old_hp, damage, messages):
+		character = self.game.all_players[player_idx].all_characters[character_idx]
+		target = self.game.get_other_character_at(character.player, path[-1])
+		new_hp = target.hp
+		target.hp = old_hp
+		self.animate_move(character, path[:-1])
+		self.animate_attack(character, target, damage, messages)
+		target.hp = new_hp
 
-	def blah_move(self, character, path):
-		end = mouse_grid_pos = path[-1]
-		distance = len(path) - 1
-		self.animate_move(path, character)
-		character.grid_pos = end
-		character.mp -= distance
-		new_heading = self.get_heading(path[-2], mouse_grid_pos)
-		self.draw()
-		pygame.display.flip()
-		character.heading = new_heading
-
-	def animate_move(self, path, character):
+	def animate_move(self, character, path):
 		# Five steps per second
 		frames = self.fps / 5
 		for i in range(1, len(path) - 1):
-			character.heading = self.get_heading(path[i], path[i+1])
+			character.heading = get_heading(path[i], path[i+1])
 			character.grid_pos = path[i]
 			self.draw(frames)
+
+	def animate_attack(self, attacker, target, damage, messages):
+		self.animate_taunt(attacker)
+		self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
+		self.messages.messages.append(' '.join(messages))
+		if damage:
+			self.animate_hp_change(target, -damage)
+
+	def animate_taunt(self, character):
+		texts = taunts[None] + taunts.get(character.race.name, [])
+		text = random.choice(texts)
+
+		image = draw_speech_bubble(text)
+		rect = image.get_rect()
+		rect.topleft = character.pos
+		rect.top -= rect.height
+
+		sprite = Tile(image, rect, layer=(4,))
+
+		self.sprites.add(sprite)
+		self.draw(FPS)
+		self.sprites.remove(sprite)
 
 	def animate_hit(self, character, file_path):
 		anim = AnimatedEffect(character, file_path, FPS / HIT_FPS)
@@ -422,115 +559,8 @@ class XadirMain:
 		# Clean up hp change
 		character.hp = orig_hp
 
-	def get_heading(self, a, b):
-		delta = (b[0] - a[0], b[1] - a[1])
-		# Negate y because screen coordinates differ from math coordinates
-		angle = math.degrees(math.atan2(-delta[1], delta[0])) % 360
-		# Make the angle an integer and a multiple of 45
-		angle = int(round(angle / 45)) * 45
-		# Prefer horizontal directions when the direction is not a multiple of 90
-		return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
-
-	def next_turn(self):
-		if len(self.players) < 1 or len(self.live_players) < 1:
-			return
-
-		self.turn = (self.turn + 1) % len(self.players)
-		while not self.current_player.is_alive():
-			self.turn = (self.turn + 1) % len(self.players)
-
-		self.messages.messages.append('%s\'s turn' % self.current_player.name)
-		self.current_player.reset_movement_points()
-
-	def get_all_players(self):
-		return self.players
-
-	def get_other_players(self):
-		return [player for i, player in enumerate(self.players) if i != self.turn]
-
-	def get_current_player(self):
-		return self.players[self.turn]
-
-	def get_own_other_players(self):
-		return [self.players[self.turn], self.get_other_players()]
-
 	def add_player(self, name, remote, characters):
-		self.players.append(GamePlayer(name, characters, self, remote))
-
-	def attack(self, attacker, target, damage, messages):
-		attacker_position = attacker.grid_pos
-		target_position = target.grid_pos
-		print "Character at (%d,%d) attacked character at (%d,%d)" % (attacker_position[0], attacker_position[1], target_position[0], target_position[1])
-		if attacker.mp > 0:
-			texts = taunts[None] + taunts.get(attacker.race.name, [])
-			text = draw_speech_bubble(random.choice(texts))
-			rect = text.get_rect()
-			rect.topleft = attacker.pos
-			rect.top -= rect.height
-			sprite = Tile(text, rect, layer=(4,))
-			self.sprites.add(sprite)
-			self.draw(FPS)
-			self.sprites.remove(sprite)
-
-			self.animate_hit(target, os.path.join(GFXDIR, "sword_hit_small.gif"))
-			self.messages.messages.append(' '.join(messages))
-			if damage:
-				self.animate_hp_change(target, -damage)
-			target.take_hit(damage)
-			#XXX Attack XP implementation
-			#attacker.xp += damage_xp * damage
-			#if attacker.lvl_up(): self.animate_lvl_up(attacker, attacker.level)
-			attacker.mp = 0
-
-	def is_walkable(self, coords):
-		"""Is the terrain at this point walkable?"""
-		grid = self.map
-		return coords in grid and grid[coords] in self.walkable
-
-	def is_passable_for(self, character, coords):
-		"""Is it okay for <character> to pass through this point without stopping?"""
-		return self.is_walkable(coords) and coords not in [c.grid_pos for p in self.players for c in p.characters if p != character.player]
-
-	def is_haltable_for(self, character, coords):
-		"""Is it okay for <character> to stop at this point?"""
-		return self.is_walkable(coords) and coords not in [c.grid_pos for p in self.players for c in p.characters if c != character]
-
-	def get_move_path_for(self, character, start, end):
-		"""Get path from start to end; all the intermediate points will be passable and the last one haltable"""
-		assert isinstance(start, tuple)
-		assert isinstance(end, tuple)
-		assert self.is_haltable_for(character, end)
-		return shortest_path(self, start, end, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
-
-	def get_attack_path_for(self, character, start, end):
-		"""Get path suitable for attacking from start to end; ie. a path where you can stop on the point just *before* the last one"""
-		assert isinstance(start, tuple)
-		assert isinstance(end, tuple)
-		assert end in [c.grid_pos for p in self.players for c in p.characters if p != character.player], 'Target square must contain enemy character'
-		# Get possible stopping points, one square away from the enemy
-		ends = self.get_neighbours(end, lambda pos: self.is_haltable_for(character, pos))
-		path = shortest_path_any(self, start, set(ends), lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_passable_for(character, pos_)))
-		if path:
-			path.append(end)
-		return path
-
-	def get_action_area_for(self, character):
-		"""Get points where the character can either move or attack"""
-		result = bfs_area(self, character.grid_pos, character.mp, lambda self_, pos: self_.get_neighbours(pos, lambda pos_: self_.is_walkable(pos_)) if self_.is_passable_for(character, pos) else [])
-		# Remove own characters
-		result = set(result) - set(c.grid_pos for c in character.player.characters)
-		# Remove enemies that can't be reached
-		result = result - set(c.grid_pos for p in self.players for c in p.characters if p != character.player and not self.get_neighbours(c.grid_pos, lambda pos: pos == character.grid_pos or pos in result))
-		return list(result)
-
-	def get_neighbours(self, coords, filter = None, size = 1):
-		"""Get surrounding points, filtered by some function"""
-		if filter is None:
-			filter = lambda pos: True
-		grid = self.map
-		result = [pos for pos in grid.env_keys(coords, size) if filter(pos)]
-		result.sort(key = lambda pos: get_distance_2(pos, coords))
-		return result
+		self.game.all_players.append(GamePlayer(name, characters, self, remote))
 
 	def opaque_rect(self, rect, color=(0, 0, 0), opaque=255):
 		box = pygame.Surface((rect.width, rect.height)).convert()
@@ -545,7 +575,7 @@ class XadirMain:
 		bar_height = 20
 		margin = 5
 		bar_size = [width, bar_height]
-		players = self.get_all_players()
+		players = self.game.all_players
 		for player in players:
 			label = PlayerName(player, pygame.Rect(coords, (1, 1)))
 			self.sprites.add(label)
@@ -721,7 +751,7 @@ class CurrentPlayerName(StateTrackingSprite):
 		self.font = pygame.font.Font(FONT, int(50*FONTSCALE))
 
 	def get_state(self):
-		return self.main.current_player.name
+		return self.main.game.current_player.name
 
 	def redraw(self):
 		self.image = self.font.render(self.state, True, (255,255, 255))
@@ -749,7 +779,7 @@ class DisabledCharacter(pygame.sprite.DirtySprite):
 			image.fill((0, 0, 0, 200), special_flags=pygame.BLEND_RGBA_MULT)
 			self.main.disabled_chartypes[state] = image
 
-		self.visible = self.character.visible and self.character.player != self.main.current_player
+		self.visible = self.character.visible and self.character.player != self.main.game.current_player
 		if image != self.image or self.character.rect != self.rect:
 			self.dirty = 1
 
@@ -925,7 +955,6 @@ def compatible_protocol(version):
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
 	game = XadirMain(screen, mapname = mapname)
-	game.load_resources()
 	game.init_teams(teams, game.get_spawnpoints(teams))
 	game.main_loop()
 
@@ -976,7 +1005,6 @@ def host_game(screen, port, mapname, team):
 	teams = [('Player 1', None, team), ('Player 2', conn, other_team[0])]
 
 	game = XadirMain(screen, mapname = mapname)
-	game.load_resources()
 
 	spawns = game.get_spawnpoints(teams)
 	conn.push_message('SPAWNS', serialize_spawns(spawns))
@@ -1024,7 +1052,6 @@ def join_game(screen, host, port, team):
 	teams = [('Player 1', conn, other_team[0]), ('Player 2', None, team)]
 
 	game = XadirMain(screen, mapname = mapname[0])
-	game.load_resources()
 	game.init_teams(teams, spawns[0])
 	game.main_loop()
 
