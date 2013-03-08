@@ -1177,7 +1177,7 @@ class Manager:
 		#else:
 		#	join_game(self.screen, self.ip_input.value, int(self.port_input.value), self.player.team)
 		self.network_connected = True
-		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers)
+		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers, selected = self.select_network_player)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 95), self.selected_networkplayers)
 		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), [])
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
@@ -1275,6 +1275,13 @@ class Manager:
 
 			self.saved_players.append(Player(name, player_party, player_inventory, 1000))
 			#self.update_local_playerlist()
+
+	def select_network_player(self, namelist, event):
+		old_selection = set([self.network_playerlist_selected.items[sel] for sel in self.network_playerlist_selected.sel])
+		self.selected_networkplayers[:] = [namelist.items[sel] for sel in sorted(namelist.sel)]
+		self.network_playerlist_selected.sel.clear()
+		for player in set(self.selected_networkplayers) & set(old_selection):
+			self.network_playerlist_selected.sel.add(self.network_playerlist_selected.items.index(player))
 
 	def select_saved_player(self, namelist, event):
 		self.players[:] = [namelist.items[sel] for sel in sorted(namelist.sel)]
