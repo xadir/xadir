@@ -130,11 +130,11 @@ class LoungeConnection(CentralConnectionBase):
 	def send_message(self, msg):
 		self.push_cmd('MSG', serialize(msg, 'unicode'))
 
-	def challenge_create(self, clients, map):
-		self.push_cmd('CHALLENGE_CREATE', serialize((clients, map), 'tuple', [['list', 'int'], 'str']))
+	def challenge_create(self, clients, map, players):
+		self.push_cmd('CHALLENGE_CREATE', serialize((clients, map, players), 'tuple', [['list', 'int'], 'str', ['list', 'Player']]))
 
-	def challenge_accept(self, client_id):
-		self.push_cmd('CHALLENGE_ACCEPT', serialize(client_id, 'int'))
+	def challenge_accept(self, client_id, players):
+		self.push_cmd('CHALLENGE_ACCEPT', serialize((client_id, players), 'tuple', ['int', ['list', 'Player']]))
 
 	def challenge_reject(self, client_id):
 		self.push_cmd('CHALLENGE_REJECT', serialize(client_id, 'int'))
@@ -1243,10 +1243,10 @@ class Manager:
 			return
 
 		###XXX Add challenge sending here
-		self.lounge.challenge_create([client.client_id for client in [self.lounge] + self.selected_networkplayers], self.network_map)
+		self.lounge.challenge_create([client.client_id for client in [self.lounge] + self.selected_networkplayers], self.network_map, self.players)
 
 	def accept_challenge(self, none):
-		self.lounge.challenge_accept(self.selected_item.id)
+		self.lounge.challenge_accept(self.selected_item.id, self.players)
 		self.selected_item = None
 		self.update_item_panel()
 

@@ -4,8 +4,9 @@ import asyncore
 import asynchat
 import socket
 import debug, sys
+import zlib
 
-VERSION = 'CENTRAL 0.1'
+VERSION = 'CENTRAL 0.2'
 
 class SimpleServer(asyncore.dispatcher):
 	def __init__(self, clientclass):
@@ -34,7 +35,7 @@ class CentralConnectionBase(asynchat.async_chat):
 
 	def collect_incoming_data(self, data):
 		self.line += data
-		if len(self.line) > 100000:
+		if len(self.line) > 1000000:
 			self.die('Too much data')
 
 	def found_terminator(self):
@@ -42,11 +43,12 @@ class CentralConnectionBase(asynchat.async_chat):
 		self.line = ''
 		cmd, args = line.split(' ')
 		print '<', cmd
-		self.handler(cmd, binascii.unhexlify(args))
+		self.handler(cmd, zlib.decompress(binascii.unhexlify(args)))
 
 	def push_cmd(self, cmd, args):
-		print '>', cmd
-		self.push('%s %s\n' % (cmd, binascii.hexlify(args)))
+		data = binascii.hexlify(zlib.compress(args))
+		print '>', cmd, len(args), len(data)
+		self.push('%s %s\n' % (cmd, data))
 
 	def die(self, msg):
 		print 'DIE:', msg
@@ -105,22 +107,20 @@ class XadirServerClient(CentralConnectionBase):
 			print 'MSG', self.client_id, self.nicks, repr(msg)
 			self.bcast_cmd('MSG', serialize((self.client_id, msg), 'tuple', ['int', 'unicode']), not_to_self = False)
 		elif cmd == 'CHALLENGE_CREATE':
-			clients, map = deserialize(args, 'tuple', [['list', 'int'], 'str'])
+			clients, map, players = deserialize(args, 'tuple', [['list', 'int'], 'str', ['list', 'Player']])
 			if self.client_id in self.serv.challenges:
 				self.die('Duplicate challenge')
 			else:
-				self.serv.challenges[self.client_id] = (map, set(clients), set([self.client_id]))
+				self.serv.challenges[self.client_id] = (map, set(clients), {self.client_id: players})
 				self.mcast_cmd('CHALLENGE_CREATED', serialize((self.client_id, clients, map), 'tuple', ['int', ['list', 'int'], 'str']), self.serv.challenges[self.client_id][1])
 		elif cmd == 'CHALLENGE_ACCEPT':
-			client_id = deserialize(args, 'int')
+			client_id, players = deserialize(args, 'tuple', ['int', ['list', 'Player']])
 			if self.challenge_valid(client_id):
-				self.serv.challenges[client_id][2].add(self.client_id)
+				self.serv.challenges[client_id][2][self.client_id] = players
 				self.mcast_cmd('CHALLENGE_ACCEPTED_BY', serialize((client_id, self.client_id), 'tuple', ['int', 'int']), self.serv.challenges[client_id][1])
 				self.challenge_cancel_all(except_ = client_id)
-				if self.serv.challenges[client_id][1] == self.serv.challenges[client_id][2]:
-					# Success
-					#self.mcast_cmd('CHALLENGE_START', serialize(self.client_id, 'int'), self.serv.challenges[client_id][1])
-					print 'Challenge succeeded'
+				if self.serv.challenges[client_id][1] == set(self.serv.challenges[client_id][2]):
+					self.mcast_cmd('CHALLENGE_START', serialize(client_id, 'int'), self.serv.challenges[client_id][1])
 		elif cmd == 'CHALLENGE_REJECT':
 			client_id = deserialize(args, 'int')
 			if self.challenge_valid(client_id):
