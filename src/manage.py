@@ -26,7 +26,7 @@ import socket
 import server
 from server import CentralConnectionBase
 
-DEFAULT_CENTRAL_HOST = 'localhost'#'gameserver.xadir.net'
+DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
