@@ -231,7 +231,6 @@ class Manager:
 #		self.update_char_panels()
 		self.update_store()
 #		self.update_general_texts()
-		#self.update_local_playerlist()
 		self.show_connect_panel()
 
 		self.network_connected = False
@@ -338,34 +337,6 @@ class Manager:
 		elif isinstance(item, Armor):
 			armor_icon = self.res.armors[item.style]['human'][270]
 			self.add_item(armor_icon, item.name.capitalize(), container, item, container_type)
-
-	def update_local_playerlist(self):
-		print "Updating local player list"
-		
-		self.local_con.clear()
-		self.local_con_buttons = []
-
-		addplayer_btn = FuncButton(self.local_con, 10, 50, 200, 30, [["Add player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.add_player, None), True, False, True)
-
-		self.local_con_buttons.append(addplayer_btn)
-
-		self.local_con.spritegroup.add(addplayer_btn)
-
-		btn_y = 80
-		for p in self.players:
-#			print "Player: ", p, p.name, p.characters, p.inventory, p.money
-			if p == self.player:
-				tmp = FuncButton(self.local_con, self.local_con.x + 10, self.local_con.y + btn_y, 200, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, None, True, True, True)
-				tmp.function = (self.manage_player, p)
-				tmp.select()
-			else:
-				tmp = FuncButton(self.local_con, self.local_con.x + 10, self.local_con.y + btn_y, 200, 20, [[p.name, None]], None, ICON_FONTSIZE, self.screen, 1, None, True, False, True)
-				tmp.function = (self.manage_player, p)
-			#tmp.select()
-			print "Button: ", tmp
-			self.local_con.spritegroup.add(tmp)
-			self.local_con_buttons.append(tmp)
-			btn_y += 30
 
 	def show_connect_panel(self):
 		print "Showing connecting panel"
@@ -1252,7 +1223,6 @@ class Manager:
 				player_inventory.append(armor)
 
 			self.saved_players.append(Player(name, player_party, player_inventory, 1000))
-			#self.update_local_playerlist()
 
 	def select_network_player(self, namelist, event):
 		self.network_playerlist_selected.replace([namelist.items[sel] for sel in sorted(namelist.sel)])
@@ -1305,7 +1275,6 @@ class Manager:
 		self.update_char_panels()
 		self.update_store()
 		self.update_general_texts()
-		#self.update_local_playerlist()
 		self.update_inventories()
 
 	def disconnect(self):
