@@ -323,24 +323,22 @@ class XadirMain:
 
 		log_stats('game')
 
+	def is_local_turn(self):
+		return not self.game.current_player.remote
+
 	def poll_local_events(self):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				sys.exit()
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == 1:
-					for b in self.buttons:
-						if b.contains(*event.pos):
-							b.function()
-					self.click()
-			if event.type == KEYDOWN and event.key == K_SPACE:
-				self.end_turn()
-
-	def poll_remote_events(self):
-		asyncore.loop(count=1, timeout=0.01)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				sys.exit()
+			if self.is_local_turn():
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if event.button == 1:
+						for b in self.buttons:
+							if b.contains(*event.pos):
+								b.function()
+						self.click()
+				if event.type == KEYDOWN and event.key == K_SPACE:
+					self.end_turn()
 
 	def main_loop(self):
 		self.init_sidebar()
@@ -350,11 +348,10 @@ class XadirMain:
 		self.done = False
 		while not self.done:
 			self.draw()
-			if self.game.current_player.remote:
-				self.poll_remote_events()
-			else:
-				self.poll_local_events()
+			asyncore.loop(count=1, timeout=0.0)
+			self.poll_local_events()
 
+			if self.is_local_turn():
 				if self.game.current_player.movement_points_left() < 1:
 					self.end_turn()
 
