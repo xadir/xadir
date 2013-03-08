@@ -41,7 +41,7 @@ def format_exc(exctype, value, tb):
 		except:
 			just = 0
 
-		loc_info.append(item + '  Locals:\n' + '\n'.join("    %-*s: %s" % (just, key, saferepr(value)) for key, value in sorted(locs.iteritems())))
+		loc_info.append(item + '  Locals:\n' + '\n'.join("    %-*s: %s" % (just, key, saferepr(value)[:512]) for key, value in sorted(locs.iteritems())))
 
 		tb = tb.tb_next
 

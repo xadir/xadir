@@ -125,8 +125,9 @@ def get_heading(a, b):
 	return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
 
 class Game:
-	def __init__(self, map, players):
+	def __init__(self, map, spawns, players):
 		self.map = map
+		self.spawns = spawns
 		self.all_players = players
 
 		self.walkable = ['G', 'D', 'F']
@@ -281,6 +282,17 @@ class Game:
 		result.sort(key = lambda pos: get_distance_2(pos, coords))
 		return result
 
+	# ...
+
+	def get_spawnpoints(self, teams):
+		result = []
+		player_ids = random.sample(self.spawns, len(teams))
+		for player_id, team in zip(player_ids, teams):
+			name, remote, characters = team
+			spawn_points = random.sample(self.spawns[player_id], len(characters))
+			result.append(spawn_points)
+		return result
+
 class XadirMain:
 	"""Main class for initialization and mechanics of the game"""
 	def __init__(self, screen, mapname='map_new.txt'):
@@ -319,7 +331,7 @@ class XadirMain:
 		self.map = BackgroundMap(map, *mapsize, res = self.res)
 		self.spawns = spawns
 
-		self.game = Game(self.map, [])
+		self.game = Game(self.map, self.spawns, [])
 
 		log_stats('game')
 
@@ -406,15 +418,6 @@ class XadirMain:
 			self.sprites.draw(self.screen)
 			pygame.display.flip()
 
-	def get_spawnpoints(self, teams):
-		result = []
-		player_ids = random.sample(self.spawns, len(teams))
-		for player_id, team in zip(player_ids, teams):
-			name, remote, characters = team
-			spawn_points = random.sample(self.spawns[player_id], len(characters))
-			result.append(spawn_points)
-		return result
-
 	def init_teams(self, teams, spawns):
 		self.remote = None
 		for (name, remote, characters), spawn in zip(teams, spawns):
@@ -473,6 +476,9 @@ class XadirMain:
 
 	def end_turn(self):
 		self.handle_actions(self.game.end_turn())
+
+	def handle_remote(self):
+		pass
 
 	def handle_actions(self, actions):
 		for action in actions:

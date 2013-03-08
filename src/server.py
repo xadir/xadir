@@ -6,6 +6,8 @@ import socket
 import debug, sys
 import zlib
 
+from game import Game, Grid, load_map, GamePlayer
+
 VERSION = 'CENTRAL 0.2'
 
 class SimpleServer(asyncore.dispatcher):
@@ -120,7 +122,24 @@ class XadirServerClient(CentralConnectionBase):
 				self.mcast_cmd('CHALLENGE_ACCEPTED_BY', serialize((client_id, self.client_id), 'tuple', ['int', 'int']), self.serv.challenges[client_id][1])
 				self.challenge_cancel_all(except_ = client_id)
 				if self.serv.challenges[client_id][1] == set(self.serv.challenges[client_id][2]):
-					self.mcast_cmd('CHALLENGE_START', serialize(client_id, 'int'), self.serv.challenges[client_id][1])
+					players = [(cid, p) for cid, ps in self.serv.challenges[client_id][2].items() for p in ps]
+					map, (width, height), spawns = load_map(self.serv.challenges[client_id][0])
+					map = Grid(width, height, map)
+					map.cell_size = (1, 1)
+					map.x = map.y = 0
+					game = Game(map, spawns, [])
+					teams = [(p.name, None, p.team) for cid, p in players]
+					spawns = game.get_spawnpoints(teams)
+					class Dummy: pass
+					main = Dummy()
+					main.map = game.map
+					main.res = None
+					game.players = [GamePlayer(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)], main, None) for (name, remote, characters), spawn in zip(teams, spawns)]
+					for client in self.serv.clients:
+						if client.client_id not in self.serv.challenges[client_id][1]:
+							continue
+						client.game = game
+					self.mcast_cmd('GAME_START', serialize((self.serv.challenges[client_id][0], spawns, players), 'tuple', ['str', ['list', 'list', ':coord'], ['list', 'tuple', ['int', 'Player']]]), self.serv.challenges[client_id][1])
 		elif cmd == 'CHALLENGE_REJECT':
 			client_id = deserialize(args, 'int')
 			if self.challenge_valid(client_id):

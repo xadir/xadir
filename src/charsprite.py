@@ -22,7 +22,8 @@ class CharacterSprite(UIGridObject, pygame.sprite.DirtySprite):
 
 		self.res = res
 
-		self.update()
+		if self.res is not None:
+			self.update()
 
 	def __getattr__(self, name):
 		return getattr(self.char, name)

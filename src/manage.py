@@ -8,7 +8,7 @@ from charsprite import CharacterSprite
 from race import races
 from charclass import classes
 from store import *
-from game import start_game, host_game, join_game
+from game import start_game, host_game, join_game, XadirMain
 from weapon import Weapon, weapons
 from armor import Armor, armors
 from player import Player
@@ -124,6 +124,10 @@ class LoungeConnection(CentralConnectionBase):
 		elif cmd == 'CHALLENGE_CANCELED':
 			challenge, client = deserialize(args, 'tuple', ['int', 'int'])
 			self.manage.challenge_canceled(challenge, client)
+		elif cmd == 'GAME_START':
+			map, spawns, players = deserialize(args, 'tuple', ['str', ['list', 'list', ':coord'], ['list', 'tuple', ['int', 'Player']]])
+			# XXX: From inside asyncore? bad bad bad...
+			self.manage.central_game(map, players, spawns)
 		else:
 			self.die('Unknown command: ' + repr(cmd))
 
@@ -1289,6 +1293,17 @@ class Manager:
 		mapsel.loop()
 		host_game(self.screen, int(mapsel.port_input.value), mapsel.mapname, team)
 
+	def central_game(self, map, players, spawns):
+		log_stats('central')
+
+		remote = self.lounge
+
+		xadir = XadirMain(self.screen, mapname = map)
+		# XXX: local teams won't get updated with xp and monayz
+		xadir.init_teams([(player.name, remote if client_id != self.lounge.client_id else None, player.team) for client_id, player in players], spawns)
+
+		xadir.main_loop()
+
 	def add_player(self, none):
 		name = self.player_input.value
 		if name != "":
@@ -1319,6 +1334,8 @@ class Manager:
 		self.local_playerlist.replace([namelist.items[sel] for sel in sorted(namelist.sel)])
 		if self.player and self.player not in self.local_playerlist.items:
 			self.select_player(self.local_playerlist, None)
+		if not self.nick_input.value and len(self.local_playerlist.items) == 1:
+			self.nick_input.value = self.local_playerlist.items[0].name
 
 	def select_player(self, namelist, event):
 		sel = namelist.get_selected()
