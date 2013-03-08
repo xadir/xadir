@@ -62,7 +62,9 @@ class MapEditor:
 		self.sprites.add(self.grid.sprites.values())
 
 		self.maplist_container = UIContainer(None, (963, 200), (240, 550), self.screen)
-		self.save_input = eztext.Input(x=self.maplist_container.x + 10, y=self.maplist_container.y + 400, maxlength=40, color=COLOR_FONT, prompt='Map name: ', font=pygame.font.Font(FONT, int(20*FONTSCALE)))
+		self.save_input = eztext.Input(self.maplist_container, (10, 400), (220, 20), maxlength=40, color=COLOR_FONT, prompt='Map name: ', font=pygame.font.Font(FONT, int(20*FONTSCALE)))
+
+		self.sprites.add(self.save_input)
 
 		self.save_btn = FuncButton(self.maplist_container, 10, 430, 218, 30, [["Save map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_save, None), True, False, True)
 		self.menu_btn = FuncButton(self.maplist_container, 10, 465, 218, 30, [["Main menu", None]], None, ICON_FONTSIZE, self.screen, 1, (self.do_done, None), True, False, True)
@@ -241,16 +243,15 @@ class MapEditor:
 
 		self.done = False
 		while not self.done:
-			events = pygame.event.get()
 			self.screen.fill((0, 0, 0))
 
 			self.draw()
-			self.save_input.update(events)
-			self.save_input.draw(self.screen)
 
 			pygame.display.flip()
 
+			events = pygame.event.get()
 			for event in events:
+				self.save_input.event(event)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						self.click(event)
