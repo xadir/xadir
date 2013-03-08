@@ -220,6 +220,12 @@ class TextList(StateTrackingSprite, UIObject):
 			(sel, ) = self.sel
 		return sel
 
+	def get_selected_item(self):
+		index = self.get_selected()
+		if index is None:
+			return None
+		return self.items[index]
+
 	# Poke contained items
 
 	def remove_at(self, index):

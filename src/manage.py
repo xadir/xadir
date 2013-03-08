@@ -54,8 +54,14 @@ class Challenge:
 		self.name = [player for player in self.manage.networkplayers if player.client_id == id][0].name
 		self.id = id
 		self.clients = clients
-		self.accepted = []
+		self.accepted = [self.id]
 		self.map = map
+
+	def get_clients(self):
+		return [client for client in self.manage.networkplayers if client.client_id in self.clients]
+
+	def get_player_names(self):
+		return [nick for client in self.get_clients() for nick in client.nicks]
 
 class NetworkPlayer:
 	def __init__(self, client_id, ip_addr, nicks):
@@ -202,6 +208,7 @@ class Manager:
 		self.manager_texts = []
 		self.local_con_buttons = []
 		self.network_buttons = []
+		self.item_con_buttons = []
 
 		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
@@ -210,6 +217,9 @@ class Manager:
 		self.network_disconnect_btn = FuncButton(self.network_con, 10, 390, 70, 30, [["Disconnect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.disconnect_server, None), True, False, True)
 		self.network_ready_btn = FuncButton(self.network_con, 90, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
 		self.network_challenge_btn = FuncButton(self.network_con, 170, 390, 70, 30, [["Challenge", None]], None, ICON_FONTSIZE, self.screen, 1, (self.send_challenge, None), True, False, True)
+
+		self.network_accept_btn = FuncButton(self.item_con, 210, 180, 70, 30, [["Accept", None]], None, ICON_FONTSIZE, self.screen, 1, (self.accept_challenge, None), True, False, True)
+		self.network_reject_btn = FuncButton(self.item_con, 290, 180, 70, 30, [["Reject", None]], None, ICON_FONTSIZE, self.screen, 1, (self.reject_challenge, None), True, False, True)
 
 		self.ezfont = pygame.font.Font(FONT, int(24*FONTSCALE))
 
@@ -255,7 +265,7 @@ class Manager:
 		self.show_connect_panel()
 
 		self.network_connected = False
-		self.network_map = None
+		self.network_map = 'map_new.txt'
 		self.update_text_fields()
 
 		self.load_all_players()
@@ -581,6 +591,7 @@ class Manager:
 
 	def update_item_panel(self):
 		self.item_con.clear()
+		self.item_con_buttons = []
 		
 		if self.selected_item != None:
 
@@ -725,6 +736,22 @@ class Manager:
 				texts.blit(text, rect)
 				text_y += 15
 
+			if isinstance(self.selected_item, Challenge):
+				font = pygame.font.Font(FONT, int(20*FONTSCALE))
+
+				lines = ['Challenge from: ' + self.selected_item.name + '    Map: ' + self.selected_item.map]
+				for client in self.selected_item.get_clients():
+					lines.append('Client: ' + client.name + (' (accepted)' if client.client_id in self.selected_item.accepted else ''))
+					for nick in client.nicks:
+						lines.append('  Player: ' + nick)
+
+				y = 0
+				for line in lines:
+					text = font.render(line, True, COLOR_FONT, COLOR_BG)
+					rect = text.get_rect()
+					rect.y = y
+					y += rect.height
+					texts.blit(text, rect)
 
 			text_sprite = pygame.sprite.Sprite()
 			text_sprite.image = texts
@@ -734,6 +761,12 @@ class Manager:
 			text_sprite.rect = rect
 			print texts, texts.get_rect()
 			self.item_con.spritegroup.add(text_sprite)
+
+			if isinstance(self.selected_item, Challenge):
+				self.item_con.spritegroup.add(self.network_accept_btn)
+				self.item_con.spritegroup.add(self.network_reject_btn)
+				self.item_con_buttons.append(self.network_accept_btn)
+				self.item_con_buttons.append(self.network_reject_btn)
 
 	def add_char(self, race, container, character, in_team=False):
 		charsprite = CharacterSprite(None, character, (0,0), 270, FakeGrid(CHAR_SIZE), self.res)
@@ -1134,7 +1167,7 @@ class Manager:
 		self.network_connected = True
 		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers, selected = self.select_network_player)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 95), self.selected_networkplayers)
-		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), self.challenges)
+		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), self.challenges, selected = self.select_challenge)
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
 		self.network_messages.scroll.knob.rel_pos = self.network_messages.scroll.leeway
 		self.sprites.add(self.network_playerlist_all)
@@ -1201,11 +1234,17 @@ class Manager:
 			return
 
 		###XXX Add challenge sending here
-		self.lounge.challenge_create([client.client_id for client in self.selected_networkplayers], self.network_map)
+		self.lounge.challenge_create([client.client_id for client in [self.lounge] + self.selected_networkplayers], self.network_map)
 
-	def accept_challenge(self, c):
-		self.selected_networkplayers = c.players
-		self.show_network_panel()
+	def accept_challenge(self, none):
+		self.lounge.challenge_accept(self.selected_item.id)
+		self.selected_item = None
+		self.update_item_panel()
+
+	def reject_challenge(self, none):
+		self.lounge.challenge_reject(self.selected_item.id)
+		self.selected_item = None
+		self.update_item_panel()
 
 	def ready_server(self, none):
 		print "Player is ready"
@@ -1259,6 +1298,10 @@ class Manager:
 				player_inventory.append(armor)
 
 			self.saved_players.append(Player(name, player_party, player_inventory, 1000))
+
+	def select_challenge(self, namelist, event):
+		self.selected_item = namelist.get_selected_item()
+		self.update_item_panel()
 
 	def select_network_player(self, namelist, event):
 		self.network_playerlist_selected.replace([namelist.items[sel] for sel in sorted(namelist.sel)])
@@ -1340,6 +1383,11 @@ class Manager:
 				f(b.function[1])
 				return True
 		for b in self.local_con_buttons:
+			if b.contains(*event.pos):
+				f = b.function[0]
+				f(b.function[1])
+				return True
+		for b in self.item_con_buttons:
 			if b.contains(*event.pos):
 				f = b.function[0]
 				f(b.function[1])
