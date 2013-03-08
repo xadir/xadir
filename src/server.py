@@ -109,7 +109,7 @@ class XadirServerClient(CentralConnectionBase):
 			if self.client_id in self.serv.challenges:
 				self.die('Duplicate challenge')
 			else:
-				self.serv.challenges[self.client_id] = (map, set(clients), set())
+				self.serv.challenges[self.client_id] = (map, set(clients), set([self.client_id]))
 				self.mcast_cmd('CHALLENGE_CREATED', serialize((self.client_id, clients, map), 'tuple', ['int', ['list', 'int'], 'str']), self.serv.challenges[self.client_id][1])
 		elif cmd == 'CHALLENGE_ACCEPT':
 			client_id = deserialize(args, 'int')
