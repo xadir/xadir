@@ -1314,9 +1314,6 @@ class Manager:
 		self.show_connect_panel()
 		self.network_con.draw(False)
 
-	def select_field(self, index):
-		print "Clicked on field button"
-
 	def enable_buttons(self, i):
 		for b in range(1, len(self.parent_buttons[i])):
 			self.parent_buttons[i][b].toggle_visibility()
