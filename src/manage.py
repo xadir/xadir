@@ -1149,13 +1149,19 @@ class Manager:
 		self.show_connect_panel()
 
 	def send_challenge(self, none):
-		try:
-			c = Challenge(self.selected_networkplayers + self.player)
-		except TypeError:
-			print "Cannot send challenge, you must have local player selected by now"
-			sys.exit(0)
-		for p in self.selected_networkplayers:
-			print "Sent challenge " + c + " to " + p.name
+		local_count = len(self.players)
+		net_count = len(self.selected_networkplayers)
+		map_count = 6
+		if local_count <= 0:
+			self.error('No local players selected!')
+			return
+		if local_count + net_count < 2:
+			self.error('Less than two players selected!')
+			return
+		if local_count + net_count > map_count:
+			self.error('Too much players selected, map only allows %d, you have selected %d local and %d network players' % (map_count, local_count, net_count))
+			return
+
 		###XXX Add challenge sending here
 
 	def accept_challenge(self, c):
