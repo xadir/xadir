@@ -283,7 +283,10 @@ class Manager:
 				challenge.accepted.append(client_id)
 
 	def challenge_canceled(self, challenge_id, client_id):
-		self.challenges[:] = [challenge for challenge in self.challenges if challenge.id != challenge_id]
+		self.network_challengelist.replace([challenge for challenge in self.challenges if challenge.id != challenge_id])
+		if isinstance(self.selected_item, Challenge) and self.selected_item.id == challenge_id:
+			self.selected_item = None
+			self.update_item_panel()
 
 	def load_all_players(self):
 		for fname in os.listdir(SAVEDIR):
