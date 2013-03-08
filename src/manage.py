@@ -185,6 +185,7 @@ class Manager:
 		self.network_play_btn = FuncButton(self.network_con, 10, 100, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_hotseat_game, None), True, False, True)
 		self.network_connect_btn = FuncButton(self.network_con, 10, 140, 70, 30, [["Connect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.connect_server, None), True, False, True)
 		self.network_host_btn = FuncButton(self.network_con, 10, 180, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_server, None), True, False, True)
+		self.network_map_btn = FuncButton(self.network_con, 170, 40, 70, 30, [["Map", None]], None, ICON_FONTSIZE, self.screen, 1, (self.select_map, None), True, False, True)
 		self.network_disconnect_btn = FuncButton(self.network_con, 10, 390, 70, 30, [["Disconnect", None]], None, ICON_FONTSIZE, self.screen, 1, (self.disconnect_server, None), True, False, True)
 		self.network_ready_btn = FuncButton(self.network_con, 90, 390, 70, 30, [["Ready", None]], None, ICON_FONTSIZE, self.screen, 1, (self.ready_server, None), True, False, True)
 		self.network_challenge_btn = FuncButton(self.network_con, 170, 390, 70, 30, [["Challenge", None]], None, ICON_FONTSIZE, self.screen, 1, (self.send_challenge, None), True, False, True)
@@ -233,6 +234,7 @@ class Manager:
 		self.show_connect_panel()
 
 		self.network_connected = False
+		self.network_map = None
 		self.update_text_fields()
 
 		self.load_all_players()
@@ -370,8 +372,8 @@ class Manager:
 		rect.y = 0
 		texts.blit(text, rect)
 
-		font = pygame.font.Font(FONT, int(25*FONTSCALE))
-		text = font.render("Players", True, COLOR_FONT, COLOR_BG)
+		font = pygame.font.Font(FONT, int(16*FONTSCALE))
+		text = font.render("Map: " + str(self.network_map), True, COLOR_FONT, COLOR_BG)
 		rect = text.get_rect()
 		rect.x = 0
 		rect.y = 40
@@ -393,9 +395,11 @@ class Manager:
 		self.network_con.spritegroup.add(text_sprite)
 
 		self.network_buttons = []
+		self.network_con.spritegroup.add(self.network_map_btn)
 		self.network_con.spritegroup.add(self.network_disconnect_btn)
 		self.network_con.spritegroup.add(self.network_ready_btn)
 		self.network_con.spritegroup.add(self.network_challenge_btn)
+		self.network_buttons.append(self.network_map_btn)
 		self.network_buttons.append(self.network_challenge_btn)
 		self.network_buttons.append(self.network_disconnect_btn)
 		self.network_buttons.append(self.network_ready_btn)
@@ -1152,12 +1156,26 @@ class Manager:
 		local_count = len(self.players)
 		net_count = len(self.selected_networkplayers)
 		map_count = 6
+
+		if not self.network_map:
+			self.error('No map selected')
+			return
+
+		try:
+			mapdata, size, spawns = load_map(self.network_map)
+			map_count = len(spawns)
+		except:
+			self.error('Could not load the selected map')
+			return
+
 		if local_count <= 0:
-			self.error('No local players selected!')
+			self.error('No local players selected')
 			return
+
 		if local_count + net_count < 2:
-			self.error('Less than two players selected!')
+			self.error('Less than two players selected')
 			return
+
 		if local_count + net_count > map_count:
 			self.error('Too much players selected, map only allows %d, you have selected %d local and %d network players' % (map_count, local_count, net_count))
 			return
@@ -1171,6 +1189,11 @@ class Manager:
 	def ready_server(self, none):
 		print "Player is ready"
 		###XXX Add ready-sending activities here
+
+	def select_map(self, none):
+		mapsel = MapSelection(self.screen, 'map_new.txt')
+		mapsel.loop()
+		self.network_map = mapsel.mapname
 
 	def host_server(self, none):
 		log_stats('host')
