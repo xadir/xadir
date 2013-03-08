@@ -58,7 +58,7 @@ class NetworkPlayer:
 		self.client_id = client_id
 		self.ip_addr = ip_addr
 		self.nicks = nicks
-		self.name = '%s (%d)' % (nicks[0], len(nicks))
+		self.name = '%s (%d)' % (nicks[0] if nicks else '?', len(nicks))
 
 class LoungeConnection(CentralConnectionBase):
 	def __init__(self, manage, host, port):
