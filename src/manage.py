@@ -119,6 +119,7 @@ class Manager:
 
 		### Objects to implement multi-round game
 
+		self.saved_players = []
 		self.players = []
 		self.player = None
 
@@ -162,13 +163,15 @@ class Manager:
 		self.text_con = UIContainer(None, (880, 20), (298, 80), self.screen)
 		self.textfield_con = UIContainer(None, (20, 20), (600, 430), self.screen)
 
-		self.local_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.players, selected = self.select_player)
+		self.saved_playerlist = NameList(self.local_con, (10, 90), (100, 100), self.saved_players, selected = self.select_saved_player, multi = True)
+		self.local_playerlist = NameList(self.local_con, (120, 90), (100, 100), self.players, selected = self.select_player)
 		self.network_playerlist_all = None
 		self.network_playerlist_selected = None
 		self.network_messages = None
 
 		self.sprites = pygame.sprite.LayeredUpdates()
 		self.sprites.add(self.local_playerlist)
+		self.sprites.add(self.saved_playerlist)
 
 		self.race_sprite_x = self.manage.x + 90
 		self.race_sprite_y = self.manage.y + 20
@@ -251,7 +254,7 @@ class Manager:
 			data = f.read()
 
 		player = deserialize(data, 'Player')
-		self.players.append(player)
+		self.saved_players.append(player)
 
 	def save_player(self, player):
 		fname = player.name + '.sav'
@@ -1266,8 +1269,16 @@ class Manager:
 				armor = random.choice(armors.values())
 				player_inventory.append(armor)
 
-			self.players.append(Player(name, player_party, player_inventory, 1000))
+			self.saved_players.append(Player(name, player_party, player_inventory, 1000))
 			#self.update_local_playerlist()
+
+	def select_saved_player(self, namelist, event):
+		self.players[:] = [namelist.items[sel] for sel in sorted(namelist.sel)]
+		self.local_playerlist.sel.clear()
+		if self.player in self.local_playerlist.items:
+			self.local_playerlist.sel.add(self.local_playerlist.items.index(self.player))
+		elif self.player:
+			self.select_player(self.local_playerlist, None)
 
 	def select_player(self, namelist, event):
 		sel = namelist.get_selected()
