@@ -159,6 +159,9 @@ class XadirServerClient(CentralConnectionBase):
 	def push_actions(self, actions):
 		for action in actions:
 			self.mcast_cmd('GAME_' + action[0] + '_RET', serialize(action[1:]), self.game.client_ids)
+			assert action[0] in 'TURN MOVE ATTACK'.split()
+			handler = getattr(self.game, 'handle_' + action[0].lower())
+			handler(*action[1:])
 
 	def handle_close(self):
 		print 'DISCONNECT', self.client_id, self.nicks

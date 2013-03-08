@@ -27,7 +27,7 @@ import server
 from server import CentralConnectionBase
 
 CLIENT_VERSION = 'CENTRAL 0.2'
-DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
+DEFAULT_CENTRAL_HOST = 'localhost'#'gameserver.xadir.net'
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -133,10 +133,10 @@ class LoungeConnection(CentralConnectionBase):
 			p, c, path = deserialize(args, 'tuple', ['int', 'int', ':path'])
 			self.manage.cgame.handle_move(p, c, path)
 		elif cmd == 'GAME_ATTACK_RET':
-			p, c, path, hp, dam, msg = deserialize(args, 'tuple', ['int', 'int', ':path', 'int', 'int', ['list', 'unicode']])
+			p, c, path, hp, dam, msg = deserialize(args, 'tuple', ['int', 'int', ':path', 'int', 'int', ['list', ('str', 'unicode')]])
 			self.manage.cgame.handle_attack(p, c, path, hp, dam, msg)
 		elif cmd == 'GAME_TURN_RET':
-			p, = deserialize(args, 'int')
+			p, = deserialize(args, 'tuple', ['int'])
 			self.manage.cgame.handle_turn(p)
 		else:
 			self.die('Unknown command: ' + repr(cmd))
@@ -170,6 +170,8 @@ class Manager:
 	def __init__(self, screen):
 
 		### Objects to implement multi-round game
+
+		self.cgame = None
 
 		self.saved_players = []
 		self.players = []
@@ -1325,7 +1327,6 @@ class Manager:
 		# XXX: local teams won't get updated with xp and monayz
 		xadir.init_teams([(player.name, remote if client_id != self.lounge.client_id else None, player.team) for client_id, player in players], spawns)
 		xadir.game = NetworkGame(xadir.game, self.lounge)
-		xadir.main_loop()
 
 	def add_player(self, none):
 		name = self.player_input.value
@@ -1575,6 +1576,10 @@ class Manager:
 						self.container_click(event, self.text_con)
 				elif event.type == pygame.QUIT:
 					sys.exit()
+
+			if self.cgame:
+				self.cgame.main_loop()
+				self.cgame = None
 
 			asyncore.loop(count=1, timeout=0.0)
 			time.sleep(0.05)
