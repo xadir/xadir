@@ -26,6 +26,7 @@ import socket
 import server
 from server import CentralConnectionBase
 
+CLIENT_VERSION = 'CENTRAL 0.2'
 DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
 
 if not pygame.font:
@@ -1313,6 +1314,10 @@ class Manager:
 
 	def central_game(self, map, players, spawns):
 		log_stats('central')
+
+		if server.VERSION != CLIENT_VERSION:
+			self.error('Game protocol version mismatch, please download the latest client')
+			return
 
 		remote = self.lounge
 
