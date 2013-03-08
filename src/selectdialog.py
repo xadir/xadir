@@ -219,6 +219,28 @@ class TextList(StateTrackingSprite, UIObject):
 			(sel, ) = self.sel
 		return sel
 
+	# Poke contained items
+
+	def remove_at(self, index):
+		old_sel = self.sel.copy()
+		self.sel.clear()
+		for sel in old_sel:
+			if sel < index:
+				self.sel.add(sel)
+			elif sel > index:
+				self.sel.add(sel - 1)
+		self.items.pop(index)
+
+	def remove(self, item):
+		self.remove_at(self.items.index(item))
+
+	def replace(self, items):
+		old_sel = [self.items[sel] for sel in self.sel]
+		self.items[:] = items
+		self.sel.clear()
+		for item in set(self.items) & set(old_sel):
+			self.sel.add(self.items.index(item))
+
 if __name__ == "__main__":
 	screen = init_pygame()
 

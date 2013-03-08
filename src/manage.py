@@ -1277,18 +1277,11 @@ class Manager:
 			#self.update_local_playerlist()
 
 	def select_network_player(self, namelist, event):
-		old_selection = set([self.network_playerlist_selected.items[sel] for sel in self.network_playerlist_selected.sel])
-		self.selected_networkplayers[:] = [namelist.items[sel] for sel in sorted(namelist.sel)]
-		self.network_playerlist_selected.sel.clear()
-		for player in set(self.selected_networkplayers) & set(old_selection):
-			self.network_playerlist_selected.sel.add(self.network_playerlist_selected.items.index(player))
+		self.network_playerlist_selected.replace([namelist.items[sel] for sel in sorted(namelist.sel)])
 
 	def select_saved_player(self, namelist, event):
-		self.players[:] = [namelist.items[sel] for sel in sorted(namelist.sel)]
-		self.local_playerlist.sel.clear()
-		if self.player in self.local_playerlist.items:
-			self.local_playerlist.sel.add(self.local_playerlist.items.index(self.player))
-		elif self.player:
+		self.local_playerlist.replace([namelist.items[sel] for sel in sorted(namelist.sel)])
+		if self.player and self.player not in self.local_playerlist.items:
 			self.select_player(self.local_playerlist, None)
 
 	def select_player(self, namelist, event):
