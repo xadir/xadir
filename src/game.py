@@ -124,6 +124,26 @@ def get_heading(a, b):
 	# Prefer horizontal directions when the direction is not a multiple of 90
 	return {45: 0, 135: 180, 225: 180, 315: 0}.get(angle, angle)
 
+class NetworkGame:
+	def __init__(self, game, lounge):
+		self.game = game
+		self.lounge = lounge
+
+	def __getattr__(self, name):
+		return getattr(self.game, name)
+
+	def move(self, character, target_pos):
+		self.lounge.move(self.all_players.index(character.player), character.player.all_characters.index(character), target_pos)
+		return []
+
+	def attack(self, character, target_pos):
+		self.lounge.attack(self.all_players.index(character.player), character.player.all_characters.index(character), target_pos)
+		return []
+
+	def end_turn(self):
+		self.lounge.end_turn()
+		return []
+
 class Game:
 	def __init__(self, map, spawns, players):
 		self.map = map

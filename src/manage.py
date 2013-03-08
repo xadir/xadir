@@ -8,7 +8,7 @@ from charsprite import CharacterSprite
 from race import races
 from charclass import classes
 from store import *
-from game import start_game, host_game, join_game, XadirMain
+from game import start_game, host_game, join_game, XadirMain, NetworkGame
 from weapon import Weapon, weapons
 from armor import Armor, armors
 from player import Player
@@ -26,7 +26,7 @@ import socket
 import server
 from server import CentralConnectionBase
 
-DEFAULT_CENTRAL_HOST = 'localhost'#'gameserver.xadir.net'
+DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -128,6 +128,15 @@ class LoungeConnection(CentralConnectionBase):
 			map, spawns, players = deserialize(args, 'tuple', ['str', ['list', 'list', ':coord'], ['list', 'tuple', ['int', 'Player']]])
 			# XXX: From inside asyncore? bad bad bad...
 			self.manage.central_game(map, players, spawns)
+		elif cmd == 'GAME_MOVE_RET':
+			p, c, path = deserialize(args, 'tuple', ['int', 'int', ':path'])
+			self.manage.cgame.handle_move(p, c, path)
+		elif cmd == 'GAME_ATTACK_RET':
+			p, c, path, hp, dam, msg = deserialize(args, 'tuple', ['int', 'int', ':path', 'int', 'int', ['list', 'unicode']])
+			self.manage.cgame.handle_attack(p, c, path, hp, dam, msg)
+		elif cmd == 'GAME_TURN_RET':
+			p, = deserialize(args, 'int')
+			self.manage.cgame.handle_turn(p)
 		else:
 			self.die('Unknown command: ' + repr(cmd))
 
@@ -142,6 +151,15 @@ class LoungeConnection(CentralConnectionBase):
 
 	def challenge_reject(self, client_id):
 		self.push_cmd('CHALLENGE_REJECT', serialize(client_id, 'int'))
+
+	def move(self, p, c, t):
+		self.push_cmd('GAME_MOVE', serialize((p, c, t), 'tuple', ['int', 'int', ':coord']))
+
+	def attack(self, p, c, t):
+		self.push_cmd('GAME_ATTACK', serialize((p, c, t), 'tuple', ['int', 'int', ':coord']))
+
+	def end_turn(self):
+		self.push_cmd('GAME_ENDTURN', '')
 
 	def handle_close(self):
 		self.manage.handle_disconnect()
@@ -1298,10 +1316,10 @@ class Manager:
 
 		remote = self.lounge
 
-		xadir = XadirMain(self.screen, mapname = map)
+		self.cgame = xadir = XadirMain(self.screen, mapname = map)
 		# XXX: local teams won't get updated with xp and monayz
 		xadir.init_teams([(player.name, remote if client_id != self.lounge.client_id else None, player.team) for client_id, player in players], spawns)
-
+		xadir.game = NetworkGame(xadir.game, self.lounge)
 		xadir.main_loop()
 
 	def add_player(self, none):

@@ -134,7 +134,8 @@ class XadirServerClient(CentralConnectionBase):
 					main = Dummy()
 					main.map = game.map
 					main.res = None
-					game.players = [GamePlayer(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)], main, None) for (name, remote, characters), spawn in zip(teams, spawns)]
+					game.all_players = [GamePlayer(name, [(char, x, y, 0) for char, (x, y) in zip(characters, spawn)], main, None) for (name, remote, characters), spawn in zip(teams, spawns)]
+					game.client_ids = self.serv.challenges[client_id][1]
 					for client in self.serv.clients:
 						if client.client_id not in self.serv.challenges[client_id][1]:
 							continue
@@ -144,8 +145,20 @@ class XadirServerClient(CentralConnectionBase):
 			client_id = deserialize(args, 'int')
 			if self.challenge_valid(client_id):
 				self.challenge_cancel(client_id, self.client_id)
+		elif cmd == 'GAME_MOVE':
+			p, c, t = deserialize(args, 'tuple', ['int', 'int', ':coord'])
+			self.push_actions(self.game.move(self.game.all_players[p].all_characters[c], t))
+		elif cmd == 'GAME_ATTACK':
+			p, c, t = deserialize(args, 'tuple', ['int', 'int', ':coord'])
+			self.push_actions(self.game.attack(self.game.all_players[p].all_characters[c], t))
+		elif cmd == 'GAME_ENDTURN':
+			self.push_actions(self.game.end_turn())
 		else:
 			self.die('Unknown command: ' + repr(cmd))
+
+	def push_actions(self, actions):
+		for action in actions:
+			self.mcast_cmd('GAME_' + action[0] + '_RET', serialize(action[1:]), self.game.client_ids)
 
 	def handle_close(self):
 		print 'DISCONNECT', self.client_id, self.nicks
