@@ -26,7 +26,7 @@ import socket
 import server
 from server import CentralConnectionBase
 
-DEFAULT_CENTRAL_HOST = 'gameserver.xadir.net'
+DEFAULT_CENTRAL_HOST = 'localhost'#'gameserver.xadir.net'
 
 if not pygame.font:
 	print "Warning: Fonts not enabled"
@@ -49,8 +49,12 @@ class Server:
 		self.playerlist = players
 
 class Challenge:
-	def __init__(self, players, map):
-		self.players = players
+	def __init__(self, manage, id, clients, map):
+		self.manage = manage
+		self.name = [player for player in self.manage.networkplayers if player.client_id == id][0].name
+		self.id = id
+		self.clients = clients
+		self.accepted = []
 		self.map = map
 
 class NetworkPlayer:
@@ -104,11 +108,29 @@ class LoungeConnection(CentralConnectionBase):
 			del self.users[client_id]
 			# XXX: ugh...
 			self.manage.networkplayers[:] = [player for player in self.manage.networkplayers if player.client_id != client_id]
+		elif cmd == 'CHALLENGE_CREATED':
+			client_id, clients, map = deserialize(args, 'tuple', ['int', ['list', 'int'], 'str'])
+			self.manage.challenge_created(client_id, clients, map)
+		elif cmd == 'CHALLENGE_ACCEPTED_BY':
+			challenge, client = deserialize(args, 'tuple', ['int', 'int'])
+			self.manage.challenge_accepted_by(challenge, client)
+		elif cmd == 'CHALLENGE_CANCELED':
+			challenge, client = deserialize(args, 'tuple', ['int', 'int'])
+			self.manage.challenge_canceled(challenge, client)
 		else:
 			self.die('Unknown command: ' + repr(cmd))
 
 	def send_message(self, msg):
 		self.push_cmd('MSG', serialize(msg, 'unicode'))
+
+	def challenge_create(self, clients, map):
+		self.push_cmd('CHALLENGE_CREATE', serialize((clients, map), 'tuple', [['list', 'int'], 'str']))
+
+	def challenge_accept(self, client_id):
+		self.push_cmd('CHALLENGE_ACCEPT', serialize(client_id, 'int'))
+
+	def challenge_reject(self, client_id):
+		self.push_cmd('CHALLENGE_REJECT', serialize(client_id, 'int'))
 
 	def handle_close(self):
 		self.manage.handle_disconnect()
@@ -127,8 +149,7 @@ class Manager:
 
 		self.networkplayers = []
 		self.selected_networkplayers = []
-		self.received_challenges = []
-		self.received_challenges.append(Challenge([Player("test1", [], [], 100), Player("test2", [], [], 100)], "new_map.txt"))
+		self.challenges = []
 
 #		self.selected_networkplayers.append(self.server.playerlist[0])
 
@@ -242,6 +263,17 @@ class Manager:
 	def send_message(self):
 		self.lounge.send_message(self.message_input.value)
 		self.message_input.value = ''
+
+	def challenge_created(self, challenge_id, clients, map):
+		self.challenges.append(Challenge(self, challenge_id, clients, map))
+
+	def challenge_accepted_by(self, challenge_id, client_id):
+		for challenge in self.challenges:
+			if challenge.id == challenge_id:
+				challenge.accepted.append(client_id)
+
+	def challenge_canceled(self, challenge_id, client_id):
+		self.challenges[:] = [challenge for challenge in self.challenges if challenge.id != challenge_id]
 
 	def load_all_players(self):
 		for fname in os.listdir(SAVEDIR):
@@ -1118,7 +1150,7 @@ class Manager:
 		self.network_connected = True
 		self.network_playerlist_all= NameList(self.network_con, (10, 80), (100, 200), self.networkplayers, selected = self.select_network_player)
 		self.network_playerlist_selected = NameList(self.network_con, (120, 80), (100, 95), self.selected_networkplayers)
-		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), [])
+		self.network_challengelist = NameList(self.network_con, (120, 185), (100, 95), self.challenges)
 		self.network_messages = TextList(self.network_con, (10, 290), (210, 70), [])
 		self.network_messages.scroll.knob.rel_pos = self.network_messages.scroll.leeway
 		self.sprites.add(self.network_playerlist_all)
@@ -1137,6 +1169,8 @@ class Manager:
 	def handle_disconnect(self):
 		self.lounge = None
 		self.networkplayers[:] = []
+		self.selected_networkplayers[:] = []
+		self.challenges[:] = []
 		self.network_connected = False
 		self.server = None
 		self.sprites.remove(self.network_playerlist_all)
@@ -1156,6 +1190,8 @@ class Manager:
 		local_count = len(self.players)
 		net_count = len(self.selected_networkplayers)
 		map_count = 6
+
+		# XXX: local_count is player count, but net_count is client count...
 
 		if not self.network_map:
 			self.error('No map selected')
@@ -1181,6 +1217,7 @@ class Manager:
 			return
 
 		###XXX Add challenge sending here
+		self.lounge.challenge_create([client.client_id for client in self.selected_networkplayers], self.network_map)
 
 	def accept_challenge(self, c):
 		self.selected_networkplayers = c.players
