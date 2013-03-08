@@ -1164,6 +1164,9 @@ class Manager:
 		start_game(self.screen, mapsel.mapname, teams)
 
 	def connect_server(self, none):
+		if not self.players:
+			self.error('At least one player must be selected')
+			return
 		if not self.nick_input.value:
 			self.error('A nickname must be specified')
 			return
