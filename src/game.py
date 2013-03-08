@@ -364,18 +364,18 @@ class XadirMain:
 	def gameover(self):
 		print "gameover"
 		change_sound(0, load_sound('menu.ogg'), BGM_FADE_MS)
-		if len(self.live_players) < 1:
+		if len(self.game.live_players) < 1:
 			text = 'Draw!'
-			for p in self.players:
-				for c in p.characters:
+			for p in self.game.all_players:
+				for c in p.all_characters:
 					c.xp += win_xp
 					c.check_lvl()
 		else:
-			text = '%s wins!' % self.live_players[0].name
-			for c in self.live_players[0].all_characters:
+			text = '%s wins!' % self.game.live_players[0].name
+			for c in self.game.live_players[0].all_characters:
 				c.char.xp += win_xp
 				c.check_lvl()
-			for p in self.dead_players:
+			for p in self.game.dead_players:
 				for c in p.all_characters:
 					c.char.xp += defeat_xp
 					c.check_lvl()
