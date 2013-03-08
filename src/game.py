@@ -479,12 +479,12 @@ class XadirMain:
 
 	def handle_actions(self, actions):
 		for action in actions:
-			if action[0] == 'TURN':
-				self.handle_turn(*action[1:])
-			if action[0] == 'MOVE':
-				self.handle_move(*action[1:])
-			if action[0] == 'ATTACK':
-				self.handle_attack(*action[1:])
+			self.handle_action(action)
+
+	def handle_action(self, action):
+		assert action[0] in 'TURN MOVE ATTACK'.split()
+		handler = getattr(self, 'handle_' + action[0].lower())
+		handler(*action[1:])
 
 	def handle_turn(self, player_idx):
 		self.game.handle_turn(player_idx)
