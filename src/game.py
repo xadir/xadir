@@ -186,7 +186,7 @@ class Game:
 			return
 
 		turn = (self.turn + 1) % len(self.all_players)
-		while not self.current_player.is_alive():
+		while not self.all_players[turn].is_alive():
 			turn = (turn + 1) % len(self.all_players)
 
 		return [('TURN', turn)]
