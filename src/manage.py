@@ -1329,22 +1329,24 @@ class Manager:
 
 	def add_player(self, none):
 		name = self.player_input.value
-		if name != "":
-#			print "Adding player: ", name
-			self.player_input.value = ""
-			player_party = []
-			player_inventory = []
-			for i in range(5):
-				char = Character.random()
-				player_party.append(char)
-			for i in range(3):
-				sword = random.choice(weapons.values())
-				player_inventory.append(sword)
-			for i in range(1):
-				armor = random.choice(armors.values())
-				player_inventory.append(armor)
+		if not name:
+			self.error('You must choose a player name first')
+			return
 
-			self.saved_players.append(Player(name, player_party, player_inventory, 1000))
+		self.player_input.value = ""
+		player_party = []
+		player_inventory = []
+		for i in range(5):
+			char = Character.random()
+			player_party.append(char)
+		for i in range(3):
+			sword = random.choice(weapons.values())
+			player_inventory.append(sword)
+		for i in range(1):
+			armor = random.choice(armors.values())
+			player_inventory.append(armor)
+
+		self.saved_players.append(Player(name, player_party, player_inventory, 1000))
 
 	def select_challenge(self, namelist, event):
 		self.selected_item = namelist.get_selected_item()
