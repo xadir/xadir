@@ -270,16 +270,10 @@ class Manager:
 		self.connect_buttons.append(self.network_connect_btn)
 		self.connect_buttons.append(self.network_host_btn)
 		self.save_btn = FuncButton(self.manage, 10, 210, 100, 30, [["Save", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_char, self.selected_char), True, False, True)
-		self.play_btn = FuncButton(self.team_con, 10, 80, 70, 30, [["Play", None]], None, ICON_FONTSIZE, self.screen, 1, (self.start_game, self.team), True, False, True)
-		self.join_btn = FuncButton(self.team_con, 85, 80, 70, 30, [["Join", None]], None, ICON_FONTSIZE, self.screen, 1, (self.join_game, self.team), True, False, True)
-		self.host_btn = FuncButton(self.team_con, 160, 80, 70, 30, [["Host", None]], None, ICON_FONTSIZE, self.screen, 1, (self.host_game, self.team), True, False, True)		
 		self.save_player_btn = FuncButton(self.team_con, 260, 80, 100, 30, [["Save player", None]], None, ICON_FONTSIZE, self.screen, 1, (self.save_selected_player, None), True, False, True)
 		self.new_char_btn = FuncButton(self.party_con, 10, 210, 130, 30, [["New", None]], None, ICON_FONTSIZE, self.screen, 1, (self.new_character, self.manage), True, False, True)
 
 		self.manager_buttons.append(self.save_btn)
-		self.manager_buttons.append(self.play_btn)
-		self.manager_buttons.append(self.join_btn)
-		self.manager_buttons.append(self.host_btn)
 		self.manager_buttons.append(self.save_player_btn)
 		self.manager_buttons.append(self.new_char_btn)
 
@@ -423,7 +417,6 @@ class Manager:
 		self.network_con.spritegroup.add(self.network_connect_btn)
 		self.network_buttons.append(self.network_connect_btn)
 		self.network_con.spritegroup.add(self.network_host_btn)
-		self.network_buttons.append(self.host_btn)
 
 	def show_network_panel(self):
 		self.network_con.clear()
@@ -863,9 +856,6 @@ class Manager:
 		self.new_char_buttons = []
 
 		self.manage.spritegroup.add(self.save_btn)
-		self.team_con.spritegroup.add(self.play_btn)
-		self.team_con.spritegroup.add(self.join_btn)
-		self.team_con.spritegroup.add(self.host_btn)
 		self.party_con.spritegroup.add(self.new_char_btn)
 
 		self.race_index = 0
