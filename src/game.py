@@ -341,6 +341,7 @@ class XadirMain:
 		self.sprites.add(self.messages)
 
 		self.remote = None
+		self.waiting_for_response = False
 
 		self.res = Resources(None)
 
@@ -356,7 +357,7 @@ class XadirMain:
 		log_stats('game')
 
 	def is_local_turn(self):
-		return not self.game.current_player.remote
+		return not self.game.current_player.remote and not self.waiting_for_response
 
 	def poll_local_events(self):
 		for event in pygame.event.get():
@@ -489,12 +490,15 @@ class XadirMain:
 				character.unselect()
 
 	def move(self, character, coords):
+		self.waiting_for_response = True
 		self.handle_actions(self.game.move(character, coords))
 
 	def attack(self, character, coords):
+		self.waiting_for_response = True
 		self.handle_actions(self.game.attack(character, coords))
 
 	def end_turn(self):
+		self.waiting_for_response = True
 		self.handle_actions(self.game.end_turn())
 
 	def handle_remote(self):
@@ -512,11 +516,13 @@ class XadirMain:
 	def handle_turn(self, player_idx):
 		self.game.handle_turn(player_idx)
 		self.messages.messages.append('%s\'s turn' % self.game.current_player.name)
+		self.waiting_for_response = False
 
 	def handle_move(self, player_idx, character_idx, path):
 		character = self.game.all_players[player_idx].all_characters[character_idx]
 		self.animate_move(character, path)
 		self.game.handle_move(player_idx, character_idx, path)
+		self.waiting_for_response = False
 
 	def handle_attack(self, player_idx, character_idx, path, old_hp, damage, messages):
 		character = self.game.all_players[player_idx].all_characters[character_idx]
@@ -525,6 +531,7 @@ class XadirMain:
 		character.heading = get_heading(path[-2], path[-1])
 		self.animate_attack(character, target, damage, messages)
 		self.game.handle_attack(player_idx, character_idx, path, old_hp, damage, messages)
+		self.waiting_for_response = False
 
 	def animate_move(self, character, path):
 		# Five steps per second
