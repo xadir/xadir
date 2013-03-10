@@ -1039,6 +1039,10 @@ class Manager:
 		self.update_general_texts()
 
 	def buy(self, item):
+		if not self.player:
+			self.error('You must select a player before you can buy anything')
+			return
+
 		if self.player.money >= item.price:
 			self.inventory.append(item)
 			self.player.money -= item.price
