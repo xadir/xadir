@@ -1192,7 +1192,7 @@ class Manager:
 		if not self.nick_input.value:
 			self.error('A nickname must be specified')
 			return
-		#log_stats('join')
+		log_stats('connect')
 		#if self.player == None:
 		#	print "Create player before connecting"
 		#else:

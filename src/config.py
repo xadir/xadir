@@ -1,6 +1,6 @@
 import os
 
-TRACK_USAGE = False
+TRACK_USAGE = True
 
 PROTOCOL_VERSION = '0.5'
 
