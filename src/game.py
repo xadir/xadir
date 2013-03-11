@@ -1000,7 +1000,7 @@ def compatible_protocol(version):
 def start_game(screen, mapname, teams):
 	teams = [(name, None, team) for name, team in teams]
 	game = XadirMain(screen, mapname = mapname)
-	game.init_teams(teams, game.get_spawnpoints(teams))
+	game.init_teams(teams, game.game.get_spawnpoints(teams))
 	game.main_loop()
 
 from screen_message import MessageWin
